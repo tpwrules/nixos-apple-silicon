@@ -1,0 +1,36 @@
+I wrote derivations to build a minimal rootfs with the Asahi project kernel in order to get suppot for more of the hardware, and tried to boot it with m1n1's linux script. Now the NVMe is detected and the rootfs is mounted, but NixOS still cannot boot because the correct init wasn't passed. USB keyboard also still does not work.
+
+At this point, it's time to get u-boot working. I captured the load addresses from the linux script, wondering if putting stuff in the wrong place was why u-boot crashed. Chainloading u-boot like before. Instead, I tried to set the environmnet variables to the values m1n1 had used:
+setenv fdt_addr_r 0x8130095c0
+setenv kernel_addr_r 0x813200000
+setenv ramdisk_addr_r 0x833200000
+sysboot nvme 0:4 any 0x960000000 /boot/extlinux/extlinux.conf
+
+Alas, it complained that loading the kernel would overwrite reserved memory. I tried a slightly different address:
+setenv kernel_addr_r 0x823200000
+sysboot nvme 0:4 any 0x960000000 /boot/extlinux/extlinux.conf
+
+but it just crashed again.
+
+After a bit more fiddling, it now hangs at "Starting kernel...":
+setenv fdtfile apple/t8103-j274.dtb
+setenv fdt_addr_r 0x823100000
+setenv kernel_addr_r 0x823200000
+setenv ramdisk_addr_r 0x833200000
+sysboot nvme 0:4 any 0x960000000 /boot/extlinux/extlinux.conf
+
+But maybe this means it's started? It's still the old rootfs with incorrect kernel args. Let's try rewriting the rootfs, and rerunning the above commands.
+
+Now it hangs shortly after some serial port stuff, and doesn't show anything on the display. Trying it without the hypervisor seems to display the same result, where it apparently hangs.
+
+Maybe it has the wrong console? Let's try to force the kernel params to exclude the other consoles and reflash the rootfs, then try again in the hypervisor because it's easier to paste the uboot commands. But sadly it does not work. Trying with chainloading does the same thing.
+
+Trying again with the Linux script but the boot args from nixos itself:
+m1n1/bin/m1n1-linux -b 'init=/nix/store/b65j3zs0kcw5dsvifv8kbi16a31zl4d8-nixos-system-nixos-21.11pre-git/init earlycon console=ttySAC0,1500000 console=tty0 debug boot.shell_on_fail' bootbits/Image.gz bootbits/apple.dtb bootbits/initrd
+
+But this time, it boots all the way!!! It resized the rootfs, so it must not have booted correctly the previous times. Unfortunately, the USB keyboard still does not work, neither in the A nor the C ports. It also appears the network is not up. So there is not yet any way to communicate with the running system...
+
+The linux script has an option to also load u-boot, so let's throw that in there and see what happens. Maybe it can give us more clues as to appropriate variables:
+m1n1/bin/m1n1-linux --tty /dev/ttyACM1 -u u-boot/u-boot.macho -b 'init=/nix/store/b65j3zs0kcw5dsvifv8kbi16a31zl4d8-nixos-system-nixos-21.11pre-git/init earlycon console=ttySAC0,1500000 console=tty0 debug boot.shell_on_fail' bootbits/Image.gz bootbits/apple.dtb bootbits/initrd
+
+Nope, it just resets the machine.

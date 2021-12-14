@@ -16,7 +16,7 @@
 
   boot.consoleLogLevel = lib.mkDefault 7;
 
-  boot.kernelParams = ["earlycon" "console=ttySAC0,1500000" "console=tty0" "debug" "boot.shell_on_fail"];
+  boot.kernelParams = lib.mkForce ["earlycon" "console=ttySAC0,1500000" "console=tty0" "debug" "boot.shell_on_fail"];
 
   # save space and compilation time. might revise?
   sound.enable = false;
