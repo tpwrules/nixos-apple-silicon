@@ -1,0 +1,50 @@
+So that I could take advantage of m1n1's wonderful hypervisor, I reinstalled it bare instead of having it load u-boot.
+
+While still in 1TR, I decided to try to put in a linux root FS. I got a NixOS SD image from Hydra which had a suitably new kernel. I downloaded and extracted the rootfs from it as follows:
+
+mkdir temp
+cd temp
+wget -O nixos.img.zst https://hydra.nixos.org/build/158402880/download/1/nixos-sd-image-21.11pre331775.c6b332cb1a4-aarch64-linux.img.zst
+zstd -d nixos.img.zst
+DEVICE=$(sudo losetup -P --show -f nixos.img)
+sudo dd if=${DEVICE}p2 of=nixos_root.img bs=1M
+sudo losetup -D $DEVICE
+nix-shell -p python3 --run 'python3 -m http.server'
+
+In 1TR, I identified the FAT partition I had made as /dev/disk0s4 in the output of diskutil list. Then, I transferred the image over with:
+diskutil unmount /dev/disk0s4
+curl http://builder-ip:8000/nixos_root.img -o - | dd of=/dev/disk0s4 bs=1m
+sync
+reboot
+
+I then went back to the host and chainloaded u-boot like before:
+`nix-build -A m1n1`/bin/m1n1-run_guest `nix-build -A u-boot`/u-boot.macho
+
+then connected to the u-boot console in another terminal:
+nix-shell -p picocom --run 'picocom /dev/ttyACM1'
+
+U-boot failed to automatically boot for whatever reason. In the u-boot console, I ran:
+setenv ramdisk_addr_r 0x960300000
+sysboot nvme 0:4 any 0x960000000 /boot/extlinux/extlinux.conf
+
+but alas it crashed immediately and reset the Mac.
+
+I then decided to try to load the kernel directly with m1n1. To get the necessary pieces, I went back to the directory I extracted the rootfs:
+mkdir mnt
+sudo mount -t ext4 -o ro nixos_root.img mnt
+mkdir bootbits
+gzip mnt/boot/nixos/*-Image -c > bootbits/Image.gz
+cp mnt/boot/nixos/*-initrd bootbits/initrd
+cp mnt/boot/nixos/*-dtbs/apple/t8103-j274.dtb bootbits/apple.dtb
+sudo umount mnt
+
+Then, I tried to boot it with m1n1's script:
+m1n1/bin/m1n1-linux -b 'earlycon console=ttySAC0,15000000 console=tty0 debug' bootbits/Image.gz bootbits/apple.dtb bootbits/initrd
+
+the script died once the kernel started, but NixOS started to boot! Of course, it couldn't find init, and it couldn't mount the root device. Also, the USB keyboard plugged into the USB 2 ports did not work, and nor did one plugged into the USB C ports. But this is progress!
+
+I then wanted to try to get the kernel running under the hypervisor so I could communicate with it over the USB serial port:
+cat m1n1/build/m1n1.macho bootbits/Image.gz bootbits/apple.dtb bootbits/initrd > bootbits/boot.macho
+m1n1/bin/m1n1-run_guest -S bootbits/boot.macho
+
+Unfortunately, this crashed with a kernel panic because the root device was not specified, and there's no way to pass boot args through the hypervisor except by fiddling with device trees. Ah well.
