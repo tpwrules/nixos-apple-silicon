@@ -47,7 +47,7 @@
   # udisks fails due to gobject-introspection being not cross-compilation friendly.
   services.udisks2.enable = lib.mkForce false;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.callPackage ../kernel {};
 
   nixpkgs.crossSystem = {
     system = "aarch64-linux";
