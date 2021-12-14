@@ -1,0 +1,17 @@
+After setting up m1n1 using the installer, I wanted to install my own custom m1n1. I wrote the derivations then built it with `nix-build -A m1n1`. To serve it I did:
+
+cd result/build
+python3 -m http.server
+
+then I rebooted the Mac into 1TR, loaded the terminal, and executed the commands:
+
+curl http://build-ip:8000/m1n1.macho > m1n1.macho
+kmutil configure-boot -c m1n1.macho -C -v /Volumes/Linux
+
+I then rebooted the machine and saw that m1n1 still worked.
+
+I was able to interact with m1 with commands like
+export M1N1DEVICE=/dev/ttyACM0
+result/bin/m1n1-shell
+
+Sadly, the framebuffer does not work for reasons unknown.
