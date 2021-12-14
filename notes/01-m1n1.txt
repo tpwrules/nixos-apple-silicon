@@ -1,0 +1,19 @@
+Initial notes on getting m1n1 set up and installed
+
+My machine is an M1 mini, 2020, with 16GB RAM and 1TB disk. It's fresh out of the box with my user account set up. It is on macOS 12.0.1.
+
+I tried a pre-alpha version of the installer from https://mrcn.st/alxsh dated 2021-11-20.
+
+curl -L https://mrcn.st/alxsh | sh
+
+from macOS, but it said no actions were available.
+
+I then booted into 1TR by shutting the machine off completely, holding the power button until startup options came up, then selecting the "Options" option. I retried the command in the terminal in 1TR, but received the same response.
+
+I launched Disk Utility then selected the option to partition the volume group. I chose to resize the Macintosh HD partition to 500GB, though allegedly only 2-3GB are necessary. Note that unmounting the volume group prevents resizing from being possible. Once the process was complete, a new container called disk6 appeared, with an untitled volume inside. I deleted the volume, then reran the install script.
+
+Now I had options. I chose to "install a macOS stub and m1n1 into an existing APFS container", chose the container I just created, then chose the version of macOS already installed on the machine, 12.0.1. After a few minutes, it told me I had to select the startup disk "None". However, Asahi linux's logo was displayed, so I selected that instead. I hit Restart and entered my password.
+
+After a few seconds, it told me to restart back into 1TR, choose Options, run the terminal again, and execute the command `/Volumes/''/step2.sh`, which does not make much sense. When I rebooted and got back into the terminal, I found a script called step2.sh in /Volumes/Linux\ 1, so I executed it. I entered my username and password as it requested, then rebooted when prompted.
+
+When the system rebooted, the display did not come back up. However, I attached a USB cable to the DFU port and plugged it into a Linux PC and the m1n1 usb tty devices showed up, so everything worked!
