@@ -16,7 +16,15 @@
 
   boot.consoleLogLevel = lib.mkDefault 7;
 
-  boot.kernelParams = lib.mkForce ["earlycon" "console=ttySAC0,1500000" "console=tty0" "debug" "boot.shell_on_fail"];
+  boot.kernelParams = lib.mkForce [
+    "earlycon"
+    "console=ttySAC0,1500000"
+    "console=tty0"
+    "debug"
+    "boot.shell_on_fail"
+  ];
+
+  boot.initrd.availableKernelModules = lib.mkForce [];
 
   # save space and compilation time. might revise?
   sound.enable = false;
@@ -48,6 +56,8 @@
   services.udisks2.enable = lib.mkForce false;
 
   boot.kernelPackages = pkgs.callPackage ../kernel {};
+
+  networking.firewall.enable = false;
 
   nixpkgs.crossSystem = {
     system = "aarch64-linux";

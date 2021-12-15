@@ -1,0 +1,13 @@
+Now that a kind person on the IRC channel has given me a new kernel config and I've rebuilt the kernel with it, let's try to get the boot bits again and boot with the linux script. This time it appears the network starts and the keyboard works this time, but it gets stuck waiting for the firewall somehow. Let's disable the firewall and rewrite the rootfs. And now it works, with keyboard and network:
+m1n1/bin/m1n1-linux -b 'init=/nix/store/v20q3922171g3hb7wvrgvx7rmifhcsx5-nixos-system-nixos-21.11pre-git/init earlycon console=ttySAC0,1500000 console=tty0 debug boot.shell_on_fail' bootbits/Image.gz bootbits/apple.dtb bootbits/initrd
+
+Now to hopefully make u-boot go. Let's try to chainload it and put in the commands we tried previously. It hangs just like before. Waiting a few minutes for the network to come up was fruitless.
+
+Trying to shuffle around the addresses:
+setenv fdtfile apple/t8103-j274.dtb
+setenv ramdisk_addr_r 0x823200000
+sysboot nvme 0:4 any 0x960000000 /boot/extlinux/extlinux.conf
+
+Did not help. Maybe if we install u-boot instead of chainloading it? No. Maybe if we remove the ttySAC0 option? Nope. Let's put everything back to how it was before.
+
+What if we embed the above scripts (at least temporarily in a hacky manner) and stop u-boot from using the hardware? Still nope. Let's come back later...
