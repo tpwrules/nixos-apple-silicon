@@ -3,14 +3,14 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "5.16.0-rc4-asahi-next-20211206";
+      version = "5.16.0-rc5-asahi-next-20211214";
       modDirVersion = version;
 
       src = fetchFromGitHub {
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "87ff02b4daceca098e84f514a19a2baa6a030bca";
-        hash = "sha256-+sajNpL9oeTAtCu58UYiiAldJrVdpVbHTYeDL1DkPj8=";
+        rev = "b63c1083b20eefa3b23180ae57e1919c723f7d86";
+        hash = "sha256-g9pzjkEhSYXILzNCyrH9qWge+H+3gpbnnNwY7xH/beo=";
       };
 
       configfile = ./config;
