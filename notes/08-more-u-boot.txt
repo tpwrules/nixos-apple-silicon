@@ -1,0 +1,13 @@
+I did some experimentation and found that I could boot a nixos ISO using u-boot's UEFI facilities. But it could not start because it couldn't find the disk because its kernel was not compiled for it. But it did not hang, and the framebuffer worked, so overall it made more progress than u-boot did on the extlinux boot.
+
+I talked with marcan about my troubles with u-boot, and he said some curious things. First, that it is not unexpected that my kernel boot froze and m1n1 disconnected when it did, as that is the exact time the kernel tries to take over the iommu section for the serial port m1n1 uses. Second, that m1n1 should have removed that stuff from the device tree before starting the kernel (and likely did when booted using linux.py), and m1n1 should have also passed information on the framebuffer, among other things. Third, and as a consequence, m1n1 must generate the device tree using the ADT information and u-boot can't overwrite it or things will break.
+
+Marcan then explained that he expected users updating the device tree to reflash m1n1, which frankly will not do. I insist that device trees be changed with the NixOS kernel. I discussed some with samueldr of NixOS on ARM, and he said that u-boot has a facility for modifying the device tree a distro tries to load based on the firmware device tree m1n1 has generated. So it seems I must first figure out how to boot the kernel using the firmware device tree. I'm assuming it will work, since this must have been what was used when I booted the ISO. Then, I have to fix u-boot to copy over the relevant bits. This fix should be compiled in but allegedly can be done using console commands for prototyping.
+
+As for booting with the firmware device tree, I tried to boot by removing the FDTDIR from the extlinux conf, but u-boot refused to proceed because it had no FDT support. Enabling the relevant options did not seem to help (but I believe they will be needed later). It seems I will have to manually load the files and boot the kernel...
+
+Relevant paths, for the repo as it stands now (i.e. the commit when this text was added), built on x86_64-linux:
+Kernel: /boot/nixos/wf7lhx4qca1wrrzy34w4a53cxgair4j4-linux-aarch64-unknown-linux-gnu-5.16.0-rc4-asahi-next-20211206-Image
+Initrd: /boot/nixos/lrfki053w540pcqvdfy4cbjcbdxvjxik-initrd-linux-aarch64-unknown-linux-gnu-5.16.0-rc4-asahi-next-20211206-initrd
+FDT: /boot/nixos/wf7lhx4qca1wrrzy34w4a53cxgair4j4-linux-aarch64-unknown-linux-gnu-5.16.0-rc4-asahi-next-20211206-dtbs/apple/t8103-j274.dtb
+Boot args: init=/nix/store/v20q3922171g3hb7wvrgvx7rmifhcsx5-nixos-system-nixos-21.11pre-git/init earlycon console=ttySAC0,1500000 console=tty0 debug boot.shell_on_fail
