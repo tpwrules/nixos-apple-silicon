@@ -11,3 +11,42 @@ Kernel: /boot/nixos/wf7lhx4qca1wrrzy34w4a53cxgair4j4-linux-aarch64-unknown-linux
 Initrd: /boot/nixos/lrfki053w540pcqvdfy4cbjcbdxvjxik-initrd-linux-aarch64-unknown-linux-gnu-5.16.0-rc4-asahi-next-20211206-initrd
 FDT: /boot/nixos/wf7lhx4qca1wrrzy34w4a53cxgair4j4-linux-aarch64-unknown-linux-gnu-5.16.0-rc4-asahi-next-20211206-dtbs/apple/t8103-j274.dtb
 Boot args: init=/nix/store/v20q3922171g3hb7wvrgvx7rmifhcsx5-nixos-system-nixos-21.11pre-git/init earlycon console=ttySAC0,1500000 console=tty0 debug boot.shell_on_fail
+
+Now, let's try to get u-boot, which is running under the hypervisor, to start the kernel with the firmware device tree:
+setenv ramdisk_addr_r 0x970000000
+setenv fdt_addr_r 0x$fdtcontroladdr
+setenv bootargs 'init=/nix/store/v20q3922171g3hb7wvrgvx7rmifhcsx5-nixos-system-nixos-21.11pre-git/init earlycon console=ttySAC0,1500000 console=tty0 debug boot.shell_on_fail'
+load nvme 0:4 $kernel_addr_r /boot/nixos/wf7lhx4qca1wrrzy34w4a53cxgair4j4-linux-aarch64-unknown-linux-gnu-5.16.0-rc4-asahi-next-20211206-Image
+load nvme 0:4 $ramdisk_addr_r /boot/nixos/lrfki053w540pcqvdfy4cbjcbdxvjxik-initrd-linux-aarch64-unknown-linux-gnu-5.16.0-rc4-asahi-next-20211206-initrd
+booti $kernel_addr_r $ramdisk_addr_r:$filesize $fdt_addr_r
+
+And it boots, with framebuffer support!! Alas, it prints "apple-ans-nvme 27bcc0000.nvme: RTKit did not boot", and the root disk fails to show up. We can get the device tree u-boot sees and compare it with the device tree built into it:
+fdt addr 0x$fdtcontroladdr
+fdt print
+
+What follows is a description of the differences, between the device tree that got compiled into u-boot, and the one it printed after m1n1 finished futzing with it. It's unclear if u-boot has touched it at this point, but I don't think so, as there are separate "boardsetup" and "chosen" commands I did not run.
+
+* all eight CPUs have their cpu-release-addr set to nonzero values
+* the following devices have been disabled: i2c@23501c000, usb@382280000, iommu@382f00000, iommu@382f80000
+* the devices at pcie@690000000/pci@0,0/network@0,0 and pcie@690000000/pci@2,0/ethernet@0,0 have had their local-mac-address set to nonzero values
+* rng-seed and kaslr-seed have been added to chosen
+* the memory@800000000 has had its reg updated
+* the framebuffer under chosen has changed addresses, had format, stride, height, and width added, reg updated, and been enabled
+
+This tallies up with what m1n1 does:
+* dt_set_cpus: https://github.com/AsahiLinux/m1n1/blob/e8b30c93257b4d9d882463b573815f5c4d89681d/src/kboot.c#L207
+* dt_disable_missing_devs: https://github.com/AsahiLinux/m1n1/blob/e8b30c93257b4d9d882463b573815f5c4d89681d/src/kboot.c#L296
+* dt_set_mac_addresses: https://github.com/AsahiLinux/m1n1/blob/e8b30c93257b4d9d882463b573815f5c4d89681d/src/kboot.c#L267
+* dt_set_memory: https://github.com/AsahiLinux/m1n1/blob/e8b30c93257b4d9d882463b573815f5c4d89681d/src/kboot.c#L171
+* dt_set_chosen: https://github.com/AsahiLinux/m1n1/blob/e8b30c93257b4d9d882463b573815f5c4d89681d/src/kboot.c#L39
+* also some stuff around memory reservations?
+
+I discussed a lot with samueldr about the implications of this, and the result is that u-boot should perform this same munging on any device trees it tries to load. He gave information on the hooks necessary to do this, so now I just need to implement them. It looks like these are the steps:
+1. for each cpu under /cpus in the distro device tree, copy the corresponding cpu-release-addr property from the firmware device tree
+2. for each i2c and usb (the things m1n1 currently tries to disable) in the distro device tree under /soc, disable it if the corresponding node in the firmware device tree is disabled. also, there are iommus that need to be disabled too? how do we find them? looks like the iommus is a list of phandles? so then for the disabled nodes in the distro device tree, find their iommus and disable them too
+3. for each local-mac-address property in the distro device tree, copy the corresponding value from the firmware device tree
+4. copy rng-seed and kaslr-seed from /chosen in the firmware device tree to /chosen in the distro device tree, if they exist
+5. copy the reg value of the memory property from the firmware device tree to the distro device tree
+6. copy the relevant properties of the framebuffer node from the firmware device tree to the distro device tree, including its name
+
+The question is if something is missing in steps 1 through 3, what should we do? Theoretically the distro device tree and firmware device tree should have the same information, but it's conceptually possible for this to not be the case. I think u-boot should print a warning encouraging the user to update it if this hapens though.
