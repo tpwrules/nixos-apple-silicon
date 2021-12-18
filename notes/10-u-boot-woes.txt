@@ -1,0 +1,34 @@
+I asked about the NVMe predicament on IRC and was told that it's a known problem. U-boot has to shut down the NVMe stuff before Linux can start it, and it doesn't currently because OpenBSD expects it to already be started. Which is what the dude who works on u-boot likes. I was kindly linked to the relevant shutdown code in the Linux kernel, so now to patch it into u-boot!
+
+So, I did, but it didn't work. The RTKit CPU does not respond to my kind messages to ask it to shut down. Long story short, it seems u-boot is probably not starting it correctly so it hangs, though the nvme still works. Let's capture a trace with m1n1 and see if we can compare to how linux does it.
+
+The differences:
+* u-boot does not respond to the epmap with the right base
+* u-boot starts endpoints 0 and >= 0x20 (management and the application ones)
+* u-boot responds to syslog message 8 with memory
+* u-boot writes to some MMIO registers when it hands out memory
+* u-boot gets a lot less messages from endpoint 4
+* u-boot never receives the AP power ack
+* u-boot never receives any syslog messages
+
+Fixing the first three items does not resolve the remaining differences. But curiously, u-boot has code which implies it received the AP power ack at some point. So maybe this worked in the past? There were some recent changes to this area, specifically the MMIO registers, so let's try the previous version. They did not work either. Bizarre. What if we stop u-boot from touching the MMIO registers. That makes no sense, but...? It didn't help.
+
+Still, it seems the memory is wrong. Looking at the device tree, the NVMe contains a reference to the 0x277400000 mmio registers that are referenced. But the SART it points to is at 0x27bc50000? Is u-boot accessing the wrong place? Let's try to move it... And it turns out it was parsing the device tree wrong. But fixing that does not fix the underlying issue. Still, now we can see how Linux is accessing the SART and compare that too.
+
+The differences:
+* linux preloads the registers from the sart
+* linux uses a different allocation for each request, whereas u-boot just expands the current one
+
+But these shouldn't amount to much difference? Unless the processor somehow remembers the SART slot, or there is a race condition in updating the slot. And yeah, using a new slot each time doesn't seem to fix it. It could also be unhappy with high addresses, but that doesn't make much sense either. And sure enough, setting a fixed address did not help. But it looks like there is an offset in the sent memory address, like it's sending the end of the region instead of the start. Although the addresses match those written in the SART. Actually, I think it's just a memory reservation made for the SMC.
+
+There are basically no differences left, except one message arrives to linux a little earlier, and there are all those IO reporting messages. Maybe that means some IO is not being set up before RTKit is started? Both write the same value to the CPU control register to get the party started. Let's try adding a bunch of delay to change the message order. That did not help, and strangely it did not change the message order either. Perhaps the trace only shows them when the CPU reads them.
+
+Let's try and trace all the bits of the NVMe device too, instead of just the rtkit mailboxes. This did not seem to show anything relevant. I am told there is no known way to reset the nvme hardware, but there is a power controller attached to it. I can only assume people have tried to poke at it, but maybe now it is time to learn the hypervisor and see if I can make anything of it.
+
+However, there are now drivers for those power management thingies in a different kernel branch, maybe I can steal them? I compiled CMD_BIND support into u-boot to be able to easily init and deinit the nvme without having to reset.
+To deinit: unbind nvme 0
+To init again: bind /soc/nvme apple_nvme ; nvme scan
+
+Nope, it doesn't respond to power off requests and resetting doesn't seem to do anything in particular. It is possible to stop being able to access it, but that doesn't seem to bring the processor back to life.
+
+Ah well, it turns out it's easy to patch the kernel to not try to start the processor and just use the working setup. I'll just do that for now until someone else can figure out what the deal is with u-boot and this nvme stuff. Just have to do a few tweaks to get u-boot to boot stuff automatically.

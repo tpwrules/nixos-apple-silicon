@@ -16,6 +16,10 @@
       configfile = ./config;
       allowImportFromDerivation = true;
 
+      kernelPatches = [
+        { name = "sorry"; patch = ./0001-horrendous-nvme-hack.patch; }
+      ];
+
       extraMeta.branch = "5.16";
     } // (args.argsOverride or {});
 

@@ -1,0 +1,24 @@
+diff --git a/drivers/nvme/host/apple-ans.c b/drivers/nvme/host/apple-ans.c
+index 9ad48cdace37..e8b1888c8bd0 100644
+--- a/drivers/nvme/host/apple-ans.c
++++ b/drivers/nvme/host/apple-ans.c
+@@ -1767,6 +1767,10 @@ static int apple_nvme_probe(struct platform_device *pdev)
+ 		goto out_unmap;
+ 	}
+ 
++	dev->rtk = NULL;
++	(void)ret;
++	(void)sart_rtkit_ops;
++	/*
+ 	dev->rtk = apple_rtkit_init(dev->dev, dev, res, NULL, 0,
+ 				    &sart_rtkit_ops);
+ 	if (!dev->rtk) {
+@@ -1779,7 +1783,7 @@ static int apple_nvme_probe(struct platform_device *pdev)
+ 		dev_err(dev->dev, "RTKit did not boot");
+ 		goto out_unmap;
+ 	}
+-
++	*/
+ 	result = readl_poll_timeout(
+ 		dev->nvme_mmio + APPLE_ANS2_BOOT_STATUS, ans2_boot_status,
+ 		ans2_boot_status == APPLE_ANS2_BOOT_STATUS_OK, 100, 10000000);

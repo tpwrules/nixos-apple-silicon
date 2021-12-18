@@ -16,9 +16,13 @@
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
   extraMeta.platforms = [ "aarch64-linux" ];
   filesToInstall = [ "u-boot.macho" ];
+  # extraConfig = ''
+  #   CONFIG_CMD_BIND=y
+  # '';
 }).overrideAttrs (o: {
   patches = [
     ./0001-m1n1-fdt-compat.patch
+    # ./0001-apple-nvme-remove.patch
   ];
 
   # postPatch = ''
