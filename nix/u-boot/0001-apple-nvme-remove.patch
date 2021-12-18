@@ -1,5 +1,5 @@
 diff --git a/arch/arm/include/asm/arch-apple/rtkit.h b/arch/arm/include/asm/arch-apple/rtkit.h
-index 05a34e1e8f..e48cdd4530 100644
+index 05a34e1e8f..c3d60323bc 100644
 --- a/arch/arm/include/asm/arch-apple/rtkit.h
 +++ b/arch/arm/include/asm/arch-apple/rtkit.h
 @@ -13,3 +13,5 @@ extern phys_addr_t apple_rtkit_phys_addr;
@@ -7,102 +7,49 @@ index 05a34e1e8f..e48cdd4530 100644
  int apple_rtkit_init(struct mbox_chan *, int,
  		     int (*)(void *, phys_addr_t, phys_size_t), void *);
 +
-+int apple_rtkit_shutdown(struct mbox_chan *, void *);
++int apple_rtkit_shutdown(struct mbox_chan *);
 diff --git a/arch/arm/mach-apple/rtkit.c b/arch/arm/mach-apple/rtkit.c
-index 5cdc96e773..1d78b498e2 100644
+index 2f2c1ee9fa..7e998022ee 100644
 --- a/arch/arm/mach-apple/rtkit.c
 +++ b/arch/arm/mach-apple/rtkit.c
-@@ -8,8 +8,10 @@
- #include <mailbox.h>
- #include <malloc.h>
- 
-+#include <asm/io.h>
- #include <asm/arch-apple/rtkit.h>
- #include <linux/bitfield.h>
-+#include <linux/delay.h>
- 
- #define APPLE_RTKIT_EP_MGMT 0
- 
-@@ -24,7 +26,9 @@
+@@ -28,7 +28,7 @@
  #define APPLE_RTKIT_MGMT_STARTEP_EP GENMASK(39, 32)
  #define APPLE_RTKIT_MGMT_STARTEP_FLAG BIT(1)
  
 -#define APPLE_RTKIT_MGMT_PWR_STATE_ACK 7
-+#define APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE 6
-+
 +#define APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE_ACK 7
  
  #define APPLE_RTKIT_MGMT_EPMAP 8
  #define APPLE_RTKIT_MGMT_EPMAP_LAST BIT(51)
-@@ -34,9 +38,40 @@
- #define APPLE_RTKIT_MGMT_EPMAP_REPLY 8
- #define APPLE_RTKIT_MGMT_EPMAP_REPLY_MORE BIT(0)
+@@ -77,6 +77,8 @@ int apple_rtkit_init(struct mbox_chan *chan, int wakeup,
  
-+#define APPLE_RTKIT_MGMT_SET_AP_PWR_STATE 0xb
-+
-+#define APPLE_RTKIT_MGMT_SET_AP_PWR_STATE_ACK 0xb
-+
- #define APPLE_RTKIT_MIN_SUPPORTED_VERSION 11
- #define APPLE_RTKIT_MAX_SUPPORTED_VERSION 12
+ 	/* EP0_WAIT_HELLO */
+ 	ret = mbox_recv(chan, &msg, 10000);
++	if (ret < 0)
++		return ret;
  
-+#define APPLE_PMGR_RESET        BIT(31)
-+#define APPLE_PMGR_AUTO_ENABLE  BIT(28)
-+#define APPLE_PMGR_PS_AUTO      GENMASK(27, 24)
-+#define APPLE_PMGR_PARENT_OFF   BIT(11)
-+#define APPLE_PMGR_DEV_DISABLE  BIT(10)
-+#define APPLE_PMGR_WAS_CLKGATED BIT(9)
-+#define APPLE_PMGR_WAS_PWRGATED BIT(8)
-+#define APPLE_PMGR_PS_ACTUAL    GENMASK(7, 4)
-+#define APPLE_PMGR_PS_TARGET    GENMASK(3, 0)
-+
-+#define APPLE_PMGR_FLAGS        (APPLE_PMGR_WAS_CLKGATED | APPLE_PMGR_WAS_PWRGATED)
-+
-+#define APPLE_PMGR_PS_ACTIVE    0xf
-+#define APPLE_PMGR_PS_CLKGATE   0x4
-+#define APPLE_PMGR_PS_PWRGATE   0x0
-+
-+#define APPLE_PMGR_PS_SET_TIMEOUT 100
-+#define APPLE_PMGR_RESET_TIME 1
-+
-+#define NVME_PMGR_READ() (readl(cookie))
-+#define NVME_PMGR_WRITE(v) (writel((v), cookie))
-+#define NVME_PMGR_UPDATE(m, v) do {	\
-+	u32 curr = NVME_PMGR_READ();	\
-+	curr &= ~(m);					\
-+	NVME_PMGR_WRITE(curr | (v));	\
-+	} while (0)
-+
- phys_addr_t apple_rtkit_phys_start;
- phys_addr_t apple_rtkit_phys_addr;
- phys_size_t apple_rtkit_size;
-@@ -133,6 +168,7 @@ wait_epmap:
+ 	endpoint = msg.msg1;
+ 	msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
+@@ -115,6 +117,8 @@ int apple_rtkit_init(struct mbox_chan *chan, int wakeup,
+ wait_epmap:
+ 	/* EP0_WAIT_EPMAP */
+ 	ret = mbox_recv(chan, &msg, 10000);
++	if (ret < 0)
++		return ret;
+ 
+ 	endpoint = msg.msg1;
+ 	msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
+@@ -135,7 +139,8 @@ wait_epmap:
+ 	}
+ 
+ 	/* EP0_SEND_EPACK */
+-	reply = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_EPMAP_REPLY);
++	reply = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_EPMAP_REPLY) |
++		FIELD_PREP(APPLE_RTKIT_MGMT_EPMAP_BASE, base);
+ 	if (msg.msg0 & APPLE_RTKIT_MGMT_EPMAP_LAST)
  		reply |= APPLE_RTKIT_MGMT_EPMAP_LAST;
  	else
- 		reply |= APPLE_RTKIT_MGMT_EPMAP_REPLY_MORE;
-+	reply |= FIELD_PREP(APPLE_RTKIT_MGMT_EPMAP_BASE, base);
- 	msg.msg0 = reply;
- 	msg.msg1 = APPLE_RTKIT_EP_MGMT;
- 	mbox_send(chan, &msg);
-@@ -141,6 +177,8 @@ wait_epmap:
- 		goto wait_epmap;
- 
- 	for (i = 0; i < nendpoints; i++) {
-+		if ((endpoints[i] >= 0x20 || endpoints[i] == 0) && wakeup == 0)
-+			continue;
- 		/* EP0_SEND_EPSTART */
- 		msg.msg0 = FIELD_PREP(APPLE_RTKIT_MGMT_TYPE, APPLE_RTKIT_MGMT_STARTEP) |
- 			FIELD_PREP(APPLE_RTKIT_MGMT_STARTEP_EP, endpoints[i]) |
-@@ -163,6 +201,9 @@ wait_epmap:
- 			continue;
- 
- 		if (endpoint == 1 || endpoint == 2 || endpoint == 4) {
-+			if (endpoint == 2 && msgtype == 8)
-+				continue;
-+
- 			u64 size = ((msg.msg0 >> 44) & 0xff) << 12;
- 
- 			if (apple_rtkit_phys_addr + size >
-@@ -188,7 +229,7 @@ wait_epmap:
+@@ -213,16 +218,47 @@ wait_epmap:
  			printf("%s: unexpected endpoint %d\n", __func__, endpoint);
  			return -EINVAL;
  		}
@@ -111,59 +58,26 @@ index 5cdc96e773..1d78b498e2 100644
  			printf("%s: unexpected message type %d\n", __func__, msgtype);
  			return -EINVAL;
  		}
-@@ -201,3 +242,111 @@ wait_epmap:
+ 
+-		/* EP0_SEND_PWRACK */
+-		msg.msg0 = 0x00b0000000000020;
+-		msg.msg1 = APPLE_RTKIT_EP_MGMT;
+-		mbox_send(chan, &msg);
++		/* Here we should be sending a message to set the AP power state. But
++		if we do, we can't shut everything back down without crashing RTKit. We
++		don't need it anyway, because we don't start up the syslogs. */
+ 	}
  
  	return 0;
  }
 +
-+static void do_reset(void *cookie)
++int apple_rtkit_shutdown(struct mbox_chan *chan)
 +{
-+	NVME_PMGR_UPDATE(APPLE_PMGR_FLAGS | APPLE_PMGR_DEV_DISABLE,
-+		APPLE_PMGR_DEV_DISABLE);
-+	NVME_PMGR_UPDATE(APPLE_PMGR_FLAGS | APPLE_PMGR_RESET,
-+		APPLE_PMGR_RESET);
-+
-+	udelay(APPLE_PMGR_RESET_TIME);
-+
-+	NVME_PMGR_UPDATE(APPLE_PMGR_FLAGS | APPLE_PMGR_RESET, 0);
-+	NVME_PMGR_UPDATE(APPLE_PMGR_FLAGS | APPLE_PMGR_DEV_DISABLE, 0);
-+}
-+
-+static void do_set(void *cookie, u32 pstate, int auto_enable)
-+{
-+	u32 reg = NVME_PMGR_READ();
-+	reg &= ~(APPLE_PMGR_AUTO_ENABLE | APPLE_PMGR_FLAGS | APPLE_PMGR_PS_TARGET);
-+    reg |= FIELD_PREP(APPLE_PMGR_PS_TARGET, pstate);
-+    NVME_PMGR_WRITE(reg);
-+
-+    int i = 0;
-+    for (; i<1000; i++)
-+    {
-+    	reg = NVME_PMGR_READ();
-+    	if (FIELD_GET(APPLE_PMGR_PS_ACTUAL, reg) == pstate)
-+    		break;
-+    	udelay(10);
-+    }
-+    if (i == 1000) {
-+    	printf("failed to reach power state %x\n", pstate);
-+    }
-+
-+    if (auto_enable) {
-+    	reg &= ~APPLE_PMGR_FLAGS;
-+        reg |= APPLE_PMGR_AUTO_ENABLE;
-+        NVME_PMGR_WRITE(reg);
-+    }
-+}
-+
-+int apple_rtkit_shutdown(struct mbox_chan *chan, void *cookie)
-+{
-+	/*
 +	struct apple_mbox_msg msg;
 +	int ret;
 +	int endpoint;
 +	int msgtype;
 +
-+	printf("shut down ap\n");
 +	msg.msg0 = 0x0060000000000010;
 +	msg.msg1 = APPLE_RTKIT_EP_MGMT;
 +	mbox_send(chan, &msg);
@@ -181,83 +95,18 @@ index 5cdc96e773..1d78b498e2 100644
 +	if (msgtype != APPLE_RTKIT_MGMT_SET_IOP_PWR_STATE_ACK) {
 +		printf("%s: unexpected message type %d\n", __func__, msgtype);
 +		return -EINVAL;
-+ 	}
-+ 
-+	printf("shut down iop\n");
-+	msg.msg0 = 0x00b0000000000001;
-+	msg.msg1 = APPLE_RTKIT_EP_MGMT;
-+	mbox_send(chan, &msg);
-+
-+	ret = mbox_recv(chan, &msg, 100000);
-+	if (ret < 0)
-+		return ret;
-+
-+	endpoint = msg.msg1;
-+	msgtype = FIELD_GET(APPLE_RTKIT_MGMT_TYPE, msg.msg0);
-+	if (endpoint != APPLE_RTKIT_EP_MGMT) {
-+		printf("%s: unexpected endpoint %d\n", __func__, endpoint);
-+		return -EINVAL;
-+	}
-+	if (msgtype != APPLE_RTKIT_MGMT_SET_AP_PWR_STATE_ACK) {
-+		printf("%s: unexpected message type %d\n", __func__, msgtype);
-+		return -EINVAL;
 +	}
 +
-+	printf("final messages\n");
-+	while (mbox_recv(chan, &msg, 100000) != -ETIMEDOUT);
-+	*/
++	/* Here we should be sending a message to set the AP power state. But
++	since we didn't during init, doing so here would crash RTKit. */
 +
-+	do_reset(cookie);
-+
-+	mdelay(100);
-+
-+	do_set(cookie, APPLE_PMGR_PS_PWRGATE, 0);
-+
-+	mdelay(100);
-+
-+	do_set(cookie, APPLE_PMGR_PS_ACTIVE, 1);
-+
-+	mdelay(100);
-+
-+	do_reset(cookie);
-+
-+ 	return 0;
-+ }
++	return 0;
++}
 diff --git a/drivers/nvme/nvme_apple.c b/drivers/nvme/nvme_apple.c
-index 0dbb9f5eab..701038dea0 100644
+index f25a4c885a..0b4ddfe255 100644
 --- a/drivers/nvme/nvme_apple.c
 +++ b/drivers/nvme/nvme_apple.c
-@@ -31,6 +31,7 @@ struct apple_nvme_priv {
- 	void *asc;
- 	struct mbox_chan chan;
- 	void *sart;
-+	void *pmgr;
- 	phys_addr_t sart_addr;
- 	phys_addr_t sart_size;
- 	int sart_idx;
-@@ -69,6 +70,8 @@ static int apple_nvme_sart_map(void *cookie, phys_addr_t addr,
- 
- static int apple_nvme_probe(struct udevice *dev)
- {
-+	printf("begin probe of apple nvme...\n");
-+
- 	struct apple_nvme_priv *priv = dev_get_priv(dev);
- 	ofnode node;
- 	uint phandle;
-@@ -91,10 +94,11 @@ static int apple_nvme_probe(struct udevice *dev)
- 	node = ofnode_get_by_phandle(phandle);
- 	if (!ofnode_valid(node))
- 		return -EINVAL;
--	ofnode_get_addr_index(node, 1);
-+	addr = ofnode_get_addr_index(node, 0);
- 	if (addr == FDT_ADDR_T_NONE)
- 		return -EINVAL;
- 	priv->sart = map_sysmem(addr, 0);
-+	priv->pmgr = map_sysmem(0x23b700000, 0);
- 
- 	ret = mbox_get_by_index(dev, 0, &priv->chan);
- 	if (ret < 0)
-@@ -137,6 +141,24 @@ static int apple_nvme_probe(struct udevice *dev)
+@@ -137,6 +137,18 @@ static int apple_nvme_probe(struct udevice *dev)
  	return nvme_init(dev);
  }
  
@@ -265,15 +114,9 @@ index 0dbb9f5eab..701038dea0 100644
 +{
 +	struct apple_nvme_priv *priv = dev_get_priv(dev);
 +
-+	printf("apple nvme is shutting down!\n");
-+
-+	writel(0, priv->asc + REG_CPU_CTRL);
-+	int ret = apple_rtkit_shutdown(&priv->chan, priv->pmgr);
-+	printf("ret: %d\n", ret);
-+	//if (ret < 0)
-+	//	return ret;
-+	writel(0, priv->asc + REG_CPU_CTRL);
-+	printf("apple nvme has shut down!\n");
++	int ret = apple_rtkit_shutdown(&priv->chan);
++	if (ret < 0)
++	  return ret;
 +
 +	return 0;
 +}
@@ -282,7 +125,7 @@ index 0dbb9f5eab..701038dea0 100644
  static const struct udevice_id apple_nvme_ids[] = {
  	{ .compatible = "apple,t8103-ans-nvme" },
  	{ /* sentinel */ }
-@@ -148,4 +170,6 @@ U_BOOT_DRIVER(apple_nvme) = {
+@@ -148,4 +160,6 @@ U_BOOT_DRIVER(apple_nvme) = {
  	.of_match = apple_nvme_ids,
  	.priv_auto = sizeof(struct apple_nvme_priv),
  	.probe = apple_nvme_probe,
