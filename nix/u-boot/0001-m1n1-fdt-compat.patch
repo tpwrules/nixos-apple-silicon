@@ -44,10 +44,10 @@ index d61ab1ee1e..334df67da5 100644
  		efi_add_memory_map(apple_rtkit_phys_start, apple_rtkit_size,
 diff --git a/arch/arm/mach-apple/m1n1_compat.c b/arch/arm/mach-apple/m1n1_compat.c
 new file mode 100644
-index 0000000000..35c1638cb2
+index 0000000000..4688e54d6f
 --- /dev/null
 +++ b/arch/arm/mach-apple/m1n1_compat.c
-@@ -0,0 +1,292 @@
+@@ -0,0 +1,337 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * (C) Copyright 2021 Thomas Watson <twatson52@icloud.com>
@@ -294,7 +294,48 @@ index 0000000000..35c1638cb2
 +
 +		goto again;
 +	}
-+	
++
++	return 0;
++}
++
++static int copy_cpu(void *fdt, void *fw_fdt)
++{
++	const char *cpus_path = "/cpus/";
++	int fw_cpus_node = fdt_path_offset(fw_fdt, cpus_path);
++	if (fw_cpus_node < 0)
++		problem("cpus node missing from firmware\n");
++
++	char cpu_path[64];
++	strcpy(cpu_path, cpus_path);
++	char *cpu_name = cpu_path + strlen(cpus_path);
++
++	int cpus_node = fdt_path_offset(fdt, cpus_path);
++	if (cpus_node < 0)
++		problem("cpus node missing\n");
++
++	int node;
++	fdt_for_each_subnode(node, fdt, cpus_node)
++	{
++		const char *name = fdt_get_name(fdt, node, NULL);
++		if (strncmp(name, "cpu@", 4))
++			continue;
++
++		strncpy(cpu_name, name, cpu_path+64-cpu_name);
++		cpu_path[63] = '\0';
++		int fw_node = fdt_path_offset(fw_fdt, cpu_path);
++		if (fw_node < 0)
++			problem("corresponding node for %s missing\n", cpu_path);
++
++		int len;
++		const char *release_addr = fdt_getprop(
++			fw_fdt, fw_node, "cpu-release-addr", &len);
++		if (!release_addr)
++			problem("could not get release addr of %s\n", cpu_path);
++
++		if (fdt_setprop(fdt, node, "cpu-release-addr", release_addr, len))
++			problem("could not set release addr of %s\n", cpu_path);
++	}
++
 +	return 0;
 +}
 +
@@ -328,6 +369,10 @@ index 0000000000..35c1638cb2
 +	}
 +	if (copy_disabled_status(fdt, fw_fdt)) {
 +		printf("Could not copy device disabled status information!\n");
++		problems = 1;
++	}
++	if (copy_cpu(fdt, fw_fdt)) {
++		printf("Could not copy CPU information!\n");
 +		problems = 1;
 +	}
 +
