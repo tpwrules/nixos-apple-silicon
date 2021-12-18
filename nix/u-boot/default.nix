@@ -20,6 +20,7 @@
   patches = [
     ./0001-m1n1-fdt-compat.patch
     ./0001-apple-nvme-remove.patch
+    ./0001-add-extlinux-vars.patch
   ];
 
   preInstall = ''

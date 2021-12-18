@@ -1,0 +1,100 @@
+diff --git a/arch/arm/mach-apple/board.c b/arch/arm/mach-apple/board.c
+index d61ab1ee1e..8e4b00293c 100644
+--- a/arch/arm/mach-apple/board.c
++++ b/arch/arm/mach-apple/board.c
+@@ -73,11 +73,58 @@ static struct mm_region apple_mem_map[] = {
+ 
+ struct mm_region *mem_map = apple_mem_map;
+ 
++static void apple_set_env_fdt_file(void)
++{
++	char dtb_name[64];
++
++	if (env_get("fdtfile"))
++		return;
++
++	const char *soc = NULL;
++	const char *product = NULL;
++
++	int num_compats = fdt_stringlist_count(gd->fdt_blob, 0, "compatible");
++	if (num_compats < 0)
++		return;
++
++	for (int i=0; i<num_compats; i++)
++	{
++		const char *compat = fdt_stringlist_get(
++			gd->fdt_blob, 0, "compatible", i, NULL);
++
++		compat = strchr(compat, ',');
++		if (!compat)
++			continue;
++		compat++;
++
++		if (*compat == 't') {
++			soc = compat;
++		} else if (*compat == 'j') {
++			product = compat;
++		}
++	}
++
++	if (!soc || !product)
++		return;
++
++	snprintf(dtb_name, sizeof(dtb_name), "apple/%s-%s.dtb", soc, product);
++	dtb_name[sizeof(dtb_name)-1] = '\0';
++
++	env_set("fdtfile", dtb_name);
++}
++
+ int board_init(void)
+ {
+ 	return 0;
+ }
+ 
++int board_late_init(void)
++{
++	apple_set_env_fdt_file();
++
++	return 0;
++}
++
+ int dram_init(void)
+ {
+ 	ofnode node;
+diff --git a/configs/apple_m1_defconfig b/configs/apple_m1_defconfig
+index 85687fe234..afb89202f6 100644
+--- a/configs/apple_m1_defconfig
++++ b/configs/apple_m1_defconfig
+@@ -1,5 +1,6 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_APPLE=y
++CONFIG_BOARD_LATE_INIT=y
+ # CONFIG_DISPLAY_CPUINFO is not set
+ # CONFIG_MMC is not set
+ # CONFIG_NET is not set
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index 2627c2a6a5..29fe28e882 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -476,7 +476,7 @@
+ 		"\0"                                                      \
+ 	\
+ 	"scan_dev_for_boot_part="                                         \
+-		"part list ${devtype} ${devnum} -bootable devplist; "     \
++		"part list ${devtype} ${devnum} devplist; "    /* M1 note: try to boot all partitions in case user DD'd an image as it's difficult to make bootable from recoveryOS */ \
+ 		"env exists devplist || setenv devplist 1; "              \
+ 		"for distro_bootpart in ${devplist}; do "                 \
+ 			"if fstype ${devtype} "                           \
+diff --git a/include/configs/apple.h b/include/configs/apple.h
+index 3c0365b49e..b5632a7866 100644
+--- a/include/configs/apple.h
++++ b/include/configs/apple.h
+@@ -19,6 +19,8 @@
+ 	"stderr=serial,vidconsole\0"
+ 
+ #define ENV_MEM_LAYOUT_SETTINGS \
++	"ramdisk_addr_r=0x950000000\0" \
++	"scriptaddr=0x960000000\0" \
+ 	"fdt_addr_r=0x960100000\0" \
+ 	"kernel_addr_r=0x960200000\0"
+ 
