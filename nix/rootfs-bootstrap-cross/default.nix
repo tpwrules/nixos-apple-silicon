@@ -13,6 +13,5 @@ in (evalConfig {
   modules = [
     ./configuration.nix
     ./ext4-image.nix
-    (fromPkgs "nixos/modules/installer/sd-card/sd-image-aarch64-installer.nix")
   ];
 }).config.system.build.ext4Image

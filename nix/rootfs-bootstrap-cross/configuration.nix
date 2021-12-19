@@ -9,14 +9,22 @@
   imports = [
     (nixpkgsPath + "/nixos/modules/profiles/minimal.nix")
     (nixpkgsPath + "/nixos/modules/profiles/installation-device.nix")
+    (nixpkgsPath + "/nixos/modules/installer/sd-card/sd-image.nix")
   ];
+
+  sdImage.populateRootCommands = ''
+    mkdir -p ./files/boot
+    ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
+  '';
+
+  installer.cloneConfig = false;
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
 
-  boot.consoleLogLevel = lib.mkDefault 7;
+  boot.consoleLogLevel = 7;
 
-  boot.kernelParams = lib.mkForce [
+  boot.kernelParams = [
     "earlycon"
     "console=ttySAC0,1500000"
     "console=tty0"
@@ -26,16 +34,13 @@
 
   boot.initrd.availableKernelModules = lib.mkForce [];
 
+  hardware.enableAllFirmware = lib.mkForce false;
+  hardware.enableRedistributableFirmware = lib.mkForce false;
+
   # save space and compilation time. might revise?
   sound.enable = false;
   networking.wireless.enable = false;
-  documentation.enable = lib.mkOverride 51 false;
-  documentation.nixos.enable = lib.mkOverride 51 false;
-  system.extraDependencies = lib.mkOverride 51 (with pkgs; [
-    stdenvNoCC # for runCommand
-    busybox
-    jq # for 
-  ]);
+  documentation.nixos.enable = lib.mkOverride 49 false;
 
   # (Failing build in a dep to be investigated)
   security.polkit.enable = false;
