@@ -1,3 +1,15 @@
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index e9d5627290..a25b9bc397 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -937,6 +937,7 @@ config ARCH_APPLE
+ 	select MISC
+ 	select OF_CONTROL
+ 	select OF_BOARD
++	select OF_BOARD_SETUP
+ 	select PCI
+ 	select PINCTRL
+ 	select USB
 diff --git a/arch/arm/include/asm/arch-apple/m1n1_compat.h b/arch/arm/include/asm/arch-apple/m1n1_compat.h
 new file mode 100644
 index 0000000000..27ce468f99
@@ -21,7 +33,7 @@ index 52f30a777b..b4008844a0 100644
 +obj-y += m1n1_compat.o
 \ No newline at end of file
 diff --git a/arch/arm/mach-apple/board.c b/arch/arm/mach-apple/board.c
-index d61ab1ee1e..334df67da5 100644
+index b4a7a51dc2..8d2eeb8edb 100644
 --- a/arch/arm/mach-apple/board.c
 +++ b/arch/arm/mach-apple/board.c
 @@ -11,6 +11,7 @@
@@ -32,16 +44,18 @@ index d61ab1ee1e..334df67da5 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -169,6 +170,9 @@ __weak phys_size_t apple_rtkit_size;
- 
- int ft_board_setup(void *blob, struct bd_info *bd)
+@@ -163,3 +164,11 @@ unsigned long get_uart_clk(int dev_index)
  {
+ 	return 24000000;
+ }
++
++int ft_board_setup(void *blob, struct bd_info *bd)
++{
 +	if (apple_m1n1_update_fdt(blob, (void *)fw_dtb_pointer))
 +		return -1;
 +
- 	if (apple_rtkit_size > 0) {
- 		/* Reserve memory stolen by the mailboxes. */
- 		efi_add_memory_map(apple_rtkit_phys_start, apple_rtkit_size,
++	return 0;
++}
 diff --git a/arch/arm/mach-apple/m1n1_compat.c b/arch/arm/mach-apple/m1n1_compat.c
 new file mode 100644
 index 0000000000..4688e54d6f

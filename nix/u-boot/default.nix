@@ -7,10 +7,10 @@
   src = fetchFromGitHub {
     owner = "kettenis";
     repo = "u-boot";
-    rev = "9b6b6ed5a086a83f0e372ee62a88b892e9c2c830";
-    hash = "sha256-QrelJxN7Wv547NVUc62zGk/HfSpICMkLIC0Px4BD3AI=";
+    rev = "fd6480ff7986e61848bc96dc43a279c80ba27cc9";
+    hash = "sha256-K79/s26ec3cOLlbbY+Im+m87Zec761xTkZJJ9Ni3sLI=";
   };
-  version = "unstable-2021-12-18";
+  version = "unstable-2021-12-19";
 
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
@@ -19,7 +19,6 @@
 }).overrideAttrs (o: {
   patches = [
     ./0001-m1n1-fdt-compat.patch
-    ./0001-apple-nvme-remove.patch
     ./0001-add-extlinux-vars.patch
   ];
 
