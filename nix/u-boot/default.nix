@@ -3,7 +3,7 @@
 , pkgsCross
 , m1n1
 , withDeviceTree ? "t8103-j274"
-}: (pkgsCross.aarch64-multiplatform.buildUBoot {
+}: (pkgsCross.aarch64-multiplatform.buildUBoot rec {
   src = fetchFromGitHub {
     owner = "kettenis";
     repo = "u-boot";
@@ -16,6 +16,9 @@
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
   extraMeta.platforms = [ "aarch64-linux" ];
   filesToInstall = [ "u-boot.macho" ];
+  extraConfig = ''
+    CONFIG_IDENT_STRING=" ${version} ${withDeviceTree}"
+  '';
 }).overrideAttrs (o: {
   patches = [
     ./0001-m1n1-fdt-compat.patch
