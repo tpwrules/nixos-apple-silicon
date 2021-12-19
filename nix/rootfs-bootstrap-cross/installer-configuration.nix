@@ -15,6 +15,11 @@
   sdImage.populateRootCommands = ''
     mkdir -p ./files/boot
     ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
+
+    mkdir -p ./files/etc/nixos/kernel
+    cp -r ${../kernel}/* ./files/etc/nixos/kernel
+    cp ${./sample-configuration.nix} ./files/etc/nixos/configuration.nix
+    chmod +w -R ./files/etc/nixos/
   '';
 
   installer.cloneConfig = false;
@@ -32,15 +37,30 @@
     "boot.shell_on_fail"
   ];
 
+  boot.kernelPackages = pkgs.callPackage ../kernel { };
+
+  # our kernel config is weird and doesn't have these modules as modules
   boot.initrd.availableKernelModules = lib.mkForce [];
 
+  # save space and compilation time. might revise?
   hardware.enableAllFirmware = lib.mkForce false;
   hardware.enableRedistributableFirmware = lib.mkForce false;
-
-  # save space and compilation time. might revise?
   sound.enable = false;
   networking.wireless.enable = false;
   documentation.nixos.enable = lib.mkOverride 49 false;
+
+  hardware.wirelessRegulatoryDatabase = true;
+  hardware.firmware = [
+    # all the firmware is big, but including the tigon one avoids an awkward
+    # minute long hang on mac mini
+    (pkgs.stdenv.mkDerivation {
+      name = "tigon-firmware";
+      buildCommand = ''
+        mkdir -p $out/lib/firmware
+        cp -r ${pkgs.firmwareLinuxNonfree}/lib/firmware/tigon $out/lib/firmware
+      '';
+    })
+  ];
 
   # (Failing build in a dep to be investigated)
   security.polkit.enable = false;
@@ -59,8 +79,6 @@
   # ec6224b6cd147943eee685ef671811b3683cb2ce re-introduced udisks in the installer
   # udisks fails due to gobject-introspection being not cross-compilation friendly.
   services.udisks2.enable = lib.mkForce false;
-
-  boot.kernelPackages = pkgs.callPackage ../kernel {};
 
   networking.firewall.enable = false;
 

@@ -11,7 +11,7 @@ in (evalConfig {
     inherit nixpkgsPath;
   };
   modules = [
-    ./configuration.nix
+    ./installer-configuration.nix
     ./ext4-image.nix
   ];
 }).config.system.build.ext4Image
