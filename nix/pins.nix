@@ -1,7 +1,7 @@
 {
   nixpkgs = fetchTarball {
-    name   = "nixpkgs-21.11-2021-12-13";
-    url    = "https://github.com/NixOS/nixpkgs/archive/d2f47b7dcd558a7727606319fd8661a4c3311b4a.tar.gz";
-    sha256 = "sha256:1kkykw8i80jcnw6iz7a4kndia3fig53jm1kzqi4xbfgxamfwqnzb";
+    name   = "nixpkgs-unstable-2021-12-14";
+    url    = "https://github.com/NixOS/nixpkgs/archive/a2e281f5770247855b85d70c43454ba5bff34613.tar.gz";
+    sha256 = "sha256:03m6b3yvx7v8gwib848aclwqpg02rhqdh9h511w9byyfvha9g0fg";
   };
 }
