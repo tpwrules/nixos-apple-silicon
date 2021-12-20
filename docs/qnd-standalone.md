@@ -130,11 +130,15 @@ nixos$ sudo nixos-rebuild boot
 nixos$ sudo reboot
 ```
 
-U-Boot will prompt you to select your new system (Generation 2) or the old system, which is the installer (Generation 1). If you wait a few seconds, it will automatically boot the latest generation. Your new system should now start and can be used like any other NixOS system. Refer to the manual for more information.
+U-Boot will prompt you to select your new system (Configuration 2) or the old system, which is the installer (Configuration 1). If you wait a few seconds, it will automatically boot the latest configuration. Your new system should now start and can be used like any other NixOS system. Refer to the manual for more information on how to use NixOS.
 
 Note that Linux currently cannot completely shut down the system. Once you issue the command, you will have to hold the power button until the power shuts off completely. Rebooting should work fine though.
 
-If something goes wrong, you can go back to the installer by selecting Generation 1 in the U-Boot menu (option 3 if you have only rebuilt the system once). There you can edit the configuration again and re-rebuild the system.
+If something goes wrong, you can go back to the installer by selecting Configuration 1 in the U-Boot menu (option 3 if you have only rebuilt the system once). Once back in the installer, you can edit the configuration again and re-rebuild the system.
+
+Otherwise, if you want to edit the system configuration, you can install and use your favorite editor to change `/etc/nixos/configuration.nix`, then rerun `sudo nixos-rebuild boot` and reboot to switch to it. You can use U-Boot to switch back to the previous configuration if things don't pan out.
+
+To update the Asahi kernel, you can download the files under `nix/kernel` from this repo and place them under `/etc/nixos/kernel`. Alternately, you can edit the kernel config in `/etc/nixos/kernel/config` and rebuild the system to test modifications. Consult the comments in `/etc/nixos/configuration.nix` and `/etc/nixos/kernel/default.nix` for more details.
 
 #### Hypervisor Boot
 
