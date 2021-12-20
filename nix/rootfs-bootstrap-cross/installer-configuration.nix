@@ -37,7 +37,7 @@
     "boot.shell_on_fail"
   ];
 
-  boot.kernelPackages = pkgs.callPackage ../kernel { };
+  boot.kernelPackages = pkgs.callPackage ../kernel { nativeBuild = false; };
 
   # our kernel config is weird and doesn't have these modules as modules
   boot.initrd.availableKernelModules = lib.mkForce [];

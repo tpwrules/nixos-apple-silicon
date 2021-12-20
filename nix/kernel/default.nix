@@ -1,4 +1,28 @@
-{ pkgs }: let
+{ pkgs, nativeBuild ? false }: let
+  buildPkgs = if nativeBuild then
+    import (pkgs.path) {
+      system = "aarch64-linux";
+    }
+  else (
+    import (pkgs.path) {
+      system = "x86_64-linux";
+      crossSystem.system = "aarch64-linux";
+    }
+  );
+
+  # we do this so the config can be read on any system and not affect
+  # the output hash
+  localPkgs = import (pkgs.path) { system = builtins.currentSystem; };
+  readConfig = configfile: import (localPkgs.runCommand "config.nix" {} ''
+    echo "{" > "$out"
+    while IFS='=' read key val; do
+      [ "x''${key#CONFIG_}" != "x$key" ] || continue
+      no_firstquote="''${val#\"}";
+      echo '  "'"$key"'" = "'"''${no_firstquote%\"}"'";' >> "$out"
+    done < "${configfile}"
+    echo "}" >> $out
+  '').outPath;
+
   linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, linuxKernel, ... } @ args:
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
@@ -26,10 +50,10 @@
       };
 
       configfile = ./config;
-      allowImportFromDerivation = true;
+      config = readConfig configfile;
 
       extraMeta.branch = "5.16";
     } // (args.argsOverride or {});
 
-  linux_asahi = pkgs.callPackage linux_asahi_pkg {};
-in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux_asahi)
+  linux_asahi = buildPkgs.callPackage linux_asahi_pkg { };
+in buildPkgs.recurseIntoAttrs (buildPkgs.linuxPackagesFor linux_asahi)

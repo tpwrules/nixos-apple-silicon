@@ -13,7 +13,11 @@
 
   # Use the customized Asahi Linux kernel.
   # If you wish to modify the kernel, see /etc/nixos/kernel/default.nix.
-  boot.kernelPackages = pkgs.callPackage ./kernel { };
+
+  # IMPORTANT: if you have to build the kernel on the Mac itself, set
+  # nativeBuild here to `true`. If you don't, Nix will complain that it
+  # cannot find an x86_64-linux builder.
+  boot.kernelPackages = pkgs.callPackage ./kernel { nativeBuild = false; };
 
   boot.consoleLogLevel = 7;
   boot.kernelParams = lib.mkForce [
