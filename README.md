@@ -1,6 +1,10 @@
 Attempts to get NixOS up on M1 Macs.
 
-This is mostly a restructuring of work many others have already done, and it wouldn't have been possible without them. Important parts of this include:
+* [Quick and Dirty Standalone NixOS](docs/qnd-standalone.md)
+
+## Credits
+
+This is mostly a restructuring of work many others have already done, and it wouldn't have been possible without them. Important parts of the Linux on M1 experience include:
 * [Asahi Linux's m1n1 bootloader/hypervisor](https://github.com/AsahiLinux/m1n1)
 * [Asahi Linux's kernel patches](https://github.com/AsahiLinux/linux)
 * [Mark Kettenis' U-boot port](https://github.com/kettenis/u-boot)
