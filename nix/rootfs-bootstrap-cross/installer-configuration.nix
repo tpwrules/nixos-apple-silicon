@@ -48,6 +48,7 @@
   sound.enable = false;
   networking.wireless.enable = false;
   documentation.nixos.enable = lib.mkOverride 49 false;
+  system.extraDependencies = lib.mkForce [ ];
 
   hardware.wirelessRegulatoryDatabase = true;
   hardware.firmware = [
