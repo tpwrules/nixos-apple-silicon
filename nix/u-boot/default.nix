@@ -15,7 +15,7 @@
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
   extraMeta.platforms = [ "aarch64-linux" ];
-  filesToInstall = [ "u-boot.macho" ];
+  filesToInstall = [ "u-boot.macho" "u-boot.bin" ];
   extraConfig = ''
     CONFIG_IDENT_STRING=" ${version} ${withDeviceTree}"
   '';
@@ -27,5 +27,6 @@
 
   preInstall = ''
     cat ${m1n1}/build/m1n1.macho u-boot.dtb u-boot-nodtb.bin > u-boot.macho
+    cat ${m1n1}/build/m1n1.bin u-boot.dtb u-boot-nodtb.bin > u-boot.bin
   '';
 })

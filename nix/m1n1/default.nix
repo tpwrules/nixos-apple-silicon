@@ -12,13 +12,13 @@
   ]);
 in stdenv.mkDerivation {
   pname = "m1n1";
-  version = "unstable-2021-12-13";
+  version = "unstable-2021-12-17";
 
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "m1n1";
-    rev = "e8b30c93257b4d9d882463b573815f5c4d89681d";
-    hash = "sha256-qFQJ2+42TD7cTmmPZqlUaDRtWtdZEAzjXzBQfj2mUwQ=";
+    rev = "f2eac15ca7f8076190a671aa33ed64e2ee0f0cc1";
+    hash = "sha256-QLGbCFP35o+xMmiBrUVvAPd0fZt6T9ZDYJx7g+YaQpQ=";
     fetchSubmodules = true;
   };
 
@@ -43,6 +43,7 @@ in stdenv.mkDerivation {
     cp -r proxyclient $out/script
     cp -r tools $out/script
     cp build/m1n1.macho $out/build
+    cp build/m1n1.bin $out/build
 
     for toolpath in $out/script/proxyclient/tools/*.py; do
       tool=$(basename $toolpath .py)
