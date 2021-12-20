@@ -7,7 +7,7 @@
 
 {
   # Enables the generation of /boot/extlinux/extlinux.conf
-  # GRUB cannot correctly load device trees.
+  # GRUB cannot correctly load device trees, so do not change this.
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
 
@@ -29,7 +29,6 @@
   ];
 
   # networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Set your time zone.
   # time.timeZone = "Europe/Amsterdam";
@@ -81,17 +80,18 @@
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
 
-  # nftables support is not yet in the kernel config
+  # nftables support is not yet in the kernel config, so enabling the firewall
+  # does not work yet
   networking.firewall.enable = false;
 
   # our kernel config is weird so don't try to include any modules
   boot.initrd.availableKernelModules = lib.mkForce [ ];
 
+  # do not change these, they match the built root FS and partition layout
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/44444444-4444-4444-8888-888888888888";
       fsType = "ext4";
     };
-
   swapDevices = [ ];
 
   hardware.firmware = [ pkgs.firmwareLinuxNonfree ];
