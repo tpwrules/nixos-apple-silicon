@@ -21,7 +21,6 @@ in {
     u-boot = lib.genAttrs compatibleDTs (
       name: callPackage ./u-boot { withDeviceTree = name; }
     );
-    rootfs-bootstrap-cross = callPackage ./rootfs-bootstrap-cross {};
     installer-bootstrap-cross = callPackage ./installer-bootstrap-cross {};
   });
 }

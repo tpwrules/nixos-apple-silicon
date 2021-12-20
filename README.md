@@ -1,7 +1,5 @@
 Attempts to get NixOS up on M1 Macs.
 
-* [Quick and Dirty Standalone NixOS](docs/qnd-standalone.md)
-
 ## Credits
 
 This is mostly a restructuring of work many others have already done, and it wouldn't have been possible without them. Important parts of the Linux on M1 experience include:

@@ -20,10 +20,8 @@
     CONFIG_IDENT_STRING=" ${version} ${withDeviceTree}"
   '';
 }).overrideAttrs (o: {
-  patches = [
-    ./0001-m1n1-fdt-compat.patch
-    ./0001-add-extlinux-vars.patch
-  ];
+  # upstream patches are not applicable
+  patches = [ ];
 
   preInstall = ''
     cat ${m1n1}/build/m1n1.macho u-boot.dtb u-boot-nodtb.bin > u-boot.macho
