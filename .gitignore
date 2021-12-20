@@ -1,4 +1,6 @@
 /result
 /u-boot
 /m1n1
+/rootfs
+/installer
 bootbits/
