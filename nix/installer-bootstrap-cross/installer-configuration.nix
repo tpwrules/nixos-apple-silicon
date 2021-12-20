@@ -1,5 +1,6 @@
 # this configuration is intended to have just enough stuff to get the disk,
 # display, USB input, and network up so the user can build a real config.
+# in the future we will just use the standard NixOS iso
 
 # based vaguely on
 # https://github.com/samueldr/cross-system/blob/master/configuration.nix
@@ -40,20 +41,9 @@
 
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
-  boot.consoleLogLevel = 7;
-
-  boot.kernelParams = [
-    "earlycon"
-    "console=ttySAC0,1500000"
-    "console=tty0"
-    "debug"
-    "boot.shell_on_fail"
+  environment.systemPackages = [
+    pkgs.gptfdisk
   ];
-
-  boot.kernelPackages = pkgs.callPackage ../kernel { nativeBuild = false; };
-
-  # our kernel config is weird and doesn't have these modules as modules
-  boot.initrd.availableKernelModules = lib.mkForce [];
 
   # save space and compilation time. might revise?
   hardware.enableAllFirmware = lib.mkForce false;
@@ -62,19 +52,6 @@
   networking.wireless.enable = false;
   documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
-
-  hardware.wirelessRegulatoryDatabase = true;
-  hardware.firmware = [
-    # all the firmware is big, but including the tigon one avoids an awkward
-    # minute long hang on mac mini
-    (pkgs.stdenv.mkDerivation {
-      name = "tigon-firmware";
-      buildCommand = ''
-        mkdir -p $out/lib/firmware
-        cp -r ${pkgs.firmwareLinuxNonfree}/lib/firmware/tigon $out/lib/firmware
-      '';
-    })
-  ];
 
   # (Failing build in a dep to be investigated)
   security.polkit.enable = false;
@@ -93,10 +70,4 @@
   # ec6224b6cd147943eee685ef671811b3683cb2ce re-introduced udisks in the installer
   # udisks fails due to gobject-introspection being not cross-compilation friendly.
   services.udisks2.enable = lib.mkForce false;
-
-  networking.firewall.enable = false;
-
-  nixpkgs.crossSystem = {
-    system = "aarch64-linux";
-  };
 }
