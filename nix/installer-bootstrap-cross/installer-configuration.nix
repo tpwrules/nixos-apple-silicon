@@ -5,13 +5,13 @@
 # based vaguely on
 # https://github.com/samueldr/cross-system/blob/master/configuration.nix
 
-{ config, pkgs, lib, nixpkgsPath, ... }:
+{ config, pkgs, lib, modulesPath, ... }:
 
 {
   imports = [
-    (nixpkgsPath + "/nixos/modules/profiles/minimal.nix")
-    (nixpkgsPath + "/nixos/modules/profiles/installation-device.nix")
-    (nixpkgsPath + "/nixos/modules/installer/cd-dvd/iso-image.nix")
+    (modulesPath + "/profiles/minimal.nix")
+    (modulesPath + "/profiles/installation-device.nix")
+    (modulesPath + "/installer/cd-dvd/iso-image.nix")
   ];
 
   # Adds terminus_font for people with HiDPI displays
