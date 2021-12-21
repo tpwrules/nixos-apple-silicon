@@ -1,5 +1,8 @@
 Attempts to get NixOS up on M1 Macs.
 
+* [UEFI Boot Standalone NixOS (2021-12-20)
+](docs/uefi-standalone.md)
+
 ## Credits
 
 This is mostly a restructuring of work many others have already done, and it wouldn't have been possible without them. Important parts of the Linux on M1 experience include:
