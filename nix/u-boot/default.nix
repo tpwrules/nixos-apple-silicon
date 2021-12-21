@@ -7,10 +7,10 @@
   src = fetchFromGitHub {
     owner = "kettenis";
     repo = "u-boot";
-    rev = "fd6480ff7986e61848bc96dc43a279c80ba27cc9";
-    hash = "sha256-K79/s26ec3cOLlbbY+Im+m87Zec761xTkZJJ9Ni3sLI=";
+    rev = "bc8ba79af742cd9f29e504a4afdf7f350851a133";
+    hash = "sha256-d2x24vMWIKhIKCTt7y36OHYMxOTTRn007p7J7BTJhSc=";
   };
-  version = "unstable-2021-12-19";
+  version = "unstable-2021-12-21";
 
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
@@ -21,12 +21,7 @@
   '';
 }).overrideAttrs (o: {
   # upstream patches are not applicable
-  patches = [
-    # stop u-boot from claiming it can provide runtime services to reset the
-    # system when it can't. it will presumably be able to once the PSCI stuff
-    # gets worked out though.
-    ./0001-fix-reboot.patch
-  ];
+  patches = [ ];
 
   preInstall = ''
     cat ${m1n1}/build/m1n1.macho u-boot.dtb u-boot-nodtb.bin > u-boot.macho

@@ -1,11 +1,11 @@
-# UEFI Boot Standalone NixOS (2021-12-20)
+# UEFI Boot Standalone NixOS (2021-12-21)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2021-12-15
 * m1n1, as of 2021-12-17
-* Mark Kettenis' U-Boot, as of 2021-12-19
+* Mark Kettenis' U-Boot, as of 2021-12-21
 * Nixpkgs, as of 2021-12-14
 * macOS stub 11.4
 
