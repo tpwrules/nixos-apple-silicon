@@ -1,0 +1,13 @@
+diff --git a/lib/efi_loader/efi_runtime.c b/lib/efi_loader/efi_runtime.c
+index 93a695fc27..3a5e08a90d 100644
+--- a/lib/efi_loader/efi_runtime.c
++++ b/lib/efi_loader/efi_runtime.c
+@@ -132,7 +132,7 @@ efi_status_t efi_init_runtime_supported(void)
+ 	 * as well as efi_runtime_services.
+ 	 */
+ #ifdef CONFIG_EFI_HAVE_RUNTIME_RESET
+-	rt_table->runtime_services_supported |= EFI_RT_SUPPORTED_RESET_SYSTEM;
++	// rt_table->runtime_services_supported |= EFI_RT_SUPPORTED_RESET_SYSTEM;
+ #endif
+ 
+ 	ret = efi_install_configuration_table(&efi_rt_properties_table_guid,

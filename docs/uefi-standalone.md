@@ -287,7 +287,7 @@ Retype new password: ***
 nixos$ sudo reboot
 ```
 
-Note that the system will hang for 30 or so seconds before it finally reboots, for reasons unknown at this time. Shutting down currently does not work at all; you will have to manually hold the power button until the computer shuts off after you've issued the command.
+Note that shutting down from Linux currently does not work at all; you will have to manually hold the power button until the computer shuts off after you've issued the command.
 
 #### Using NixOS
 

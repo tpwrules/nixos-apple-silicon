@@ -21,7 +21,12 @@
   '';
 }).overrideAttrs (o: {
   # upstream patches are not applicable
-  patches = [ ];
+  patches = [
+    # stop u-boot from claiming it can provide runtime services to reset the
+    # system when it can't. it will presumably be able to once the PSCI stuff
+    # gets worked out though.
+    ./0001-fix-reboot.patch
+  ];
 
   preInstall = ''
     cat ${m1n1}/build/m1n1.macho u-boot.dtb u-boot-nodtb.bin > u-boot.macho
