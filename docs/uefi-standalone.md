@@ -291,7 +291,7 @@ Note that shutting down from Linux currently does not work at all; you will have
 
 #### Using NixOS
 
-When the system reboots, GRUB will come up and boot the default configuration after a short delay, which is the one you've most recently built. You can also select and boot older configurations under the "All configurations" submenu. If the system appears to hang at a gray screen, either press a key to get it going, or be patient and it will eventually boot.
+When the system reboots, GRUB will come up and boot the default configuration after a short delay, which is the one you've most recently built. You can also select and boot older configurations under the "All configurations" submenu.
 
 If the system does not boot or is otherwise unusable, for example if the network was not configured correctly, you will need to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run usb_boot`. You can then re-mount your partitions (reformatting them is unnecessary), edit the configuration, and reinstall it.
 

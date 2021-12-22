@@ -21,7 +21,11 @@
   '';
 }).overrideAttrs (o: {
   # upstream patches are not applicable
-  patches = [ ];
+  patches = [
+    # stop EFI from spending 99% of its time polling the USB keybord instead of
+    # reading disk sectors
+    ./0001-fix-slow-boot.patch
+  ];
 
   preInstall = ''
     cat ${m1n1}/build/m1n1.macho u-boot.dtb u-boot-nodtb.bin > u-boot.macho
