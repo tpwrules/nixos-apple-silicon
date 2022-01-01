@@ -1,11 +1,11 @@
-# UEFI Boot Standalone NixOS (2021-12-21)
+# UEFI Boot Standalone NixOS (2022-01-01)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2021-12-15
-* m1n1, as of 2021-12-17
-* Mark Kettenis' U-Boot, as of 2021-12-21
+* m1n1, as of 2021-12-31
+* Mark Kettenis' U-Boot, as of 2021-12-29
 * Nixpkgs, as of 2021-12-14
 * macOS stub 11.4
 
@@ -27,7 +27,6 @@ The following items are required to get started:
 * M1 Mac with working m1n1 setup (M1 Pro/Max are not supported by U-Boot yet) and a blank partition, separate from the macOS stub partition, which is at least 5GB (10GB for full GUI)
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine. Note that HDMI is at this time broken completely if the stub partition has macOS 12.0.1 or newer.
 * Ethernet cable (WiFi drivers are not incorporated yet)
-* USB keyboard and mouse (internal keyboards are not supported by U-Boot yet)
 * USB flash drive which is at least 512MB and can be fully erased
 * For laptop users: USB to Ethernet adapter, USB A to C adapter, and hub
 * An x86_64 Linux PC (any distro is fine) on the same network as the Mac
@@ -276,7 +275,7 @@ If you want to install a desktop environment, you will have to uncomment the opt
   services.xserver.desktopManager.xfce.enable = true;
 ```
 
-Once you are happy with your initial configuration, install the system. This will also have to download a large amount of data. If there are SSL errors, wait a minute or so for the time to be set correctly over the network. If there are any other errors, you can edit the configuration and safely re-run the command. You will be asked to set a root password as the final step. Once complete, you can reboot the system.
+Once you are happy with your initial configuration, install the system. This will also have to download a large amount of data. If there are SSL errors, wait a minute or so for the time to be set correctly over the network. If there are any other errors, you can edit the configuration and safely re-run the command. You will be asked to set a root password as the final step. If this fails (for example if you type the password incorrectly), you can still re-run the command safely. Once complete, you can reboot the system.
 
 ```
 nixos$ sudo nixos-install
@@ -284,6 +283,9 @@ nixos$ sudo nixos-install
 setting root password...
 New password: ***
 Retype new password: ***
+passwd: password updated successfully
+installation finished!
+
 nixos$ sudo reboot
 ```
 

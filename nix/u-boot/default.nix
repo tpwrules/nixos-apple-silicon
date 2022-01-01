@@ -7,10 +7,10 @@
   src = fetchFromGitHub {
     owner = "kettenis";
     repo = "u-boot";
-    rev = "9e65c625e516cb9e80fc2e96fae131e2bb9308ed";
-    hash = "sha256-z6ww8K/03qpBDZnd1qzg5aXHi5d7V09V1UnjxCf9gRU=";
+    rev = "9581098cbe247435983907fa8db71c5395d36315";
+    hash = "sha256-T/75coa6XhLfbvYP18S92Tgy/Hb2AW6RRxLa+rdFlRo=";
   };
-  version = "unstable-2021-12-23";
+  version = "unstable-2021-12-29";
 
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
