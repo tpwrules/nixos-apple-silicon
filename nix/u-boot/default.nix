@@ -7,10 +7,10 @@
   src = fetchFromGitHub {
     owner = "kettenis";
     repo = "u-boot";
-    rev = "9581098cbe247435983907fa8db71c5395d36315";
-    hash = "sha256-T/75coa6XhLfbvYP18S92Tgy/Hb2AW6RRxLa+rdFlRo=";
+    rev = "83d839cb04651ca48e567fa8c58e57d78adc0994";
+    hash = "sha256-91QCx9r60ZnRmAIL0yf/VQOwZaH7Z6V32sSkcRY9jyw=";
   };
-  version = "unstable-2021-12-29";
+  version = "unstable-2022-01-02";
 
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
@@ -21,11 +21,7 @@
   '';
 }).overrideAttrs (o: {
   # upstream patches are not applicable
-  patches = [
-    # stop EFI from spending 99% of its time polling the USB keybord instead of
-    # reading disk sectors
-    ./0001-fix-slow-boot.patch
-  ];
+  patches = [ ];
 
   preInstall = ''
     cat ${m1n1}/build/m1n1.macho u-boot.dtb u-boot-nodtb.bin > u-boot.macho
