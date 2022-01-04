@@ -1,14 +1,10 @@
-{ pkgs, nativeBuild ? false }: let
-  buildPkgs = if nativeBuild then
-    import (pkgs.path) {
-      system = "aarch64-linux";
-    }
-  else (
+{ pkgs, crossBuild ? false }: let
+  buildPkgs = if crossBuild then
     import (pkgs.path) {
       system = "x86_64-linux";
       crossSystem.system = "aarch64-linux";
     }
-  );
+  else pkgs;
 
   # we do this so the config can be read on any system and not affect
   # the output hash

@@ -1,4 +1,4 @@
-# configuration that is specific to the cross-compiled ISO
+# configuration that is specific to the ISO
 { config, pkgs, lib, ... }:
 {
   imports = [
@@ -23,8 +23,4 @@
       cp -r ${../kernel} /etc/nixos/kernel
     fi
   '';
-
-  nixpkgs.crossSystem = {
-    system = "aarch64-linux";
-  };
 }

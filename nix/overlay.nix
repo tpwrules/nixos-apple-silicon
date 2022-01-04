@@ -21,6 +21,9 @@ in {
     u-boot = lib.genAttrs compatibleDTs (
       name: callPackage ./u-boot { withDeviceTree = name; }
     );
-    installer-bootstrap-cross = callPackage ./installer-bootstrap-cross {};
+    installer-bootstrap = callPackage ./installer-bootstrap {};
+    installer-bootstrap-cross = callPackage ./installer-bootstrap {
+      crossBuild = true;
+    };
   });
 }

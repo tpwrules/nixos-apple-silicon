@@ -1,11 +1,11 @@
-# UEFI Boot Standalone NixOS (2022-01-01)
+# UEFI Boot Standalone NixOS (2022-01-04)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2021-12-15
-* m1n1, as of 2021-12-31
-* Mark Kettenis' U-Boot, as of 2021-12-29
+* m1n1, as of 2022-01-03
+* Mark Kettenis' U-Boot, as of 2022-01-02
 * Nixpkgs, as of 2021-12-14
 * macOS stub 11.4
 
@@ -29,7 +29,7 @@ The following items are required to get started:
 * Ethernet cable (WiFi drivers are not incorporated yet)
 * USB flash drive which is at least 512MB and can be fully erased
 * For laptop users: USB to Ethernet adapter, USB A to C adapter, and hub
-* An x86_64 Linux PC (any distro is fine) on the same network as the Mac
+* An x86_64 or aarch64 Linux PC or VM (any distro is fine) on the same network as the Mac
 * Familiarity with the command line and installers without GUIs
 
 ## Software Preparation
@@ -75,7 +75,7 @@ The bootstrap NixOS installer ISO contains UEFI-compatible GRUB, the Asahi Linux
 
 Building the image requires downloading of a large amount of data and compilation of a number of packages, including the kernel. On my six core Xeon laptop, building it took about 11 minutes (90 CPU minutes). Your mileage may vary. You can use the `-j` option to specify the number of packages to build in parallel. Each is allowed to use all cores, but for this build, most do not use more than one. Therefore, it is recommended to set it to less than the number of physical cores in your machine.
 
-Use Nix to build the installer ISO:
+Use Nix to build the installer ISO (if you are on an aarch64 machine, use `installer-bootstrap` instead of `installer-bootstrap-cross`):
 
 ```
 nixos-m1$ nix-build -A installer-bootstrap-cross -o installer -j4
@@ -236,6 +236,7 @@ Create a default configuration for the new system, then copy the Asahi Linux ker
 ```
 nixos$ sudo nixos-generate-config --root /mnt
 nixos$ sudo cp -r /etc/nixos/kernel /mnt/etc/nixos/
+nixos$ sudo chmod -R +w /mnt/etc/nixos/
 ```
 
 Use Nano to edit the configuration of the new system to include the kernel module and GRUB bootloader. Be aware that other editors and most documentation has been left out of the bootstrap installer to save space and time.
@@ -265,6 +266,13 @@ Add the `./kernel` directory to the imports list, remove the three lines that me
   boot.loader.efi.canTouchEfiVariables = false;
 ```
 
+If you used the cross-compiled installer image, i.e. you built `installer-bootstrap-cross`, add the following line to re-use the cross-compiled kernel. If you don't, the kernel will be rebuilt in the installer, which wastes time. If at any point you change the kernel configuration or update the system, and the kernel needs to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
+
+```
+  # Remove if you get an error that an x86_64-linux builder is required.
+  boot.kernelBuildIsCross = true;
+```
+
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including WiFi, sound, and the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
@@ -289,7 +297,7 @@ installation finished!
 nixos$ sudo reboot
 ```
 
-Note that shutting down from Linux currently does not work at all; you will have to manually hold the power button until the computer shuts off after you've issued the command.
+Note that shutting down from Linux currently does not work at all; you will have to manually hold the power button until the computer shuts off after you've issued the command. However, rebooting works properly.
 
 #### Using NixOS
 
