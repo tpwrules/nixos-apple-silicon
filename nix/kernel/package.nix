@@ -23,7 +23,7 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "5.16.0-rc5-asahi-next-20211214";
+      version = "5.16.0-asahi-next-20220118";
       modDirVersion = version;
 
       src = fetchFromGitHub {
@@ -34,9 +34,9 @@
         # TO UPDATE THE KERNEL SOURCES: set the Git repo information here
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "b63c1083b20eefa3b23180ae57e1919c723f7d86";
+        rev = "a4d177b3ad21299fd91c39a88857cff903f5f9c3";
         # then, set hash = lib.fakeHash; (with no quotes)
-        hash = "sha256-g9pzjkEhSYXILzNCyrH9qWge+H+3gpbnnNwY7xH/beo=";
+        hash = "sha256-fllRfjxRrhJxvrUflJqTYlKZ6lR+fZwLFhcoGGnM+wU=";
         # Run `sudo nixos-rebuild boot`.
         # Nix will download and hash the source, then tell you something like:
         #  error: hash mismatch in fixed-output derivation
