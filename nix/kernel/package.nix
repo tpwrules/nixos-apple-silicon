@@ -19,7 +19,7 @@
     echo "}" >> $out
   '').outPath;
 
-  linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, linuxKernel, ... } @ args:
+  linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel, ... } @ args:
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
@@ -44,6 +44,19 @@
         #      got:    sha256-g9pzjkEhSYXILzNCyrH9qWge+H+3gpbnnNwY7xH/beo=
         # now, set hash = "<that value>"; and run the rebuild command again.
       };
+
+      kernelPatches = [
+        { name = "sound-unused-var-fix";
+          patch = ./fix-unused-sound-variable.patch;
+        }
+        # thanks to Martin Povik via Glanzmann
+        { name = "sound-clock-fix";
+          patch = fetchpatch {
+            url = "https://tg.st/u/5nly";
+            sha256 = "sha256-BRmYYIyaa1sI1fkAw/5H/cBAVsc+USgEp3yi2mnXHYM=";
+          };
+        }
+      ];
 
       configfile = ./config;
       config = readConfig configfile;

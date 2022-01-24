@@ -1,0 +1,13 @@
+diff --git a/sound/soc/apple/mca.c b/sound/soc/apple/mca.c
+index 3703edb1b2a5..f44813fd316f 100644
+--- a/sound/soc/apple/mca.c
++++ b/sound/soc/apple/mca.c
+@@ -526,7 +526,7 @@ static int mca_set_runtime_hwparams(struct snd_soc_component *component,
+ 				struct snd_pcm_substream *substream)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = asoc_substream_to_rtd(substream);
+-	struct mca_route *route = mca_route_for_rtd(asoc_substream_to_rtd(substream));
++	struct mca_route *route = mca_route_for_rtd(rtd);
+ 	struct dma_chan *chan = route->chan[substream->stream];
+ 	struct device *dma_dev = chan->device->dev;
+ 	struct snd_dmaengine_dai_dma_data dma_data = {};
