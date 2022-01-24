@@ -56,6 +56,19 @@
             sha256 = "sha256-BRmYYIyaa1sI1fkAw/5H/cBAVsc+USgEp3yi2mnXHYM=";
           };
         }
+        # thanks to Janne Grunau via Glanzmann
+        { name = "spi-fix";
+          patch = fetchpatch {
+            url = "https://github.com/jannau/linux/commit/9ce9060dea91951a330feeeda3ad636bc88c642c.patch";
+            sha256 = "sha256-z8KbiSmWCKYGsFag/yc2td3G/RSVzXEG1DrC6TeN0IA=";
+          };
+        }
+        { name = "spi-probe-fix";
+          patch = fetchpatch {
+            url = "https://github.com/jannau/linux/commit/aa6a11b3feeda0f57284f99406188e4615e7c43c.patch";
+            sha256 = "sha256-ysOS1utzoQ1tHrpNJln6GuNKJhsJKhH7nMJqHJaSjdk=";
+          };
+        }
       ];
 
       configfile = ./config;
