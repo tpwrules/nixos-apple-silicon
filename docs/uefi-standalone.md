@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-01-23)
+# UEFI Boot Standalone NixOS (2022-01-24)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
@@ -7,7 +7,7 @@ This guide will build and was tested with the following software:
 * m1n1, as of 2022-01-18
 * Mark Kettenis' U-Boot, as of 2022-01-07
 * Nixpkgs, as of 2021-12-14
-* macOS stub 11.4
+* macOS stub 12.0.1
 
 ## Introduction
 
@@ -25,7 +25,8 @@ This also does not necessarily promise to be useful. Just because you can do it 
 
 The following items are required to get started:
 * M1 Mac with working m1n1 setup (M1 Pro/Max are not supported by U-Boot yet) and a blank partition, separate from the macOS stub partition, which is at least 5GB (10GB for full GUI)
-* For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine. Note that HDMI is at this time broken completely if the stub partition has macOS 12.0.1 or newer.
+* macOS stub partition with macOS 12.0.1 or later installed; 12.0.1 is preferred. 11.x may work but is not supported.
+* For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * Ethernet cable (WiFi drivers are not incorporated yet)
 * USB flash drive which is at least 512MB and can be fully erased
 * For laptop users: USB to Ethernet adapter, USB A to C adapter, and hub
@@ -99,7 +100,7 @@ Boot the Mac into 1TR and open the Terminal. Download the U-Boot image (replacin
 # curl http://<host PC IP>:8000/u-boot/u-boot.macho -o u-boot.macho
 ```
 
-Use `kmutil` to install the `.macho` or `.bin` according to the [m1n1 manual](https://github.com/AsahiLinux/m1n1#usage), depending on your system.
+Use `kmutil` to install the `.macho` or `.bin` according to the [m1n1 manual](https://github.com/AsahiLinux/m1n1#usage), depending on your recoveryOS version.
 
 ```
 # kmutil configure-boot -c u-boot.macho <...>
