@@ -26,15 +26,6 @@
 
     hardware.wirelessRegulatoryDatabase = true;
     hardware.firmware = [
-      # all the firmware is big, but including the tigon one avoids an awkward
-      # minute long hang on mac mini
-      (pkgs.stdenv.mkDerivation {
-        name = "tigon-firmware";
-        buildCommand = ''
-          mkdir -p $out/lib/firmware
-          cp -r ${pkgs.firmwareLinuxNonfree}/lib/firmware/tigon $out/lib/firmware
-        '';
-      })
     ];
   };
 
