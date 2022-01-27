@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-01-24)
+# UEFI Boot Standalone NixOS (2022-01-26)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
@@ -27,9 +27,7 @@ The following items are required to get started:
 * M1 Mac with working m1n1 setup (M1 Pro/Max are not supported by U-Boot yet) and a blank partition, separate from the macOS stub partition, which is at least 5GB (10GB for full GUI)
 * macOS stub partition with macOS 12.0.1 or later installed; 12.0.1 is preferred. 11.x may work but is not supported.
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
-* Ethernet cable (WiFi drivers are not incorporated yet)
-* USB flash drive which is at least 512MB and can be fully erased
-* For laptop users: USB to Ethernet adapter, USB A to C adapter, and hub
+* USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter if on a laptop
 * An x86_64 or aarch64 Linux PC or VM (any distro is fine) on the same network as the Mac
 * Familiarity with the command line and installers without GUIs
 
@@ -46,6 +44,18 @@ Clone this repository to a suitable location on the host PC. In the future, you 
 ```
 $ git clone https://github.com/tpwrules/nixos-m1/
 $ cd nixos-m1
+```
+
+If you wish to use Wi-Fi, you will have to extract the non-redistributable firmware from the Mac and build it into the installer. Roughly, this is as follows, when booted into macOS:
+```
+$ git clone https://github.com/AsahiLinux/asahi-installer/
+$ cd asahi-installer/src
+$ python3 -m firmware.wifi /usr/local/firmware/wifi wifi-firmware.tar
+```
+
+Copy this archive to your Linux system, then put the it in the correct place in the repo:
+```
+nixos-m1$ mv /path/to/copied/wifi-firmware.tar nix/kernel/firmware/wifi-firmware.tar
 ```
 
 #### m1n1
@@ -84,6 +94,8 @@ nixos-m1$ nix-build -A installer-bootstrap-cross -o installer -j4
 
 The installer ISO is now available in `installer/iso/nixos-22.05pre-git-aarch64-linux.iso`. Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported.
 
+NOTE: If this ISO has the Wi-Fi firmware built in, it is illegal to redistribute.
+
 ## Installation
 
 #### U-Boot
@@ -106,7 +118,7 @@ Use `kmutil` to install the `.macho` or `.bin` according to the [m1n1 manual](ht
 # kmutil configure-boot -c u-boot.macho <...>
 ```
 
-Once `kmutil` has completed successfully, shut down the machine. If on a laptop, connect your USB peripherals, including the flash drive with the installer ISO, to a USB-C port through the USB A to C adapter. If on a Mac mini, you can use either the USB-A or USB-C ports. Connect the Ethernet cable to the network port or adapter as well.
+Once `kmutil` has completed successfully, shut down the machine. Connect the flash drive with the installer ISO to a USB-C port through the USB A to C adapter. If on a Mac mini, you can use either the USB-A or USB-C ports. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
 Start the Mac, and U-Boot should start booting from the USB drive. After a short delay, GRUB will start, then the NixOS installer (the default GRUB option is fine). You will get a console prompt once booting completes.
 
@@ -224,6 +236,8 @@ Installation of NixOS, and GRUB using NixOS's mechanisms, is covered below.
 
 The subsequent steps in this section will help you install NixOS onto your new partitions. More information is available in the Installing section of the [NixOS manual](https://nixos.org/manual/nixos/stable/index.html#sec-installation-installing). Some changes to the configuration as described in that manual are needed for NixOS on M1 to work properly.
 
+If you are using Wi-Fi, enable networking in the installer using `wpa_supplicant` by following [the directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual.
+
 Mount the new partitions:
 
 ```
@@ -274,7 +288,7 @@ If you used the cross-compiled installer image, i.e. you built `installer-bootst
   boot.kernelBuildIsCross = true;
 ```
 
-The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including WiFi, sound, and the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
+The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including sound and the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 
@@ -282,9 +296,16 @@ If you want to install a desktop environment, you will have to uncomment the opt
   # Enable the X11 windowing system.
   services.xserver.enable = true;
   services.xserver.desktopManager.xfce.enable = true;
+
+  # Enable NetworkManager under XFCE so Wi-Fi is easily configurable.
+  # If you enable these, do not enable networking.wireless!
+  networking.networkmanager.enable = true;
+  programs.nm-applet.enable = true;
 ```
 
-Once you are happy with your initial configuration, install the system. This will also have to download a large amount of data. If there are SSL errors, wait a minute or so for the time to be set correctly over the network. If there are any other errors, you can edit the configuration and safely re-run the command. You will be asked to set a root password as the final step. If this fails (for example if you type the password incorrectly), you can still re-run the command safely. Once complete, you can reboot the system.
+Once you are happy with your initial configuration, install the system. This will also have to download a large amount of data. If there are SSL errors, run the command `systemctl restart systemd-timesyncd` to set the time over the network.
+
+If there are any other errors, you can edit the configuration and safely re-run the command. You will be asked to set a root password as the final step. If this fails (for example if you type the password incorrectly), you can still re-run the command safely. Once complete, you can reboot the system.
 
 ```
 nixos$ sudo nixos-install

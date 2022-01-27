@@ -23,6 +23,16 @@
       "debug"
       "boot.shell_on_fail"
     ];
+
+    hardware.firmware = [
+      (pkgs.stdenvNoCC.mkDerivation {
+        name = "wifi-firmware";
+        buildCommand = ''
+          mkdir -p $out/lib/firmware
+          tar xf ${./firmware}/wifi-firmware*.tar -C $out/lib/firmware
+        '';
+      })
+    ];
   };
 
   options.boot.kernelBuildIsCross = lib.mkOption {
