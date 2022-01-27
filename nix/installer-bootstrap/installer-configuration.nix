@@ -49,9 +49,21 @@
   hardware.enableAllFirmware = lib.mkForce false;
   hardware.enableRedistributableFirmware = lib.mkForce false;
   sound.enable = false;
-  networking.wireless.enable = false;
   documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
+
+  networking.wireless.enable = true;
+  networking.wireless.userControlled.enable = true;
+  systemd.services.wpa_supplicant.wantedBy = lib.mkOverride 50 [];
+
+  # avoids the need to cross-compile rustc and spidermonkey and polkit
+  nixpkgs.overlays = [
+    (self: super: {
+      wpa_supplicant = super.wpa_supplicant.override {
+        withPcsclite = false;
+      };
+    })
+  ];
 
   # (Failing build in a dep to be investigated)
   security.polkit.enable = false;

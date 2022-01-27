@@ -23,10 +23,6 @@
       "debug"
       "boot.shell_on_fail"
     ];
-
-    hardware.wirelessRegulatoryDatabase = true;
-    hardware.firmware = [
-    ];
   };
 
   options.boot.kernelBuildIsCross = lib.mkOption {
