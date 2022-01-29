@@ -1,7 +1,10 @@
 {
+  # https://hydra.nixos.org/jobset/mobile-nixos/unstable/evals
+  # these evals have a cross-compiled stdenv available
+  # note that we can't upgrade past 2021-12-24 now because of libunwind
   nixpkgs = fetchTarball {
-    name   = "nixpkgs-unstable-2021-12-14";
-    url    = "https://github.com/NixOS/nixpkgs/archive/a2e281f5770247855b85d70c43454ba5bff34613.tar.gz";
-    sha256 = "sha256:03m6b3yvx7v8gwib848aclwqpg02rhqdh9h511w9byyfvha9g0fg";
+    name   = "nixpkgs-unstable-2021-12-24";
+    url    = "https://github.com/NixOS/nixpkgs/archive/cb372c3b8880e504b06946e8fb2ca9777c685505.tar.gz";
+    sha256 = "sha256:0m5k2vkhdd3049pcrampw4xb7hvf9f44pp18y765fvdwwvgqasw7";
   };
 }
