@@ -56,6 +56,12 @@
             sha256 = "sha256-BRmYYIyaa1sI1fkAw/5H/cBAVsc+USgEp3yi2mnXHYM=";
           };
         }
+        { name = "sound-delay-fix";
+          patch = fetchpatch {
+            url = "https://tg.st/u/0wM8";
+            sha256 = "sha256-BzlTmdQeGnVMtrmSi3nLuWR7kTLK+1qRidhtgQmW2F8=";
+          };
+        }
         # thanks to Janne Grunau via Glanzmann
         { name = "spi-fix";
           patch = fetchpatch {
