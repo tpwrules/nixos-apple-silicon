@@ -1,0 +1,445 @@
+diff --git a/drivers/iommu/apple-dart.c b/drivers/iommu/apple-dart.c
+index 1b15907df8aa..fe91c5cf0535 100644
+--- a/drivers/iommu/apple-dart.c
++++ b/drivers/iommu/apple-dart.c
+@@ -97,7 +97,6 @@ struct apple_dart_hw {
+  * @lock: lock for hardware operations involving this dart
+  * @pgsize: pagesize supported by this DART
+  * @supports_bypass: indicates if this DART supports bypass mode
+- * @force_bypass: force bypass mode due to pagesize mismatch?
+  * @sid2group: maps stream ids to iommu_groups
+  * @iommu: iommu core device
+  */
+@@ -115,7 +114,6 @@ struct apple_dart {
+ 
+ 	u32 pgsize;
+ 	u32 supports_bypass : 1;
+-	u32 force_bypass : 1;
+ 
+ 	struct iommu_group *sid2group[DART_MAX_STREAMS];
+ 	struct iommu_device iommu;
+@@ -499,9 +497,6 @@ static int apple_dart_attach_dev(struct iommu_domain *domain,
+ 	struct apple_dart_master_cfg *cfg = dev_iommu_priv_get(dev);
+ 	struct apple_dart_domain *dart_domain = to_dart_domain(domain);
+ 
+-	if (cfg->stream_maps[0].dart->force_bypass &&
+-	    domain->type != IOMMU_DOMAIN_IDENTITY)
+-		return -EINVAL;
+ 	if (!cfg->stream_maps[0].dart->supports_bypass &&
+ 	    domain->type == IOMMU_DOMAIN_IDENTITY)
+ 		return -EINVAL;
+@@ -630,8 +625,6 @@ static int apple_dart_of_xlate(struct device *dev, struct of_phandle_args *args)
+ 	if (cfg_dart) {
+ 		if (cfg_dart->supports_bypass != dart->supports_bypass)
+ 			return -EINVAL;
+-		if (cfg_dart->force_bypass != dart->force_bypass)
+-			return -EINVAL;
+ 		if (cfg_dart->pgsize != dart->pgsize)
+ 			return -EINVAL;
+ 	}
+@@ -736,8 +729,6 @@ static int apple_dart_def_domain_type(struct device *dev)
+ {
+ 	struct apple_dart_master_cfg *cfg = dev_iommu_priv_get(dev);
+ 
+-	if (cfg->stream_maps[0].dart->force_bypass)
+-		return IOMMU_DOMAIN_IDENTITY;
+ 	if (!cfg->stream_maps[0].dart->supports_bypass)
+ 		return IOMMU_DOMAIN_DMA;
+ 
+@@ -904,7 +895,6 @@ static int apple_dart_probe(struct platform_device *pdev)
+ 	dart_params[1] = readl(dart->regs + DART_PARAMS2);
+ 	dart->pgsize = 1 << FIELD_GET(DART_PARAMS_PAGE_SHIFT, dart_params[0]);
+ 	dart->supports_bypass = dart_params[1] & DART_PARAMS_BYPASS_SUPPORT;
+-	dart->force_bypass = dart->pgsize > PAGE_SIZE;
+ 
+ 	ret = request_irq(dart->irq, apple_dart_irq, IRQF_SHARED,
+ 			  "apple-dart fault handler", dart);
+@@ -928,8 +918,8 @@ static int apple_dart_probe(struct platform_device *pdev)
+ 
+ 	dev_info(
+ 		&pdev->dev,
+-		"DART [pagesize %x, bypass support: %d, bypass forced: %d] initialized\n",
+-		dart->pgsize, dart->supports_bypass, dart->force_bypass);
++		"DART [pagesize %x, bypass support: %d] initialized\n",
++		dart->pgsize, dart->supports_bypass);
+ 	return 0;
+ 
+ err_sysfs_remove:
+diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
+index d85d54f2b549..de369f7d1fb2 100644
+--- a/drivers/iommu/dma-iommu.c
++++ b/drivers/iommu/dma-iommu.c
+@@ -20,8 +20,10 @@
+ #include <linux/iommu.h>
+ #include <linux/iova.h>
+ #include <linux/irq.h>
++#include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/mutex.h>
++#include <linux/pfn.h>
+ #include <linux/pci.h>
+ #include <linux/scatterlist.h>
+ #include <linux/spinlock.h>
+@@ -706,6 +708,9 @@ static struct page **__iommu_dma_alloc_pages(struct device *dev,
+ {
+ 	struct page **pages;
+ 	unsigned int i = 0, nid = dev_to_node(dev);
++	unsigned int j;
++	unsigned long min_order = __fls(order_mask);
++	unsigned int min_order_size = 1U << min_order;
+ 
+ 	order_mask &= (2U << MAX_ORDER) - 1;
+ 	if (!order_mask)
+@@ -745,15 +750,37 @@ static struct page **__iommu_dma_alloc_pages(struct device *dev,
+ 				split_page(page, order);
+ 			break;
+ 		}
+-		if (!page) {
+-			__iommu_dma_free_pages(pages, i);
+-			return NULL;
++
++		/*
++		 * If we have no valid page here we might be trying to allocate
++		 * the last block consisting of 1<<order pages (to guarantee
++		 * alignment) but actually need less pages than that.
++		 * In that case we just try to allocate the entire block and
++		 * directly free the spillover pages again.
++		 */
++		if (!page && !order_mask && count < min_order_size) {
++			page = alloc_pages_node(nid, gfp, min_order);
++			if (!page)
++				goto free_pages;
++			split_page(page, min_order);
++
++			for (j = count; j < min_order_size; ++j)
++				__free_page(page + j);
++
++			order_size = count;
+ 		}
++
++		if (!page)
++			goto free_pages;
+ 		count -= order_size;
+ 		while (order_size--)
+ 			pages[i++] = page++;
+ 	}
+ 	return pages;
++
++free_pages:
++	__iommu_dma_free_pages(pages, i);
++	return NULL;
+ }
+ 
+ /*
+@@ -770,15 +797,27 @@ static struct page **__iommu_dma_alloc_noncontiguous(struct device *dev,
+ 	bool coherent = dev_is_dma_coherent(dev);
+ 	int ioprot = dma_info_to_prot(DMA_BIDIRECTIONAL, coherent, attrs);
+ 	unsigned int count, min_size, alloc_sizes = domain->pgsize_bitmap;
++	struct sg_append_table sgt_append = {};
++	struct scatterlist *last_sg;
+ 	struct page **pages;
+ 	dma_addr_t iova;
++	phys_addr_t orig_s_phys;
++	size_t orig_s_len, orig_s_off, s_iova_off, iova_size;
+ 
+ 	if (static_branch_unlikely(&iommu_deferred_attach_enabled) &&
+ 	    iommu_deferred_attach(dev, domain))
+ 		return NULL;
+ 
+ 	min_size = alloc_sizes & -alloc_sizes;
+-	if (min_size < PAGE_SIZE) {
++	if (iovad->granule > PAGE_SIZE) {
++		if (size < iovad->granule) {
++			/* ensure a single contiguous allocation */
++			min_size = ALIGN(size, PAGE_SIZE*(1U<<get_order(size)));
++			alloc_sizes = min_size;
++		}
++
++		size = PAGE_ALIGN(size);
++	} else if (min_size < PAGE_SIZE) {
+ 		min_size = PAGE_SIZE;
+ 		alloc_sizes |= PAGE_SIZE;
+ 	} else {
+@@ -793,13 +832,17 @@ static struct page **__iommu_dma_alloc_noncontiguous(struct device *dev,
+ 	if (!pages)
+ 		return NULL;
+ 
+-	size = iova_align(iovad, size);
+-	iova = iommu_dma_alloc_iova(domain, size, dev->coherent_dma_mask, dev);
++	iova_size = iova_align(iovad, size);
++	iova = iommu_dma_alloc_iova(domain, iova_size, dev->coherent_dma_mask, dev);
+ 	if (!iova)
+ 		goto out_free_pages;
+ 
+-	if (sg_alloc_table_from_pages(sgt, pages, count, 0, size, GFP_KERNEL))
++	/* append_table is only used to get a pointer to the last entry */
++	if (sg_alloc_append_table_from_pages(&sgt_append, pages, count, 0,
++					iova_size, UINT_MAX, 0, GFP_KERNEL))
+ 		goto out_free_iova;
++	memcpy(sgt, &sgt_append.sgt, sizeof(*sgt));
++	last_sg = sgt_append.prv;
+ 
+ 	if (!(ioprot & IOMMU_CACHE)) {
+ 		struct scatterlist *sg;
+@@ -809,18 +852,59 @@ static struct page **__iommu_dma_alloc_noncontiguous(struct device *dev,
+ 			arch_dma_prep_coherent(sg_page(sg), sg->length);
+ 	}
+ 
++	if (iovad->granule > PAGE_SIZE) {
++		if (size < iovad->granule) {
++			/*
++			 * we only have a single sg list entry here that is
++			 * likely not aligned to iovad->granule. adjust the
++			 * entry to represent the encapsulating IOMMU page
++			 * and then later restore everything to its original
++			 * values, similar to the impedance matching done in
++			 * iommu_dma_map_sg.
++			 */
++			orig_s_phys = sg_phys(sgt->sgl);
++			orig_s_len = sgt->sgl->length;
++			orig_s_off = sgt->sgl->offset;
++			s_iova_off = iova_offset(iovad, orig_s_phys);
++
++			sg_set_page(sgt->sgl,
++				pfn_to_page(PHYS_PFN(orig_s_phys - s_iova_off)),
++				iova_align(iovad, orig_s_len + s_iova_off),
++				sgt->sgl->offset & ~s_iova_off);
++		} else {
++			/*
++			 * convince iommu_map_sg_atomic to map the last block
++			 * even though it may be too small.
++			 */
++			orig_s_len = last_sg->length;
++			last_sg->length = iova_align(iovad, last_sg->length);
++		}
++	}
++
+ 	if (iommu_map_sg_atomic(domain, iova, sgt->sgl, sgt->orig_nents, ioprot)
+-			< size)
++			< iova_size)
+ 		goto out_free_sg;
+ 
++	if (iovad->granule > PAGE_SIZE) {
++		if (size < iovad->granule) {
++			sg_set_page(sgt->sgl,
++				pfn_to_page(PHYS_PFN(orig_s_phys)),
++				orig_s_len, orig_s_off);
++
++			iova += s_iova_off;
++		} else {
++			last_sg->length = orig_s_len;
++		}
++	}
++
+ 	sgt->sgl->dma_address = iova;
+-	sgt->sgl->dma_length = size;
++	sgt->sgl->dma_length = iova_size;
+ 	return pages;
+ 
+ out_free_sg:
+ 	sg_free_table(sgt);
+ out_free_iova:
+-	iommu_dma_free_iova(cookie, iova, size, NULL);
++	iommu_dma_free_iova(cookie, iova, iova_size, NULL);
+ out_free_pages:
+ 	__iommu_dma_free_pages(pages, count);
+ 	return NULL;
+@@ -1038,8 +1122,9 @@ static int __finalise_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 		unsigned int s_length = sg_dma_len(s);
+ 		unsigned int s_iova_len = s->length;
+ 
+-		s->offset += s_iova_off;
+-		s->length = s_length;
++		sg_set_page(s,
++			    pfn_to_page(PHYS_PFN(sg_phys(s) + s_iova_off)),
++			    s_length, s_iova_off & ~PAGE_MASK);
+ 		sg_dma_address(s) = DMA_MAPPING_ERROR;
+ 		sg_dma_len(s) = 0;
+ 
+@@ -1080,13 +1165,17 @@ static int __finalise_sg(struct device *dev, struct scatterlist *sg, int nents,
+ static void __invalidate_sg(struct scatterlist *sg, int nents)
+ {
+ 	struct scatterlist *s;
++	phys_addr_t orig_paddr;
+ 	int i;
+ 
+ 	for_each_sg(sg, s, nents, i) {
+-		if (sg_dma_address(s) != DMA_MAPPING_ERROR)
+-			s->offset += sg_dma_address(s);
+-		if (sg_dma_len(s))
+-			s->length = sg_dma_len(s);
++		if (sg_dma_len(s)) {
++			orig_paddr = sg_phys(s) + sg_dma_address(s);
++			sg_set_page(s,
++				    pfn_to_page(PHYS_PFN(orig_paddr)),
++				    sg_dma_len(s),
++				    sg_dma_address(s) & ~PAGE_MASK);
++		}
+ 		sg_dma_address(s) = DMA_MAPPING_ERROR;
+ 		sg_dma_len(s) = 0;
+ 	}
+@@ -1164,15 +1253,16 @@ static int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 	 * stashing the unaligned parts in the as-yet-unused DMA fields.
+ 	 */
+ 	for_each_sg(sg, s, nents, i) {
+-		size_t s_iova_off = iova_offset(iovad, s->offset);
++		phys_addr_t s_phys = sg_phys(s);
++		size_t s_iova_off = iova_offset(iovad, s_phys);
+ 		size_t s_length = s->length;
+ 		size_t pad_len = (mask - iova_len + 1) & mask;
+ 
+ 		sg_dma_address(s) = s_iova_off;
+ 		sg_dma_len(s) = s_length;
+-		s->offset -= s_iova_off;
+ 		s_length = iova_align(iovad, s_length + s_iova_off);
+-		s->length = s_length;
++		sg_set_page(s, pfn_to_page(PHYS_PFN(s_phys - s_iova_off)),
++			    s_length, s->offset & ~s_iova_off);
+ 
+ 		/*
+ 		 * Due to the alignment of our single IOVA allocation, we can
+@@ -1410,9 +1500,15 @@ static int iommu_dma_get_sgtable(struct device *dev, struct sg_table *sgt,
+ 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
+ 		unsigned long attrs)
+ {
++	struct iommu_domain *domain = iommu_get_dma_domain(dev);
++	struct iommu_dma_cookie *cookie = domain->iova_cookie;
++	struct iova_domain *iovad = &cookie->iovad;
+ 	struct page *page;
+ 	int ret;
+ 
++	if (iovad->granule > PAGE_SIZE)
++		return -ENXIO;
++
+ 	if (IS_ENABLED(CONFIG_DMA_REMAP) && is_vmalloc_addr(cpu_addr)) {
+ 		struct page **pages = dma_common_find_pages(cpu_addr);
+ 
+diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+index 8b86406b7162..34471ac94eca 100644
+--- a/drivers/iommu/iommu.c
++++ b/drivers/iommu/iommu.c
+@@ -80,6 +80,8 @@ static struct iommu_domain *__iommu_domain_alloc(struct bus_type *bus,
+ 						 unsigned type);
+ static int __iommu_attach_device(struct iommu_domain *domain,
+ 				 struct device *dev);
++static void __iommu_detach_device(struct iommu_domain *domain,
++				  struct device *dev);
+ static int __iommu_attach_group(struct iommu_domain *domain,
+ 				struct iommu_group *group);
+ static void __iommu_detach_group(struct iommu_domain *domain,
+@@ -1975,6 +1977,24 @@ void iommu_domain_free(struct iommu_domain *domain)
+ }
+ EXPORT_SYMBOL_GPL(iommu_domain_free);
+ 
++static int iommu_check_page_size(struct iommu_domain *domain,
++				struct device *dev)
++{
++	bool trusted = !(dev_is_pci(dev) && to_pci_dev(dev)->untrusted);
++
++	if (!iommu_is_paging_domain(domain))
++		return 0;
++	if (iommu_is_large_pages_domain(domain) && trusted)
++		return 0;
++
++	if (!(domain->pgsize_bitmap & (PAGE_SIZE | (PAGE_SIZE - 1)))) {
++		pr_warn("IOMMU pages cannot exactly represent CPU pages.\n");
++		return -EFAULT;
++	}
++
++	return 0;
++}
++
+ static int __iommu_attach_device(struct iommu_domain *domain,
+ 				 struct device *dev)
+ {
+@@ -1984,9 +2004,23 @@ static int __iommu_attach_device(struct iommu_domain *domain,
+ 		return -ENODEV;
+ 
+ 	ret = domain->ops->attach_dev(domain, dev);
+-	if (!ret)
+-		trace_attach_device_to_domain(dev);
+-	return ret;
++	if (ret)
++		return ret;
++
++	/*
++	 * Check that CPU pages can be represented by the IOVA granularity.
++	 * This has to be done after ops->attach_dev since many IOMMU drivers
++	 * only limit domain->pgsize_bitmap after having attached the first
++	 * device.
++	 */
++	ret = iommu_check_page_size(domain, dev);
++	if (ret) {
++		__iommu_detach_device(domain, dev);
++		return ret;
++	}
++
++	trace_attach_device_to_domain(dev);
++	return 0;
+ }
+ 
+ int iommu_attach_device(struct iommu_domain *domain, struct device *dev)
+diff --git a/drivers/iommu/iova.c b/drivers/iommu/iova.c
+index b28c9435b898..3ca0cfb018ab 100644
+--- a/drivers/iommu/iova.c
++++ b/drivers/iommu/iova.c
+@@ -48,10 +48,11 @@ init_iova_domain(struct iova_domain *iovad, unsigned long granule,
+ {
+ 	/*
+ 	 * IOVA granularity will normally be equal to the smallest
+-	 * supported IOMMU page size; both *must* be capable of
+-	 * representing individual CPU pages exactly.
++	 * supported IOMMU page size; while both usually are capable of
++	 * representing individual CPU pages exactly the IOVA allocator
++	 * supports any granularities that are an exact power of two.
+ 	 */
+-	BUG_ON((granule > PAGE_SIZE) || !is_power_of_2(granule));
++	BUG_ON(!is_power_of_2(granule));
+ 
+ 	spin_lock_init(&iovad->iova_rbtree_lock);
+ 	iovad->rbroot = RB_ROOT;
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index de0c57a567c8..b32a81a22f14 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -62,6 +62,8 @@ struct iommu_domain_geometry {
+ 					      implementation              */
+ #define __IOMMU_DOMAIN_PT	(1U << 2)  /* Domain is identity mapped   */
+ #define __IOMMU_DOMAIN_DMA_FQ	(1U << 3)  /* DMA-API uses flush queue    */
++#define __IOMMU_DOMAIN_LP	(1U << 4)  /* Support for PAGE_SIZE smaller
++					      than IOMMU page size        */
+ 
+ /*
+  * This are the possible domain-types
+@@ -81,10 +83,12 @@ struct iommu_domain_geometry {
+ #define IOMMU_DOMAIN_IDENTITY	(__IOMMU_DOMAIN_PT)
+ #define IOMMU_DOMAIN_UNMANAGED	(__IOMMU_DOMAIN_PAGING)
+ #define IOMMU_DOMAIN_DMA	(__IOMMU_DOMAIN_PAGING |	\
+-				 __IOMMU_DOMAIN_DMA_API)
++				 __IOMMU_DOMAIN_DMA_API |       \
++				 __IOMMU_DOMAIN_LP)
+ #define IOMMU_DOMAIN_DMA_FQ	(__IOMMU_DOMAIN_PAGING |	\
+ 				 __IOMMU_DOMAIN_DMA_API |	\
+-				 __IOMMU_DOMAIN_DMA_FQ)
++				 __IOMMU_DOMAIN_DMA_FQ |        \
++				 __IOMMU_DOMAIN_LP)
+ 
+ struct iommu_domain {
+ 	unsigned type;
+@@ -101,6 +105,16 @@ static inline bool iommu_is_dma_domain(struct iommu_domain *domain)
+ 	return domain->type & __IOMMU_DOMAIN_DMA_API;
+ }
+ 
++static inline bool iommu_is_paging_domain(struct iommu_domain *domain)
++{
++	return domain->type & __IOMMU_DOMAIN_PAGING;
++}
++
++static inline bool iommu_is_large_pages_domain(struct iommu_domain *domain)
++{
++	return domain->type & __IOMMU_DOMAIN_LP;
++}
++
+ enum iommu_cap {
+ 	IOMMU_CAP_CACHE_COHERENCY,	/* IOMMU can enforce cache coherent DMA
+ 					   transactions */

@@ -75,6 +75,11 @@
             sha256 = "sha256-ysOS1utzoQ1tHrpNJln6GuNKJhsJKhH7nMJqHJaSjdk=";
           };
         }
+        # thanks to Sven Peter
+        # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
+        { name = "sven-iommu-4k";
+          patch = ./sven-iommu-4k.patch;
+        }
       ];
 
       configfile = ./config;
