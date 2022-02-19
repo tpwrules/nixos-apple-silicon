@@ -7,6 +7,10 @@
       crossBuild = config.boot.kernelBuildIsCross;
     };
 
+    # set a default frequency governor the same way nixos-generate-config does
+    # so the necessary bits get properly cross-compiled
+    powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";
+
     # our kernel config is weird and doesn't really have any modules
     boot.initrd.availableKernelModules = lib.mkForce [];
 
