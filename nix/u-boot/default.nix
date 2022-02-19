@@ -7,10 +7,10 @@
   src = fetchFromGitHub {
     owner = "kettenis";
     repo = "u-boot";
-    rev = "a766c6bbf74ad42d31b9a0d4090ad3594dd15562";
-    hash = "sha256-EQVn1UMtmdwTLwxoxFChxdeT0OeoTvT8if/wSwElS8s=";
+    rev = "0a50f5d0acb2a907686c9a1b2c6b48d1cd62cb63";
+    hash = "sha256-BrWNtRj5QFCjVb+0EWrrEeMgNfT0Z9u8HbK5FgXfPOQ=";
   };
-  version = "unstable-2022-01-07";
+  version = "unstable-2022-02-19";
 
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
@@ -20,7 +20,7 @@
     CONFIG_IDENT_STRING=" ${version} ${withDeviceTree}"
   '';
 }).overrideAttrs (o: {
-  # upstream patches are not applicable
+  # nixos's downstream patches are not applicable
   patches = [ ];
 
   preInstall = ''
