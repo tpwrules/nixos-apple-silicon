@@ -23,7 +23,7 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "5.16.0-asahi-next-20220118";
+      version = "5.17.0-rc4-asahi-next-20220217";
       modDirVersion = version;
 
       src = fetchFromGitHub {
@@ -34,9 +34,9 @@
         # TO UPDATE THE KERNEL SOURCES: set the Git repo information here
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "a4d177b3ad21299fd91c39a88857cff903f5f9c3";
+        rev = "501bccfe4c2d4d9524d8cafcdd4e84b7c58e976a";
         # then, set hash = lib.fakeHash; (with no quotes)
-        hash = "sha256-fllRfjxRrhJxvrUflJqTYlKZ6lR+fZwLFhcoGGnM+wU=";
+        hash = "sha256-GaeHf1XJ5IAlZcTN2ZgLIanjenYDqSMERQNM0fKPJyE=";
         # Run `sudo nixos-rebuild boot`.
         # Nix will download and hash the source, then tell you something like:
         #  error: hash mismatch in fixed-output derivation
@@ -46,34 +46,13 @@
       };
 
       kernelPatches = [
-        { name = "sound-unused-var-fix";
-          patch = ./fix-unused-sound-variable.patch;
+        # thanks to Martin Povik
+        { name = "sound-obo-fix";
+          patch = ./fix-sound-off-by-one.patch;
         }
-        # thanks to Martin Povik via Glanzmann
-        { name = "sound-clock-fix";
-          patch = fetchpatch {
-            url = "https://tg.st/u/5nly";
-            sha256 = "sha256-BRmYYIyaa1sI1fkAw/5H/cBAVsc+USgEp3yi2mnXHYM=";
-          };
-        }
-        { name = "sound-delay-fix";
-          patch = fetchpatch {
-            url = "https://tg.st/u/0wM8";
-            sha256 = "sha256-BzlTmdQeGnVMtrmSi3nLuWR7kTLK+1qRidhtgQmW2F8=";
-          };
-        }
-        # thanks to Janne Grunau via Glanzmann
-        { name = "spi-fix";
-          patch = fetchpatch {
-            url = "https://github.com/jannau/linux/commit/9ce9060dea91951a330feeeda3ad636bc88c642c.patch";
-            sha256 = "sha256-z8KbiSmWCKYGsFag/yc2td3G/RSVzXEG1DrC6TeN0IA=";
-          };
-        }
-        { name = "spi-probe-fix";
-          patch = fetchpatch {
-            url = "https://github.com/jannau/linux/commit/aa6a11b3feeda0f57284f99406188e4615e7c43c.patch";
-            sha256 = "sha256-ysOS1utzoQ1tHrpNJln6GuNKJhsJKhH7nMJqHJaSjdk=";
-          };
+        # thanks to Jens Axboe
+        { name = "apple-mca-correct-prinkts";
+          patch = ./0001-apple-mca-correct-prinkts.patch;
         }
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
@@ -85,7 +64,7 @@
       configfile = ./config;
       config = readConfig configfile;
 
-      extraMeta.branch = "5.16";
+      extraMeta.branch = "5.17";
     } // (args.argsOverride or {});
 
   linux_asahi = buildPkgs.callPackage linux_asahi_pkg { };

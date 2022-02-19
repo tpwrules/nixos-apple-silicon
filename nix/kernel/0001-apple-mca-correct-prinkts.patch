@@ -1,0 +1,37 @@
+From b781e0ccdc0c9a931571d15db09d45b7258b9905 Mon Sep 17 00:00:00 2001
+From: Jens Axboe <axboe@kernel.dk>
+Date: Sat, 19 Feb 2022 08:35:01 -0700
+Subject: [PATCH] apple-mca: correct prinkts
+
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
+---
+ sound/soc/apple/mca.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/sound/soc/apple/mca.c b/sound/soc/apple/mca.c
+index 6e38d1637780..442434ca3a88 100644
+--- a/sound/soc/apple/mca.c
++++ b/sound/soc/apple/mca.c
+@@ -914,7 +914,7 @@ static int apple_mca_probe(struct platform_device *pdev)
+ 		mca->clk_parents[i] = clk;
+ 
+ 		if (IS_ERR(clk)) {
+-			dev_err(&pdev->dev, "unable to obtain clock %s: %d\n",
++			dev_err(&pdev->dev, "unable to obtain clock %s: %ld\n",
+ 				name, PTR_ERR(clk));
+ 			ret = PTR_ERR(clk);
+ 			goto err_release_chans_clocks;
+@@ -948,8 +948,8 @@ static int apple_mca_probe(struct platform_device *pdev)
+ 			chan = of_dma_request_slave_channel(pdev->dev.of_node, name);
+ 			if (IS_ERR(chan)) {
+ 				if (PTR_ERR(chan) != -EPROBE_DEFER)
+-					dev_err(&pdev->dev, "no %s DMA channel: %d\n",
+-						name, route->of_node, PTR_ERR(chan));
++					dev_err(&pdev->dev, "no %s DMA channel: %ld\n",
++						name, PTR_ERR(chan));
+ 
+ 				ret = PTR_ERR(chan);
+ 				goto err_release_chans_clocks;
+-- 
+2.30.2
+
