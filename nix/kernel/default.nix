@@ -38,6 +38,29 @@
         '';
       })
     ];
+
+    nixpkgs.overlays = lib.optional config.boot.kernelBuildIs16K (self: super: {
+      # patch libunwind to work with dynamic pagesizes
+      libunwind = super.libunwind.overrideAttrs (o: {
+        patches = (o.patches or []) ++ [
+          (self.fetchpatch {
+            url = "https://github.com/libunwind/libunwind/pull/330.patch";
+            sha256 = "sha256-z3Hpg98D4UMmrE/LC596RFcyxRTvDjD4k7llDPfz1NI=";
+          })
+        ];
+      });
+
+      # patch webkitgtk to work with 16K pages
+      webkitgtk = super.webkitgtk.overrideAttrs (o: {
+        patches = (o.patches or []) ++ [
+          (self.fetchpatch {
+            url = "https://bug-236564-attachments.webkit.org/attachment.cgi?id=451821";
+            sha256 = "sha256-bx0Eq/cSM6I/mo7AVPcYbwLmj4XDCl9/qd3aLZFaI+0=";
+            excludes = [ "*/ChangeLog" ];
+          })
+        ];
+      });
+    });
   };
 
   options.boot.kernelBuildIsCross = lib.mkOption {
@@ -52,6 +75,9 @@
     description = ''
       Set that the Asahi Linux kernel should be built with 16K pages and various
       software patched to be compatible.
+
+      WARNING: be prepared to spend a couple hours compiling if you choose a
+      graphical environment plus this option. You will also need >20GB RAM+swap!
     '';
   };
 }
