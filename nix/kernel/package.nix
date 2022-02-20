@@ -1,4 +1,4 @@
-{ pkgs, crossBuild ? false }: let
+{ pkgs, crossBuild ? false, _16KBuild ? false }: let
   buildPkgs = if crossBuild then
     import (pkgs.path) {
       system = "x86_64-linux";
@@ -54,10 +54,18 @@
         { name = "apple-mca-correct-prinkts";
           patch = ./0001-apple-mca-correct-prinkts.patch;
         }
+      ] ++ lib.optionals (!_16KBuild) [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
         { name = "sven-iommu-4k";
           patch = ./sven-iommu-4k.patch;
+        }
+      ] ++ lib.optionals _16KBuild [
+        # patch the kernel to set the default size to 16k so we don't need to
+        # convert our config to the nixos infrastructure or patch it and thus
+        # introduce a dependency on the host system architecture
+        { name = "default-pagesize-16k";
+          patch = ./default-pagesize-16k.patch;
         }
       ];
 

@@ -5,6 +5,7 @@
   config = {
     boot.kernelPackages = pkgs.callPackage ./package.nix {
       crossBuild = config.boot.kernelBuildIsCross;
+      _16KBuild = config.boot.kernelBuildIs16K;
     };
 
     # set a default frequency governor the same way nixos-generate-config does
@@ -43,5 +44,14 @@
     type = lib.types.bool;
     default = false;
     description = "Set that the Asahi Linux kernel should be cross-compiled.";
+  };
+
+  options.boot.kernelBuildIs16K = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = ''
+      Set that the Asahi Linux kernel should be built with 16K pages and various
+      software patched to be compatible.
+    '';
   };
 }

@@ -1,0 +1,13 @@
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index a1eb6572ecd2..b94fbd9b3d70 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -1036,7 +1036,7 @@ endmenu
+ 
+ choice
+ 	prompt "Page size"
+-	default ARM64_4K_PAGES
++	default ARM64_16K_PAGES
+ 	help
+ 	  Page size (translation granule) configuration.
+ 
