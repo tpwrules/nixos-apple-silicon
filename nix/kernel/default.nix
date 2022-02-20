@@ -34,7 +34,10 @@
         name = "wifi-firmware";
         buildCommand = ''
           mkdir -p $out/lib/firmware
-          tar xf ${./firmware}/wifi-firmware*.tar -C $out/lib/firmware
+          WIFI="${./firmware}/wifi-firmware*.tar"
+          if [ -e "$WIFI" ]; then
+            tar xf "$WIFI" -C $out/lib/firmware
+          fi
         '';
       })
     ];
