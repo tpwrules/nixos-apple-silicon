@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-01-29)
+# UEFI Boot Standalone NixOS (2022-02-19)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
@@ -288,7 +288,7 @@ If you used the cross-compiled installer image, i.e. you built `installer-bootst
   boot.kernelBuildIsCross = true;
 ```
 
-The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including sound and the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
+The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 
@@ -296,11 +296,6 @@ If you want to install a desktop environment, you will have to uncomment the opt
   # Enable the X11 windowing system.
   services.xserver.enable = true;
   services.xserver.desktopManager.xfce.enable = true;
-
-  # Enable NetworkManager under XFCE so Wi-Fi is easily configurable.
-  # If you enable these, do not enable networking.wireless!
-  networking.networkmanager.enable = true;
-  programs.nm-applet.enable = true;
 ```
 
 Once you are happy with your initial configuration, install the system. This will also have to download a large amount of data. If there are SSL errors, run the command `systemctl restart systemd-timesyncd` to set the time over the network.
