@@ -23,7 +23,7 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "5.17.0-rc4-asahi-next-20220217";
+      version = "5.17.0-rc6-asahi-next-20220301";
       modDirVersion = version;
 
       src = fetchFromGitHub {
@@ -34,9 +34,9 @@
         # TO UPDATE THE KERNEL SOURCES: set the Git repo information here
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "501bccfe4c2d4d9524d8cafcdd4e84b7c58e976a";
+        rev = "0ae8c8cee4cfc9c83a809811e6bc73d643a0fddc";
         # then, set hash = lib.fakeHash; (with no quotes)
-        hash = "sha256-GaeHf1XJ5IAlZcTN2ZgLIanjenYDqSMERQNM0fKPJyE=";
+        hash = "sha256-8KYf7VUWUnu7YTbf85/kiOeYyaQbizzq5Q4zjDgn3LY=";
         # Run `sudo nixos-rebuild boot`.
         # Nix will download and hash the source, then tell you something like:
         #  error: hash mismatch in fixed-output derivation
@@ -46,14 +46,6 @@
       };
 
       kernelPatches = [
-        # thanks to Martin Povik
-        { name = "sound-obo-fix";
-          patch = ./fix-sound-off-by-one.patch;
-        }
-        # thanks to Jens Axboe
-        { name = "apple-mca-correct-prinkts";
-          patch = ./0001-apple-mca-correct-prinkts.patch;
-        }
       ] ++ lib.optionals (!_16KBuild) [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
