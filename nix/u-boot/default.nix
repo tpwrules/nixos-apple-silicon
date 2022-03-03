@@ -5,12 +5,12 @@
 , withDeviceTree ? "t8103-j274"
 }: (pkgsCross.aarch64-multiplatform.buildUBoot rec {
   src = fetchFromGitHub {
-    owner = "kettenis";
+    owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "0a50f5d0acb2a907686c9a1b2c6b48d1cd62cb63";
-    hash = "sha256-BrWNtRj5QFCjVb+0EWrrEeMgNfT0Z9u8HbK5FgXfPOQ=";
+    rev = "c3f78d0a90397164cb91c30495770046fb08b044";
+    hash = "sha256-tjEwvZkiS7mY+lDoNk3qw/GXAMZC4/g3GeNqV7WeqAA=";
   };
-  version = "unstable-2022-02-19";
+  version = "unstable-2022-03-02";
 
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];

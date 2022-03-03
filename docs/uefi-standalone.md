@@ -5,13 +5,13 @@ THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the da
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2022-02-19
 * m1n1, as of 2022-02-24
-* Mark Kettenis' U-Boot, as of 2022-02-19
+* Asahi Linux's U-Boot, as of 2022-03-02
 * Nixpkgs, as of 2022-02-19
 * macOS stub 12.0.1
 
 ## Introduction
 
-This guide will explain how to install NixOS on the internal NVMe drive of an M1 Mac (M1 Pro/Max are not supported at this time) using a customized version of the official installer, then boot it using GRUB without the help of another computer. If you like, you can use another distro's installer (although to my knowledge none are compatible yet); the NixOS specific steps are marked.
+This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official installer, then boot it using GRUB without the help of another computer. If you like, you can use another distro's installer (although to my knowledge none are compatible yet); the NixOS specific steps are marked.
 
 The process of preparing the Mac for installation of Linux is currently in flux, and will not be described here. If you want to follow this guide, you should already have a working m1n1 install which can display stuff on your screen and you can interact with over USB. Additionally, you should have created a blank partition on the internal NVMe drive separate from the macOS stub partition which is at least 5GB (10GB for full GUI).
 
@@ -24,7 +24,7 @@ This also does not necessarily promise to be useful. Just because you can do it 
 ## Prerequisites
 
 The following items are required to get started:
-* M1 Mac with working m1n1 setup (M1 Pro/Max are not supported by U-Boot yet) and a blank partition, separate from the macOS stub partition, which is at least 5GB (10GB for full GUI)
+* M1/Pro/Max Mac with working m1n1 setup and a blank partition, separate from the macOS stub partition, which is at least 5GB (10GB for full GUI)
 * macOS stub partition with macOS 12.0.1 or later installed; 12.0.1 is preferred. 11.x may work but is not supported.
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
