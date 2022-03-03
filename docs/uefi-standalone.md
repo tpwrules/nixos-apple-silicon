@@ -6,7 +6,7 @@ This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2022-02-19
 * m1n1, as of 2022-02-24
 * Asahi Linux's U-Boot, as of 2022-03-02
-* Nixpkgs, as of 2022-02-19
+* Nixpkgs, as of 2022-02-23
 * macOS stub 12.0.1
 
 ## Introduction
