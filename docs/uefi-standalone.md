@@ -4,7 +4,7 @@ THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the da
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2022-02-19
-* m1n1, as of 2022-02-14
+* m1n1, as of 2022-02-24
 * Mark Kettenis' U-Boot, as of 2022-02-19
 * Nixpkgs, as of 2022-02-19
 * macOS stub 12.0.1
