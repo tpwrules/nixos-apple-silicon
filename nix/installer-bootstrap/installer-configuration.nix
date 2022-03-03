@@ -43,6 +43,7 @@
 
   environment.systemPackages = [
     pkgs.gptfdisk
+    pkgs.parted
   ];
 
   # save space and compilation time. might revise?
