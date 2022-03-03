@@ -31,12 +31,12 @@
 
     hardware.firmware = [
       (pkgs.stdenvNoCC.mkDerivation {
-        name = "wifi-firmware";
+        name = "firmware";
         buildCommand = ''
           mkdir -p $out/lib/firmware
-          WIFI="${./firmware}/wifi-firmware*.tar"
-          if [ -e "$WIFI" ]; then
-            tar xf "$WIFI" -C $out/lib/firmware
+          FIRMWARE=`echo ${./firmware}/*firmware*.tar`
+          if [ -e "$FIRMWARE" ]; then
+            tar xf "$FIRMWARE" -C $out/lib/firmware
           fi
         '';
       })
