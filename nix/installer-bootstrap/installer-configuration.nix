@@ -83,4 +83,7 @@
   # ec6224b6cd147943eee685ef671811b3683cb2ce re-introduced udisks in the installer
   # udisks fails due to gobject-introspection being not cross-compilation friendly.
   services.udisks2.enable = lib.mkForce false;
+
+  # https://github.com/NixOS/nixpkgs/issues/162001
+  services.logrotate.enable = lib.mkForce false;
 }
