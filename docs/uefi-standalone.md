@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-02-19)
+# UEFI Boot Standalone NixOS (2022-03-09)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
@@ -7,7 +7,7 @@ This guide will build and was tested with the following software:
 * m1n1, as of 2022-03-09
 * Asahi Linux's U-Boot, as of 2022-03-04
 * Nixpkgs, as of 2022-03-04
-* macOS stub 12.0.1
+* macOS stub 12.1
 
 ## Introduction
 
@@ -25,7 +25,7 @@ This also does not necessarily promise to be useful. Just because you can do it 
 
 The following items are required to get started:
 * M1/Pro/Max Mac with working m1n1 setup and a blank partition, separate from the macOS stub partition, which is at least 5GB (10GB for full GUI)
-* macOS stub partition with macOS 12.0.1 or later installed; 12.0.1 is preferred. 11.x may work but is not supported.
+* macOS stub partition with macOS 12.0.1 or later installed; 12.1 is preferred. 11.x may work but is not supported.
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
 * An x86_64 or aarch64 Linux PC or VM (any distro is fine) on the same network as the Mac
