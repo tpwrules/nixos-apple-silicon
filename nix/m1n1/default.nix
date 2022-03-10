@@ -5,6 +5,7 @@
 , python3
 , dtc
 , imagemagick
+, isRelease ? false
 }: let
   pyenv = python3.withPackages (p: with p; [
     construct
@@ -12,17 +13,18 @@
   ]);
 in stdenv.mkDerivation {
   pname = "m1n1";
-  version = "unstable-2022-02-24";
+  version = "unstable-2022-03-09";
 
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "m1n1";
-    rev = "d76f3a66318f3b6cdd686bc0c4a746aae4b1e38e";
-    hash = "sha256-SdetT0S+7tKoD8nfFwkduV1/mzFn2u2KG809F1z3Y64=";
+    rev = "d161de0037735c6a25c25819bb8458a7e76d8e9d";
+    hash = "sha256-0FPFKsDFLtRcVUWJUvLv160tPb/vW0lObJHmBqko9fU=";
     fetchSubmodules = true;
   };
 
-  makeFlags = [ "ARCH=aarch64-unknown-linux-gnu-" ];
+  makeFlags = [ "ARCH=aarch64-unknown-linux-gnu-" ]
+    ++ lib.optional isRelease "RELEASE=1";
 
   nativeBuildInputs = [
     dtc
