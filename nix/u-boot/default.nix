@@ -7,10 +7,10 @@
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "c3f78d0a90397164cb91c30495770046fb08b044";
-    hash = "sha256-tjEwvZkiS7mY+lDoNk3qw/GXAMZC4/g3GeNqV7WeqAA=";
+    rev = "7d52d11c9582e2808110c365052f2089e72db6d6";
+    hash = "sha256-3DCBO/aauNH3LwyCfpo5ZA0ThjysPiS/I7gfMA4oHXc=";
   };
-  version = "unstable-2022-03-02";
+  version = "unstable-2022-03-04";
 
   defconfig = "apple_m1_defconfig";
   extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
