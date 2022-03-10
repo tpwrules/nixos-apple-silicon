@@ -34,9 +34,9 @@
         # TO UPDATE THE KERNEL SOURCES: set the Git repo information here
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "0ae8c8cee4cfc9c83a809811e6bc73d643a0fddc";
+        rev = "a0ce482af27aaf2ed4f90dfa961a57fc54ed2f68";
         # then, set hash = lib.fakeHash; (with no quotes)
-        hash = "sha256-8KYf7VUWUnu7YTbf85/kiOeYyaQbizzq5Q4zjDgn3LY=";
+        hash = "sha256-ka/BQvjaVVglqm2tZCkFFb0Gs8gE2XxjSmXhO+YKiIQ=";
         # Run `sudo nixos-rebuild boot`.
         # Nix will download and hash the source, then tell you something like:
         #  error: hash mismatch in fixed-output derivation

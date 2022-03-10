@@ -3,7 +3,7 @@
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel, as of 2022-02-19
+* Asahi Linux kernel, as of 2022-03-04
 * m1n1, as of 2022-03-09
 * Asahi Linux's U-Boot, as of 2022-03-04
 * Nixpkgs, as of 2022-02-23
