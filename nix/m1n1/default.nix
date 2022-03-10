@@ -6,11 +6,21 @@
 , dtc
 , imagemagick
 , isRelease ? false
-}: let
+, withChainloading ? false
+, rust-bin ? null
+}:
+
+assert withChainloading -> rust-bin != null;
+
+let
   pyenv = python3.withPackages (p: with p; [
     construct
     pyserial
   ]);
+
+  rustenv = rust-bin.selectLatestNightlyWith (toolchain: toolchain.minimal.override {
+    targets = [ "aarch64-unknown-none-softfloat" ];
+  });
 in stdenv.mkDerivation {
   pname = "m1n1";
   version = "unstable-2022-03-09";
@@ -24,13 +34,14 @@ in stdenv.mkDerivation {
   };
 
   makeFlags = [ "ARCH=aarch64-unknown-linux-gnu-" ]
-    ++ lib.optional isRelease "RELEASE=1";
+    ++ lib.optional isRelease "RELEASE=1"
+    ++ lib.optional withChainloading "CHAINLOADING=1";
 
   nativeBuildInputs = [
     dtc
     imagemagick
     pkgsCross.aarch64-multiplatform.buildPackages.gcc
-  ];
+  ] ++ lib.optional withChainloading rustenv;
 
   postPatch = ''
     substituteInPlace proxyclient/m1n1/asm.py \
