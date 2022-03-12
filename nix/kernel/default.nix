@@ -15,10 +15,6 @@
     # our kernel config is weird and doesn't really have any modules
     boot.initrd.availableKernelModules = lib.mkForce [];
 
-    # the relevant nf_tables kernel modules are not compiled yet so the firewall
-    # will not start
-    networking.firewall.enable = lib.mkForce false;
-
     # kernel parameters that are useful for debugging
     boot.consoleLogLevel = 7;
     boot.kernelParams = [

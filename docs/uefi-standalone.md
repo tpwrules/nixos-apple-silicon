@@ -247,7 +247,7 @@ If you used the cross-compiled installer image, i.e. you built `installer-bootst
   boot.kernelBuildIsCross = true;
 ```
 
-The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
+The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
 You can optionally choose to build the Asahi kernel with a 16K page size by enabling the appropriate option. This provides an improvement in compilation speed of 10-30%, but some important graphical software is currently incompatible. Patches to make everything work are included, but compilation of it will take a long time!
 ```
