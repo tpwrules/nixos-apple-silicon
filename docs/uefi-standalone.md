@@ -141,13 +141,11 @@ Choose the following options when prompted:
 
 Wait while the installation proceeds and press enter when prompted.
 
-When the startup disk preference pane opens, click the lock to make changes, select the appropriate option in the boot picker, then press Restart. The system will have to think for several seconds once restart is pressed; be patient.
+When the Startup Disk preference pane opens, click the lock to make changes, select the appropriate option in the boot picker, press Restart, then enter your password again. The system will have to think for several seconds once restart is pressed; be patient. Once the Startup Disk preference pane closes, read the final advice and press enter to shut down the system when prompted.
 
-Once the startup disk preference pane closes, read the final advice and press enter to shut down the system when prompted.
+Boot into recovery mode as directed and select the new NixOS option in the boot picker. Follow the prompts and enter your administrator password. The local policy update will take several seconds to complete. Once complete, select that you want to set a custom boot object and put your system to permissive security mode, enter your administrator username (the one you put in the password for earlier) and password, then reboot when prompted.
 
-Boot into recovery mode as directed and select the new option in the boot picker. Follow the prompts and enter your administrator password. The local policy update will take several seconds to complete. Select that you want to set a custom boot object and put your system to permissive security mode, enter your administrator username (the one you put in the password for earlier) and password, then reboot when prompted.
-
-If everything went well, you will restart into U-Boot with the Asahi Linux logo on-screen. Shut the system down by holding the power button, then proceed to the next step.
+If everything went well, you will restart into U-Boot with the Asahi Linux and U-Boot logos on-screen. Shut the system down by holding the power button, then proceed to the next step.
 
 ## Installation
 
@@ -155,7 +153,7 @@ If everything went well, you will restart into U-Boot with the Asahi Linux logo 
 
 Shut down the machine fully. Connect the flash drive with the installer ISO to a USB-C port through the USB A to C adapter. If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
-Start the Mac, and U-Boot should start booting from the USB drive. After a short delay, GRUB will start, then the NixOS installer (the default GRUB option is fine). You will get a console prompt once booting completes. Run the command `sudo su` to get a root prompt in the installer.
+Start the Mac, and U-Boot should start booting from the USB drive. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine). You will get a console prompt once booting completes. Run the command `sudo su` to get a root prompt in the installer.
 
 If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
 
@@ -174,7 +172,7 @@ The operation has completed successfully.
 
 Identify the number of the new root partition (type code 8300, typically second to last):
 ```
-nixos# sgdisk -p
+nixos# sgdisk /dev/nvme0n1 -p
 Disk /dev/nvme0n1: 244276265 sectors, 931.8 GiB
 Model: APPLE SSD AP1024Q                       
 Sector size (logical/physical): 4096/4096 bytes
@@ -214,7 +212,7 @@ Create a default configuration for the new system, then copy the Asahi Linux ker
 ```
 nixos# nixos-generate-config --root /mnt
 nixos# cp -r /etc/nixos/kernel /mnt/etc/nixos/
-nixos# cp /mnt/boot/vendorfw/firmware.tar /mnt/etc/nixos/kernel/firmware
+nixos# cp /mnt/boot/vendorfw/firmware.tar /mnt/etc/nixos/kernel/firmware/
 nixos# chmod -R +w /mnt/etc/nixos/
 ```
 
@@ -251,7 +249,12 @@ If you used the cross-compiled installer image, i.e. you built `installer-bootst
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-If you want to install a desktop environment, you will have to uncomment the option to enable X11 and add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
+You can optionally choose to build the Asahi kernel with a 16K page size by enabling the appropriate option. This provides an improvement in compilation speed of 10-30%, but some important graphical software is currently incompatible. Patches to make everything work are included, but compilation of it will take a long time!
+```
+  boot.kernelBuildIs16K = true;
+```
+
+If you want to install a desktop environment, you will have to uncomment the option to enable X11 and networkmanager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -296,7 +299,7 @@ When the system reboots, GRUB will come up and boot the default configuration af
 
 If the system does not boot or is otherwise unusable, for example if the network was not configured correctly, you will need to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run bootcmd_usb0`. You can then re-mount your partitions (reformatting them is unnecessary), edit the configuration, and reinstall it.
 
-Once the system boots, log in with the root password, and create your account or set your user account password. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
+Once the system boots, log in with the root password, and create your account, or set your user account password if you created your account in the configuration. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
 
 #### Hypervisor Boot
 
