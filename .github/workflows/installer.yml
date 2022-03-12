@@ -15,28 +15,58 @@ jobs:
           install_url: https://releases.nixos.org/nix/nix-2.7.0/install
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
+            # save space on disk and in cache
             auto-optimise-store = true
+            # keep all store paths necessary to build the outputs
             keep-outputs = true
             keep-derivations = true
 
-      - run: systemctl stop nix-daemon
-
-      - uses: actions/cache@v2
+      - name: cache nix store
+        id: cache-nix-store
+        uses: actions/cache@v2
         with:
-          key: installer
-          path: /nix
+          key: installer4-${{ github.sha }}
+          restore-keys: |
+            installer4-
+          path: |
+            nix_store_dir
+            nix_store_db.sqlite
+
+      - name: restore cached nix store
+        if: steps.cache-nix-store.outputs.cache-hit == 'true'
+        run: |
+          sudo systemctl stop nix-daemon
+
+          # put cached store paths back in their proper locations
+          sudo rm -rf /nix/store /nix/var/nix/db/db.sqlite
+          sudo mv nix_store_dir /nix/store
+          sudo cp nix_store_db.sqlite /nix/var/nix/db/db.sqlite
+
+          # fix store permissions
+          sudo chmod 1775 /nix/store
+          sudo chown root:nixbld /nix/store
+          sudo chmod 0644 /nix/var/nix/db/db.sqlite
+          sudo chown -R root:root /nix/store /nix/var/nix/db/db.sqlite
+
+          sudo systemctl start nix-daemon
 
       - name: build installer
         run: |
-          systemctl start nix-daemon
           nix-build -A installer-bootstrap-cross -j2
-          nix-collect-garbage
           cp result/iso/*.iso .
-          RESULT=`readlink -f result`
-          rm result
-          nix-store --delete $RESULT
 
       - uses: actions/upload-artifact@v3
         with:
           name: installer
           path: ./*.iso
+      
+      - name: prepare nix store for caching
+        run: |
+          # delete old stuff not relevant to this build
+          nix-collect-garbage
+          sudo systemctl stop nix-daemon
+
+          # move store to a place where the cache action can read it
+          sudo mv /nix/store nix_store_dir
+          sudo mv /nix/var/nix/db/db.sqlite nix_store_db.sqlite
+
