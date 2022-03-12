@@ -1,35 +1,41 @@
-# UEFI Boot Standalone NixOS (2022-03-09)
+# UEFI Boot Standalone NixOS (2022-03-12)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel, as of 2022-03-04
-* m1n1, as of 2022-03-09
-* Asahi Linux's U-Boot, as of 2022-03-04
-* Nixpkgs, as of 2022-03-04
+* Asahi Linux kernel, as of 2022-03-11
+* m1n1, as of 2022-03-11
+* Asahi Linux's U-Boot, as of 2022-03-11
+* Nixpkgs, as of 2022-03-07
 * macOS stub 12.1
 
 ## Introduction
 
-This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official installer, then boot it using GRUB without the help of another computer. If you like, you can use another distro's installer (although to my knowledge none are compatible yet); the NixOS specific steps are marked.
+This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official installer, then boot it using GRUB without the help of another computer. Perusing this guide might also be useful to users of other distros.
 
-The process of preparing the Mac for installation of Linux is currently in flux, and will not be described here. If you want to follow this guide, you should already have a working m1n1 install which can display stuff on your screen and you can interact with over USB. Additionally, you should have created a blank partition on the internal NVMe drive separate from the macOS stub partition which is at least 5GB (10GB for full GUI).
-
-## Warning
+#### Warning
 
 Damage to the macOS recovery partitions or the partition table could result in the Mac becoming unbootable and loss of all data on the internal NVMe drive. In this circumstance, a suitable USB cable and another computer which can run [idevicerestore](https://github.com/libimobiledevice/idevicerestore) will be required to perform a DFU upgrade and restore normal operation.
 
 This also does not necessarily promise to be useful. Just because you can do it doesn't mean you should. A lot of features are currently missing, and this guide has only been tested on an M1 Mac mini. But, it is pretty cool.
 
-## Prerequisites
+#### Prerequisites
 
 The following items are required to get started:
-* M1/Pro/Max Mac with working m1n1 setup and a blank partition, separate from the macOS stub partition, which is at least 5GB (10GB for full GUI)
-* macOS stub partition with macOS 12.0.1 or later installed; 12.1 is preferred. 11.x may work but is not supported.
+* M1/Pro/Max Mac with macOS 12.1 or later
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
-* An x86_64 or aarch64 Linux PC or VM (any distro is fine) on the same network as the Mac
+* An x86_64 or aarch64 Linux PC or VM (any distro is fine)
 * Familiarity with the command line and installers without GUIs
+
+#### Overview
+
+* [Software Preparation](#software-preparation): build the customized NixOS installer ISO and other components
+* [UEFI Preparation](#uefi-preparation): use the Asahi Linux installer to set up a standard UEFI boot environment
+* [Installation](#installation): boot the NixOS installer and use it to set up and install NixOS
+* [Maintenance](#maintenance): repair and upgrade NixOS and the Asahi Linux components
+* [Removal](#removal): restore the system to the stock state
+
 
 ## Software Preparation
 
@@ -44,18 +50,6 @@ Clone this repository to a suitable location on the host PC. In the future, you 
 ```
 $ git clone https://github.com/tpwrules/nixos-m1/
 $ cd nixos-m1
-```
-
-If you wish to use Wi-Fi, you will have to extract the non-redistributable firmware from the Mac and build it into the installer. Roughly, this is as follows, when booted into macOS:
-```
-$ git clone https://github.com/AsahiLinux/asahi-installer/
-$ cd asahi-installer/src
-$ python3 -m firmware.wifi /usr/local/firmware/wifi wifi-firmware.tar
-```
-
-Copy this archive to your Linux system, then put the it in the correct place in the repo:
-```
-nixos-m1$ mv /path/to/copied/wifi-firmware.tar nix/kernel/firmware/wifi-firmware.tar
 ```
 
 #### m1n1
@@ -94,174 +88,142 @@ nixos-m1$ nix-build -A installer-bootstrap-cross -o installer -j4
 
 The installer ISO is now available in `installer/iso/nixos-22.05pre-git-aarch64-linux.iso`. Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported.
 
-NOTE: If this ISO has the Wi-Fi firmware built in, it is illegal to redistribute.
+## UEFI Preparation
+
+This setup uses the pre-alpha Asahi Linux installer to install a standard UEFI boot environment from which the NixOS installer and OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
+
+#### Partitioning
+
+Space must be made on the internal drive for the macOS stub partition, EFI system partition, and Linux root partition by shrinking the partition containing the macOS install. This is done using the macOS `diskutil` command line utility.
+
+List the partitions in the internal disk to identify the partition to shrink:
+```
+% diskutil list disk0
+/dev/disk0 (internal):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                         1.0 TB     disk0
+   1:             Apple_APFS_ISC                         524.3 MB   disk0s1
+   2:                 Apple_APFS Container disk3         994.7 GB   disk0s2
+   3:        Apple_APFS_Recovery                         5.4 GB     disk0s3
+```
+
+WARNING: Unlike Linux, on macOS each partition's identifier does not necessarily equal its partition index. Double check the identifiers of your own system!
+
+Here, macOS is installed into `disk0s2`; it is the main APFS container and the largest partition. We choose to shrink it to 900GB to make room for approximately 3GB of auxiliary partitions and leave the rest free for Linux.
+
+NOTE: Unlike most disk utilities on Linux, `diskutil` uses decimal measures of capacity. In this document we use MB/GB for decimal measures (i.e. 1MB = 1 megabyte = 1,000,000 bytes) and MiB/GiB for power-of-two measures (i.e. 1MiB = 1 mebibyte = 1,048,576 bytes).
+
+Shrink the identifed macOS install to your desired size. This command will take a few minutes to run:
+```
+% diskutil apfs resizeContainer disk0s2 900GB
+Started APFS operation
+Aligning shrink delta to 94,662,586,368 bytes and targeting a new physical store size of 899,999,997,952 bytes
+[...]
+Finished APFS operation
+```
+
+The rest of the partitioning will be handled by the Asahi Linux installer and in NixOS.
+
+#### Asahi Linux Installation
+
+Download and run the pre-alpha installer with the following command:
+```
+% curl -L https://mrcn.st/alxsh | sh
+```
+
+Choose the following options when prompted:
+* Enter your administrator password
+* Install an OS into free space (`f`)
+* UEFI environment only
+* Target area created previously
+* Name it NixOS (this is what shows up in the firmware boot picker)
+* Latest macOS version for boot firmware (just press enter)
+
+Wait while the installation proceeds and press enter when prompted.
+
+When the startup disk preference pane opens, click the lock to make changes, select the appropriate option in the boot picker, then press Restart. The system will have to think for several seconds once restart is pressed; be patient.
+
+Once the startup disk preference pane closes, read the final advice and press enter to shut down the system when prompted.
+
+Boot into recovery mode as directed and select the new option in the boot picker. Follow the prompts and enter your administrator password. The local policy update will take several seconds to complete. Select that you want to set a custom boot object and put your system to permissive security mode, enter your administrator username (the one you put in the password for earlier) and password, then reboot when prompted.
+
+If everything went well, you will restart into U-Boot with the Asahi Linux logo on-screen. Shut the system down by holding the power button, then proceed to the next step.
 
 ## Installation
 
-#### U-Boot
+#### Booting the Installer
 
-Figure out the IP of the host Linux PC where you built everything (using e.g. `ip addr`). On that PC, change directories into the git repo and start an HTTP server for the Mac to download the files from:
+Shut down the machine fully. Connect the flash drive with the installer ISO to a USB-C port through the USB A to C adapter. If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
-```
-nixos-m1$ nix-shell -p python3 --run 'python3 -m http.server'
-```
+Start the Mac, and U-Boot should start booting from the USB drive. After a short delay, GRUB will start, then the NixOS installer (the default GRUB option is fine). You will get a console prompt once booting completes. Run the command `sudo su` to get a root prompt in the installer.
 
-Boot the Mac into 1TR and open the Terminal. Download the U-Boot image (replacing `.macho` with `.bin` if appropriate) from the host PC:
-
-```
-# curl http://<host PC IP>:8000/u-boot/u-boot.macho -o u-boot.macho
-```
-
-Use `kmutil` to install the `.macho` or `.bin` according to the [m1n1 manual](https://github.com/AsahiLinux/m1n1#usage), depending on your recoveryOS version.
-
-```
-# kmutil configure-boot -c u-boot.macho <...>
-```
-
-Once `kmutil` has completed successfully, shut down the machine. Connect the flash drive with the installer ISO to a USB-C port through the USB A to C adapter. If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
-
-Start the Mac, and U-Boot should start booting from the USB drive. After a short delay, GRUB will start, then the NixOS installer (the default GRUB option is fine). You will get a console prompt once booting completes.
-
-If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run usb_boot`.
+If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
 
 #### Partitioning and Formatting
 
 **DANGER: Damage to the GPT partition table, first partition (`iBootSystemContainer`), or the last partition (`RecoveryOSContainer`) could result in the loss of all data and render the Mac unbootable and unrecoverable without assistance from another computer! Do not use your distro's automated partitioner or partitioning instructions!**
 
-We will partition the internal NVMe drive to add an EFI system partition for GRUB and a root partition for Linux while preserving the correct layout of the existing partitions. Use of alternative partition layouts is possible, though not recommended at this time.
+We will add a root partition to the remaining free space and format it as ext4. Alternative partition layouts and filesystems are possible, but not covered by this guide.
 
-We will use `gdisk` here so make sure your distro's installer has it; `parted` is not recommended. Below is an example transcript of the partitioning process, with the commands you need to enter and `gdisk`'s replies. Commands you should enter are _italicized_. Comments on those commands or on `gdisk`'s output are **(bold and in parentheses)**; do not type them in. Please read through it and understand what is going on before you start, bearing in mind that your disk may be slightly different.
+Create the root partition to fill up the free space:
+```
+nixos# sgdisk /dev/nvme0n1 -n 0:0 -s
+[...]
+The operation has completed successfully.
+```
 
-<pre>
-nixos$ <i>sudo gdisk /dev/nvme0n1</i>
-GPT fdisk (gdisk) version 1.0.8
-
-<p>
-Partition table scan:
-  MBR: protective
-  BSD: not present
-  APM: not present
-  GPT: present
-</p>
-
-Found valid GPT with protective MBR; using GPT.
-
-Command (? for help): <i>p</i> <b>(print the existing partition table and verify it roughly matches this layout)</b>
+Identify the number of the new root partition (type code 8300, typically second to last):
+```
+nixos# sgdisk -p
 Disk /dev/nvme0n1: 244276265 sectors, 931.8 GiB
 Model: APPLE SSD AP1024Q                       
 Sector size (logical/physical): 4096/4096 bytes
-Disk identifier (GUID): (...)
-Partition table holds up to 128 entries
-Main partition table begins at sector 2 and ends at sector 5
-First usable sector is 6, last usable sector is 244276259
-Partitions will be aligned on 1-sector boundaries
-Total free space is 162 sectors (648.0 KiB)
-
-<b>(save this printout using e.g. a picture of your screen for future reference if something goes wrong)</b>
-Number  Start (sector)    End (sector)  Size       Code  Name
-   1               6          128005   500.0 MiB   FFFF  iBootSystemContainer <b>(DO NOT TOUCH)</b>
-   2          128006       122198317   465.7 GiB   AF0A  Container  <b>(macOS partition with all your files)</b>
-   3       122198318       123419020   4.7 GiB     AF0A  <b>(macOS stub partition for m1n1)</b>
-   4       123419136       242965503   456.0 GiB   0700  <b>(blank partition we will install Linux to)</b>
-   5       242965551       244276259   5.0 GiB     FFFF  RecoveryOSContainer <b>(DO NOT TOUCH)</b>
-
-<b>(skip this command if there is no blank partition but instead free space)</b>
-Command (? for help): <i>d</i> <b>(delete the blank Linux partition)</b>
-Partition number (1-5): <i>4</i> <b>(which is number four on this disk)</b>
-
-Command (? for help): <i>n</i> <b>(create new EFI system partition)</b>
-Partition number (4-128, default 4):  <b>(hit Enter to accept default)</b>
-First sector (123419021-242965550, default = 123419021) or {+-}size{KMGTP}:  <b>(hit Enter to accept default)</b> 
-Last sector (123419021-242965550, default = 242965550) or {+-}size{KMGTP}: <i>+512M</i> <b>(should not be smaller)</b>
-Current type is 8300 (Linux filesystem)
-Hex code or GUID (L to show codes, Enter = 8300): <i>EF00</i> <b>(EFI system partition code)</b>
-Changed type of partition to 'EFI system partition'
-
-Command (? for help): <i>n</i> <b>(create the root partition)</b>
-Partition number (6-128, default 6):  <b>(hit Enter to accept default)</b>
-First sector (123550093-242965550, default = 123550093) or {+-}size{KMGTP}:  <b>(hit Enter to accept default)</b>
-Last sector (123550093-242965550, default = 242965550) or {+-}size{KMGTP}:  <b>(hit Enter to accept default)</b>
-Current type is 8300 (Linux filesystem)
-Hex code or GUID (L to show codes, Enter = 8300):  <b>(hit Enter to accept default)</b>
-Changed type of partition to 'Linux filesystem'
-
-Command (? for help): <i>s</i> <b>(sort the partition table so the recovery partitions are placed correctly)</b>
-You may need to edit /etc/fstab and/or your boot loader configuration!
-
-Command (? for help): <i>p</i> <b>(print the new partition table and verify it roughly matches this layout)</b>
-Disk /dev/nvme0n1: 244276265 sectors, 931.8 GiB
-Model: APPLE SSD AP1024Q                       
-Sector size (logical/physical): 4096/4096 bytes
-Disk identifier (GUID): (...)
+Disk identifier (GUID): 27054D2E-307A-41AA-9A8C-3864D56FAF6B
 Partition table holds up to 128 entries
 Main partition table begins at sector 2 and ends at sector 5
 First usable sector is 6, last usable sector is 244276259
 Partitions will be aligned on 1-sector boundaries
 Total free space is 0 sectors (0 bytes)
 
-<b>(verify that the information for the "not touched" partitions did not change from the first printout)</b>
-<b>(if it changed or something doesn't look right, type <i>q</i> to exit the partitioner without saving changes)</b>
 Number  Start (sector)    End (sector)  Size       Code  Name
-   1               6          128005   500.0 MiB   FFFF  iBootSystemContainer <b>(was not touched)</b>
-   2          128006       122198317   465.7 GiB   AF0A  Container <b>(was not touched)</b>
-   3       122198318       123419020   4.7 GiB     AF0A  <b>(was not touched)</b>
-   4       123419021       123550092   512.0 MiB   EF00  EFI system partition <b>(new EFI system partition)</b>
-   5       123550093       242965550   455.5 GiB   8300  Linux filesystem <b>(new root partition)</b>
-   6       242965551       244276259   5.0 GiB     FFFF  RecoveryOSContainer <b>(was not touched)</b>
-
-Command (? for help): <i>w</i> <b>(write the new layout to disk)</b>
-
-Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
-PARTITIONS!!
-
-Do you want to proceed? (Y/N): <i>y</i>
-OK; writing new GUID partition table (GPT) to /dev/nvme0n1.
-The operation has completed successfully.
-</pre>
-
-After partitioning the disk, you should now have an EFI system partition which we will call `/dev/nvme0n1pX` (`/dev/nvme0n1p4` in the above example) and a root partition which we will call `/dev/nvme0n1pY` (`/dev/nvme0n1p5` in the above example).
-
-Format the EFI system partition as FAT32 and root partition as ext4:
-
-```
-nixos$ sudo mkfs.vfat -F 32 -s 1 -n boot /dev/nvme0n1pX
-nixos$ sudo mkfs.ext4 -L nixos /dev/nvme0n1pY
+   1               6          128005   500.0 MiB   FFFF  iBootSystemContainer
+   2          128006       219854567   838.2 GiB   AF0A  Container
+   3       219854568       220465127   2.3 GiB     AF0A  
+   4       220465128       220590311   489.0 MiB   EF00  
+   5       220590312       242965550   85.4 GiB    8300  
+   6       242965551       244276259   5.0 GiB     FFFF  RecoveryOSContainer
 ```
 
-Use your distro's installation instructions to install GRUB to the EFI system partition and the main OS to the root partition. You will have to install GRUB to the fallback location `/efi/boot/bootaa64.efi` on the EFI system partition by passing the `--removable` flag to `grub-install` as U-Boot does not support EFI variables.
+Format the new root partition:
+```
+nixos# mkfs.ext4 -L nixos /dev/nvme0n1p5
+```
 
-Installation of NixOS, and GRUB using NixOS's mechanisms, is covered below.
-
-#### NixOS Installation
+#### NixOS Configuration
 
 The subsequent steps in this section will help you install NixOS onto your new partitions. More information is available in the Installing section of the [NixOS manual](https://nixos.org/manual/nixos/stable/index.html#sec-installation-installing). Some changes to the configuration as described in that manual are needed for NixOS on M1 to work properly.
 
-If you are using Wi-Fi, enable networking in the installer using `wpa_supplicant` by following [the directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual.
-
-Mount the new partitions:
-
+Mount the root partition, then the EFI system partition:
 ```
-nixos$ sudo mount /dev/disk/by-label/nixos /mnt
-nixos$ sudo mkdir -p /mnt/boot
-nixos$ sudo mount /dev/disk/by-label/boot /mnt/boot
+nixos# mount /dev/disk/by-label/nixos /mnt
+nixos# mkdir -p /mnt/boot
+nixos# mount /dev/disk/by-label/EFI* /mnt/boot
 ```
 
-Create a default configuration for the new system, then copy the Asahi Linux kernel configuration module to it:
-
+Create a default configuration for the new system, then copy the Asahi Linux kernel configuration module and system WiFi firmware to it:
 ```
-nixos$ sudo nixos-generate-config --root /mnt
-nixos$ sudo cp -r /etc/nixos/kernel /mnt/etc/nixos/
-nixos$ sudo chmod -R +w /mnt/etc/nixos/
+nixos# nixos-generate-config --root /mnt
+nixos# cp -r /etc/nixos/kernel /mnt/etc/nixos/
+nixos# cp /mnt/boot/vendorfw/firmware.tar /mnt/etc/nixos/kernel/firmware
+nixos# chmod -R +w /mnt/etc/nixos/
 ```
 
 Use Nano to edit the configuration of the new system to include the kernel module and GRUB bootloader. Be aware that other editors and most documentation has been left out of the bootstrap installer to save space and time.
-
 ```
-nixos$ sudo nano /mnt/etc/nixos/configuration.nix
+nixos# nano /mnt/etc/nixos/configuration.nix
 ```
 
 Add the `./kernel` directory to the imports list, remove the three lines that mention `systemd-boot`, and set the relevant options to enable GRUB. That portion of the file should look like this:
-
 ```
   imports =
     [ # Include the results of the hardware scan.
@@ -282,7 +244,6 @@ Add the `./kernel` directory to the imports list, remove the three lines that me
 ```
 
 If you used the cross-compiled installer image, i.e. you built `installer-bootstrap-cross`, add the following line to re-use the cross-compiled kernel. If you don't, the kernel will be rebuilt in the installer, which wastes time. If at any point you change the kernel configuration or update the system, and the kernel needs to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
-
 ```
   # Remove if you get an error that an x86_64-linux builder is required.
   boot.kernelBuildIsCross = true;
@@ -291,44 +252,55 @@ If you used the cross-compiled installer image, i.e. you built `installer-bootst
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that several advertised features, including the firewall, do not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
-
 ```
   # Enable the X11 windowing system.
   services.xserver.enable = true;
   services.xserver.desktopManager.xfce.enable = true;
 ```
 
-Once you are happy with your initial configuration, install the system. This will also have to download a large amount of data. If there are SSL errors, run the command `systemctl restart systemd-timesyncd` to set the time over the network.
+#### NixOS Installation
 
-If there are any other errors, you can edit the configuration and safely re-run the command. You will be asked to set a root password as the final step. If this fails (for example if you type the password incorrectly), you can still re-run the command safely. Once complete, you can reboot the system.
+Once you are happy with your initial configuration, you may install the system. This will have to download a large amount of data.
 
+If using WiFi, the WiFi firmare must first be installed into the live system:
 ```
-nixos$ sudo nixos-install
+nixos# mkdir -p /lib/firmware
+nixos# tar xf /mnt/boot/vendorfw/firmware.tar -C /lib/firmware
+nixos# rmmod brcmfmac && modprobe brcmfmac
+```
+
+You can now configure wireless networking in the installer using `wpa_supplicant` by following [the directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual.
+
+Once the network is set up, ensure the time is set correctly, then install the system. You will be asked to set a root password as the final step:
+```
+nixos# systemctl restart systemd-timesyncd
+nixos# nixos-install
 [...]
 setting root password...
 New password: ***
 Retype new password: ***
 passwd: password updated successfully
 installation finished!
-
-nixos$ sudo reboot
 ```
 
-Note that shutting down from Linux currently does not work at all; you will have to manually hold the power button until the computer shuts off after you've issued the command. However, rebooting works properly.
+If there are any errors, or you mess up entering the root password, you can edit the configuration and safely re-run the command.
 
-#### Using NixOS
+Once complete, reboot the system:
+```
+nixos# reboot
+```
+
+#### First Run
 
 When the system reboots, GRUB will come up and boot the default configuration after a short delay, which is the one you've most recently built. You can also select and boot older configurations under the "All configurations" submenu.
 
-If the system does not boot or is otherwise unusable, for example if the network was not configured correctly, you will need to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run usb_boot`. You can then re-mount your partitions (reformatting them is unnecessary), edit the configuration, and reinstall it.
+If the system does not boot or is otherwise unusable, for example if the network was not configured correctly, you will need to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run bootcmd_usb0`. You can then re-mount your partitions (reformatting them is unnecessary), edit the configuration, and reinstall it.
 
 Once the system boots, log in with the root password, and create your account or set your user account password. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
 
-To update the Asahi kernel, you can download newer files under `nix/kernel` from this repo and place them under `/etc/nixos/kernel`. Alternately, you can edit the kernel config in `/etc/nixos/kernel/config`. Consult the comments in `/etc/nixos/kernel/default.nix` and `/etc/nixos/kernel/package.nix` for more details. Any changes will require a configuration rebuild to take effect. Note that if the kernel device trees change, U-Boot will need to be updated and reinstalled.
-
 #### Hypervisor Boot
 
-You can also choose to install m1n1 without U-Boot and run U-Boot, GRUB and the OS under m1n1's hypervisor. To do this, instead download `m1n1/build/m1n1.macho` (or `.bin`) and install it using `kmutil`.
+By selecting the appropriate menu option in the Asahi Linux installer, you can also choose to install m1n1 without U-Boot and run U-Boot, GRUB and the OS under m1n1's hypervisor.
 
 To run U-Boot under the hypervisor, start m1n1 and attach the Mac to the host PC using an appropriate USB cable, change directories to the repo, then run:
 
@@ -344,7 +316,15 @@ $ nix-shell -p picocom --run 'picocom /dev/ttyACM1'
 
 Downloading the kernel over USB using m1n1 is not supported.
 
-#### Cleanup
+## Maintenance
+
+#### Kernel Update
+
+To update the Asahi kernel, you can download newer files under `nix/kernel` from this repo and place them under `/etc/nixos/kernel`. Alternately, you can edit the kernel config in `/etc/nixos/kernel/config`. Consult the comments in `/etc/nixos/kernel/default.nix` and `/etc/nixos/kernel/package.nix` for more details. Any changes will require a configuration rebuild to take effect. Note that if the kernel device trees change, U-Boot will need to be updated and reinstalled.
+
+## Removal
+
+#### Host PC Cleanup
 
 To recover the space on the host PC, change directories into the repo, remove the built symlinks (removing just the installer will recover almost all the space), then run the garbage collector:
 
@@ -353,4 +333,56 @@ nixos-m1$ rm m1n1 u-boot installer result
 nixos-m1$ nix-collect-garbage
 ```
 
-To remove NixOS from the Mac, just delete the EFI system and root partitions (taking care to not touch the recovery partitions) and reinstall m1n1 using `kmutil`.
+#### NixOS Uninstallation
+
+NixOS can be completely uninstalled by deleting the stub partition, EFI system partition, and root partition off the disk.
+
+Boot back into macOS by shutting down the machine fully, then pressing and holding the power button until the boot picker comes up. Select the macOS installation, then click Continue to boot it. Log into an administrator account.
+
+Identify the partitions to remove. In this example, `disk0s3` is the stub because of its small size. `disk0s4` is the EFI system partition and `disk0s5` is the root partition:
+```
+% diskutil list disk0
+/dev/disk0 (internal):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                         1.0 TB     disk0
+   1:             Apple_APFS_ISC                         524.3 MB   disk0s1
+   2:                 Apple_APFS Container disk4         900.0 GB   disk0s2
+   3:                 Apple_APFS Container disk3         2.5 GB     disk0s3
+   4:                        EFI EFI - NIXOS             512.8 MB   disk0s4
+   5:           Linux Filesystem                         91.6 GB    disk0s5
+   6:        Apple_APFS_Recovery                         5.4 GB     disk0s6
+```
+
+WARNING: Unlike Linux, on macOS each partition's identifier does not necessarily equal its partition index. Double check the identifiers of your own system!
+
+Remove the EFI system partition and root partition:
+```
+% diskutil eraseVolume free free disk0s4
+Started erase on disk0s4 (EFI - NIXOS)
+Unmounting disk
+Finished erase on disk0
+% diskutil eraseVolume free free disk0s5
+Started erase on disk0s5
+Unmounting disk
+Finished erase on disk0
+```
+
+Remove the stub partition:
+```
+% diskutil apfs deleteContainer disk0s3
+Started APFS operation on disk3
+Deleting APFS Container with all of its APFS Volumes
+[...]
+Removing disk0s3 from partition map
+```
+
+Expand the main macOS partition to use the newly-created free space. This command will take a few minutes to run:
+```
+% diskutil apfs resizeContainer disk0s2 0
+Started APFS operation
+Aligning grow delta to 94,662,586,368 bytes and targeting a new physical store size of 994,662,584,320 bytes
+[...]
+Finished APFS operation
+```
+
+To complete the uninstallation, open the Startup Disk pane of System Preferences and select your macOS installation as the startup disk. If this is not done, the next boot will fail, and you will be asked to select another OS to boot from.
