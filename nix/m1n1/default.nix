@@ -23,13 +23,13 @@ let
   });
 in stdenv.mkDerivation {
   pname = "m1n1";
-  version = "unstable-2022-03-09";
+  version = "unstable-2022-03-11";
 
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "m1n1";
-    rev = "d161de0037735c6a25c25819bb8458a7e76d8e9d";
-    hash = "sha256-0FPFKsDFLtRcVUWJUvLv160tPb/vW0lObJHmBqko9fU=";
+    rev = "be1421d2addf87a8750013d01d1fb467746fc5ed";
+    hash = "sha256-/qmOrO4nswWzsI4ZFx6J5u1T6LYxvCgseX0oiSNBnRc=";
     fetchSubmodules = true;
   };
 
