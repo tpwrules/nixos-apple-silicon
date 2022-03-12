@@ -14,22 +14,12 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
-            auto-optimise-store = true
             keep-outputs = true
             keep-derivations = true
 
       - name: build installer
         run: |
           nix-build -A installer-bootstrap-cross -o installer -j2
-          nix-collect-garbage
-
-      - name: check usage
-        run: |
-          df -h
-          du -b -d 1 /nix/store -l | sort -n
-          du -b -s /nix/store
-          systemctl cat nix-daemon.service
-          cat /etc/nix/nix.conf
 
       - uses: actions/upload-artifact@v3
         with:
