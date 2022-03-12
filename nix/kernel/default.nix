@@ -25,6 +25,17 @@
       "boot.shell_on_fail"
     ];
 
+    # systemd-boot is not compatible with this setup because it needs efi vars
+    boot.loader.systemd-boot.enable = lib.mkForce false;
+    boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
+    boot.loader.grub = lib.mkDefault {
+      enable = true;
+      version = 2;
+      efiSupport = true;
+      efiInstallAsRemovable = true;
+      device = "nodev";
+    };
+
     hardware.firmware = [
       (pkgs.stdenvNoCC.mkDerivation {
         name = "firmware";

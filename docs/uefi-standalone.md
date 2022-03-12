@@ -216,12 +216,12 @@ nixos# cp /mnt/boot/vendorfw/firmware.tar /mnt/etc/nixos/kernel/firmware/
 nixos# chmod -R +w /mnt/etc/nixos/
 ```
 
-Use Nano to edit the configuration of the new system to include the kernel module and GRUB bootloader. Be aware that other editors and most documentation has been left out of the bootstrap installer to save space and time.
+Use Nano to edit the configuration of the new system to include the kernel configuration module. Be aware that other editors and most documentation has been left out of the bootstrap installer to save space and time.
 ```
 nixos# nano /mnt/etc/nixos/configuration.nix
 ```
 
-Add the `./kernel` directory to the imports list, remove the three lines that mention `systemd-boot`, and set the relevant options to enable GRUB. That portion of the file should look like this:
+Add the `./kernel` directory to the imports list and remove the three lines that mention `systemd-boot` (GRUB is set up appropriately in the kernel configuration module). That portion of the file should look like this:
 ```
   imports =
     [ # Include the results of the hardware scan.
@@ -229,16 +229,6 @@ Add the `./kernel` directory to the imports list, remove the three lines that me
       # Include the Asahi Linux kernel module and relevant configuration.
       ./kernel
     ];
-
-  # Use the GRUB 2 boot loader.
-  boot.loader.grub = {
-    enable = true;
-    version = 2;
-    efiSupport = true;
-    efiInstallAsRemovable = true;
-    device = "nodev";
-  };
-  boot.loader.efi.canTouchEfiVariables = false;
 ```
 
 If you used the cross-compiled installer image, i.e. you built `installer-bootstrap-cross`, add the following line to re-use the cross-compiled kernel. If you don't, the kernel will be rebuilt in the installer, which wastes time. If at any point you change the kernel configuration or update the system, and the kernel needs to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
