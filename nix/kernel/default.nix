@@ -52,17 +52,6 @@
           })
         ];
       });
-
-      # patch webkitgtk to work with 16K pages
-      webkitgtk = super.webkitgtk.overrideAttrs (o: {
-        patches = (o.patches or []) ++ [
-          (self.fetchpatch {
-            url = "https://bug-236564-attachments.webkit.org/attachment.cgi?id=451821";
-            sha256 = "sha256-bx0Eq/cSM6I/mo7AVPcYbwLmj4XDCl9/qd3aLZFaI+0=";
-            excludes = [ "*/ChangeLog" ];
-          })
-        ];
-      });
     });
   };
 
