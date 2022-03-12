@@ -50,6 +50,8 @@
   hardware.enableAllFirmware = lib.mkForce false;
   hardware.enableRedistributableFirmware = lib.mkForce false;
   sound.enable = false;
+  # avoid including non-reproducible dbus docs
+  documentation.doc.enable = false;
   documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
 
