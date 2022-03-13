@@ -1,6 +1,10 @@
 name: build bootstrap installer
 
 on:
+  push:
+    tags:
+      - 'release-*'
+
   workflow_dispatch:
 
 jobs:
@@ -54,12 +58,17 @@ jobs:
       - name: build installer
         run: |
           nix-build -A installer-bootstrap-cross -j2
-          cp result/iso/*.iso .
+          cp result/iso/*.iso nixos-22.05pre-m1-${{ github.ref_name }}.iso
 
       - uses: actions/upload-artifact@v3
         with:
           name: installer
           path: ./*.iso
+
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./*.iso
       
       - name: prepare nix store for caching
         run: |
