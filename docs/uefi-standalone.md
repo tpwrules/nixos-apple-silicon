@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-03-12)
+# UEFI Boot Standalone NixOS (2022-03-13)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
@@ -11,13 +11,15 @@ This guide will build and was tested with the following software:
 
 ## Introduction
 
-This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official installer, then boot it without the help of another computer. Perusing this guide might also be useful to users of other distros.
+This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official NixOS install ISO, then boot it without the help of another computer. Aside from the M1 support module and AArch64 CPU, the resulting installation can be configured and operated like any other NixOS system.
+
+Perusing this guide might also be useful to users of other distros. Most of the hard work, including the kernel and boot software, was done by the [Asahi Linux project](https://asahilinux.org/).
 
 #### Warning
 
 Damage to the macOS recovery partitions or the partition table could result in the Mac becoming unbootable and loss of all data on the internal NVMe drive. In this circumstance, a suitable USB cable and another computer which can run [idevicerestore](https://github.com/libimobiledevice/idevicerestore) will be required to perform a DFU upgrade and restore normal operation.
 
-This also does not necessarily promise to be useful. Just because you can do it doesn't mean you should. A lot of features are currently missing, and this guide has only been tested on an M1 Mac mini. But, it is pretty cool.
+While you will end up with a reasonably usable computer, the exact hardware features you want [may not be ready yet](https://github.com/AsahiLinux/docs/wiki/%22When-will-Asahi-Linux-be-done%3F%22). Please consult the [Asahi Linux Feature Support page](https://github.com/AsahiLinux/docs/wiki/Feature-Support) for information. Any features marked with a kernel version or `linux-asahi` should be supported by NixOS too.
 
 #### Prerequisites
 
@@ -25,12 +27,12 @@ The following items are required to get started:
 * M1/Pro/Max Mac with macOS 12.1 or later
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
-* An x86_64 or aarch64 Linux PC or VM (any distro is fine)
 * Familiarity with the command line and installers without GUIs
+* Optional: an x86_64 or aarch64 Linux PC or VM (any distro is fine)
 
 #### Overview
 
-* [Software Preparation](#software-preparation): build the customized NixOS installer ISO and other components
+* [Software Preparation](#software-preparation): build the customized NixOS installer ISO and Asahi Linux components
 * [UEFI Preparation](#uefi-preparation): use the Asahi Linux installer to set up a standard UEFI boot environment
 * [Installation](#installation): boot the NixOS installer and use it to set up and install NixOS
 * [Maintenance](#maintenance): repair and upgrade NixOS and the Asahi Linux components
@@ -43,6 +45,8 @@ The following items are required to get started:
 
 This setup takes advantage of the Nix package manager, which handles downloading and compiling everything. You must first install it on your Linux host PC if it doesn't run NixOS. Most distros are compatible, and installation (and uninstallation) is simple. Instructions are available on the [NixOS website](https://nixos.org/download.html#nix-quick-install).
 
+If you cannot or do not wish to install Nix and/or build these components yourself, installation ISOs are automatically built and made available from the [GitHub Releases page](https://github.com/tpwrules/nixos-m1/releases). Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported. They are fully reproducible; that is, the ISO you download will be (or should be...) bit-identical to the one you will get by following these preparation instructions.
+
 #### nixos-m1
 
 Clone this repository to a suitable location on the host PC. In the future, you can update this repository using `git pull` and re-run the `nix-build` commands to update things.
@@ -54,6 +58,8 @@ $ cd nixos-m1
 
 #### m1n1
 
+The Asahi Linux project has developed m1n1 as a bridge between Apple's boot firmware and the Linux world. m1n1 is installed as a faux macOS kernel into a stub macOS installation. In addition to booting Linux (or U-Boot), m1n1 also sets up the hardware and allows remote control and debugging over USB.
+
 Change directories to the repository, then use Nix to build m1n1 and symlink the result to `m1n1`:
 
 ```
@@ -63,6 +69,8 @@ nixos-m1$ nix-build -A m1n1 -o m1n1
 m1n1 has been built and the `.macho` and `.bin` files are now in `m1n1/build/`. You can also run m1n1's scripts such as `chainload.py` using a command like `m1n1/bin/m1n1-chainload`.
 
 #### U-Boot
+
+In the default installation, m1n1 loads U-Boot and U-Boot is used to set up a standard UEFI environment from which GRUB or systemd-boot or whatever can be booted.
 
 Use Nix to build U-Boot along with m1n1 and the device trees:
 
@@ -74,7 +82,7 @@ The `.macho` and `.bin` files with m1n1, the device trees, and U-Boot joined tog
 
 #### Kernel and Bootstrap Installer
 
-The bootstrap NixOS installer ISO contains UEFI-compatible GRUB, the Asahi Linux kernel, its initrd, and enough packages and drivers to allow connection to the internet in order to download and install a full NixOS system. If you prefer, you can use the installer ISO of another distro, as long as it is UEFI bootable and has a compatible kernel.
+The bootstrap NixOS installer ISO contains UEFI-compatible GRUB, the Asahi Linux kernel, its initrd, and enough packages and drivers to allow connection to the Internet in order to download and install a full NixOS system.
 
 Building the image requires downloading of a large amount of data and compilation of a number of packages, including the kernel. On my six core Xeon laptop, building it took about 11 minutes (90 CPU minutes). Your mileage may vary. You can use the `-j` option to specify the number of packages to build in parallel. Each is allowed to use all cores, but for this build, most do not use more than one. Therefore, it is recommended to set it to less than the number of physical cores in your machine.
 
@@ -88,7 +96,7 @@ The installer ISO is now available in `installer/iso/nixos-22.05pre-git-aarch64-
 
 ## UEFI Preparation
 
-This setup uses the pre-alpha Asahi Linux installer to install a standard UEFI boot environment from which the NixOS installer and OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
+This setup uses the pre-alpha Asahi Linux installer to install a stub macOS and standard UEFI boot environment from which the NixOS installer and installed OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
 
 #### Partitioning
 
@@ -197,7 +205,7 @@ nixos# mkfs.ext4 -L nixos /dev/nvme0n1p5
 
 #### NixOS Configuration
 
-The subsequent steps in this section will help you install NixOS onto your new partitions. More information is available in the Installing section of the [NixOS manual](https://nixos.org/manual/nixos/stable/index.html#sec-installation-installing). Some changes to the configuration as described in that manual are needed for NixOS on M1 to work properly.
+The subsequent steps in this section will help you install NixOS onto your new partitions. More information is available in the Installing section of the [NixOS manual](https://nixos.org/manual/nixos/stable/index.html#sec-installation-installing). Some changes to the configuration procedure as described in that manual are needed for NixOS on M1 to work properly.
 
 Mount the root partition, then the EFI system partition:
 ```
@@ -233,7 +241,7 @@ Add the `./m1-support` directory to the imports list and switch off the `canTouc
   boot.loader.efi.canTouchEfiVariables = false;
 ```
 
-If you used the cross-compiled installer image, i.e. you built `installer-bootstrap-cross`, add the following line to re-use the cross-compiled kernel. If you don't, the kernel will be rebuilt in the installer, which wastes time. If at any point you change the kernel configuration or update the system, and the kernel needs to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
+If you used the cross-compiled installer image, i.e. you downloaded the ISO from GitHub or built `installer-bootstrap-cross`, add the following line to re-use the cross-compiled kernel. If you don't, the kernel will be rebuilt in the installer, which wastes time. If at any point you change the kernel configuration or update the system, and the kernel needs to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
 ```
   # Remove if you get an error that an x86_64-linux builder is required.
   boot.kernelBuildIsCross = true;
@@ -241,12 +249,13 @@ If you used the cross-compiled installer image, i.e. you built `installer-bootst
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-You can optionally choose to build the Asahi kernel with a 16K page size by enabling the appropriate option. This provides an improvement in compilation speed of 10-30%, but some important graphical software is currently incompatible. Patches to make everything work are included, but compilation of it will take a long time!
+You can optionally choose to build the Asahi kernel with a 16K page size by enabling the appropriate option. This provides an improvement in compiler speed of 10-30%, but some important graphical software is currently incompatible, so this option is only recommended for build systems and the like. Patches to make the graphical software work are included, but compilation of it will take a long time!
 ```
+  # Build the kernel with 16K pages for a performance boost with some workloads.
   boot.kernelBuildIs16K = true;
 ```
 
-If you want to install a desktop environment, you will have to uncomment the option to enable X11 and networkmanager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
+If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -347,7 +356,7 @@ nixos-m1$ nix-collect-garbage
 
 NixOS can be completely uninstalled by deleting the stub partition, EFI system partition, and root partition off the disk.
 
-Boot back into macOS by shutting down the machine fully, then pressing and holding the power button until the boot picker comes up. Select the macOS installation, then click Continue to boot it. Log into an administrator account.
+Boot back into macOS by shutting down the machine fully, then pressing and holding the power button until the boot picker comes up. Select the macOS installation, then click Continue to boot it. Log into an administrator account and open Terminal.app.
 
 Identify the partitions to remove. In this example, `disk0s3` is the stub because of its small size. `disk0s4` is the EFI system partition and `disk0s5` is the root partition:
 ```

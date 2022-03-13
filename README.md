@@ -1,6 +1,6 @@
 Attempts to get NixOS up on M1 Macs.
 
-* [UEFI Boot Standalone NixOS (2022-03-12)
+* [UEFI Boot Standalone NixOS (2022-03-13)
 ](docs/uefi-standalone.md)
 
 ## Credits
