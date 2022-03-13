@@ -11,7 +11,7 @@ This guide will build and was tested with the following software:
 
 ## Introduction
 
-This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official installer, then boot it using GRUB without the help of another computer. Perusing this guide might also be useful to users of other distros.
+This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official installer, then boot it without the help of another computer. Perusing this guide might also be useful to users of other distros.
 
 #### Warning
 
@@ -219,7 +219,7 @@ Use Nano to edit the configuration of the new system to include the M1 support m
 nixos# nano /mnt/etc/nixos/configuration.nix
 ```
 
-Add the `./m1-support` directory to the imports list and remove the three lines that mention `systemd-boot` (GRUB is set up appropriately in the M1 support module). That portion of the file should look like this:
+Add the `./m1-support` directory to the imports list and switch off the `canTouchEfiVariables` option. That portion of the file should look like this:
 ```
   imports =
     [ # Include the results of the hardware scan.
@@ -227,6 +227,10 @@ Add the `./m1-support` directory to the imports list and remove the three lines 
       # Include the necessary packages and configuration for Apple M1 support.
       ./m1-support
     ];
+
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = false;
 ```
 
 If you used the cross-compiled installer image, i.e. you built `installer-bootstrap-cross`, add the following line to re-use the cross-compiled kernel. If you don't, the kernel will be rebuilt in the installer, which wastes time. If at any point you change the kernel configuration or update the system, and the kernel needs to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
@@ -281,11 +285,11 @@ Once complete, reboot the system:
 nixos# reboot
 ```
 
-When the system reboots, GRUB will come up and boot the default configuration after a short delay. Once NixOS boots, log in with the root password, and create your account, or set your user account password if you created your account in the configuration. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
+When the system reboots, the bootloader will come up and boot the default configuration after a short delay. Once NixOS boots, log in with the root password, and create your account, or set your user account password if you created your account in the configuration. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
 
 #### Hypervisor Boot
 
-By selecting the appropriate menu option in the Asahi Linux installer, you can also choose to install m1n1 without U-Boot and run U-Boot, GRUB and the OS under m1n1's hypervisor.
+By selecting the appropriate menu option in the Asahi Linux installer, you can also choose to install m1n1 without U-Boot and run U-Boot, the bootloader, and the OS under m1n1's hypervisor.
 
 To run U-Boot under the hypervisor, start m1n1 and attach the Mac to the host PC using an appropriate USB cable, change directories to the repo, then run:
 
@@ -305,22 +309,22 @@ Downloading the kernel over USB using m1n1 is not supported.
 
 #### Rescue
 
-If something goes wrong and NixOS doesn't boot or is otherwise unusable, you can first try rolling back to a previous generation. Instead of selecting the default GRUB option, select "NixOS - All configurations" and boot a configuration that worked previously.
+If something goes wrong and NixOS doesn't boot or is otherwise unusable, you can first try rolling back to a previous generation. Instead of selecting the default bootloader option, choose another configuration that worked previously.
 
 If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run bootcmd_usb0`.
 
 Once in the installer, you can re-mount your root partition and EFI system partition without reformatting them. Depending on what exactly went wrong, you might need to edit your configuration, copy over the latest M1 support module, or update U-Boot using the latest installer.
 
-Rerunning the installer will create a new generation but not touch any user data. This means you can "undo" the installation by selecting a previous generation in GRUB. To redo the installation without changing your root password or changing the version of Nixpkgs, run:
+Rerunning the installer will create a new generation but not touch any user data. This means you can "undo" the installation by selecting a previous generation in the bootloader. To redo the installation without changing your root password or changing the version of Nixpkgs, run:
 ```
 # nixos-install --no-root-password --no-channel-copy
 ```
 
-In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's GRUB and bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup. 
+In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup. 
 
 #### Kernel Update
 
-To update the Asahi kernel, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`. Alternately, you can edit the kernel config in `/etc/nixos/m1-support/kernel/config`. Consult the comments in `/etc/nixos/m1-support/kernel/default.nix` and `/etc/nixos/m1-support/kernel/package.nix` for more details. Any changes will require a configuration rebuild and reboot to take effect. Note that if the kernel device trees change, U-Boot will need to be updated too. This will be handled automatically (see below).
+To update the Asahi kernel, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`. Alternately, you can edit the kernel config in `/etc/nixos/m1-support/kernel/config`. Consult the comments in `/etc/nixos/m1-support/kernel/default.nix` and `/etc/nixos/m1-support/kernel/package.nix` for more details. Any changes will require a configuration rebuild and reboot to take effect. Note that if the kernel device trees change, U-Boot will need to be updated too. This should be handled automatically (see below).
 
 #### U-Boot/m1n1 Update
 
