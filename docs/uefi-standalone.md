@@ -283,13 +283,7 @@ Once complete, reboot the system:
 nixos# reboot
 ```
 
-#### First Run
-
-When the system reboots, GRUB will come up and boot the default configuration after a short delay, which is the one you've most recently built. You can also select and boot older configurations under the "All configurations" submenu.
-
-If the system does not boot or is otherwise unusable, for example if the network was not configured correctly, you will need to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run bootcmd_usb0`. You can then re-mount your partitions (reformatting them is unnecessary), edit the configuration, and reinstall it.
-
-Once the system boots, log in with the root password, and create your account, or set your user account password if you created your account in the configuration. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
+When the system reboots, GRUB will come up and boot the default configuration after a short delay. Once NixOS boots, log in with the root password, and create your account, or set your user account password if you created your account in the configuration. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
 
 #### Hypervisor Boot
 
@@ -310,6 +304,21 @@ $ nix-shell -p picocom --run 'picocom /dev/ttyACM1'
 Downloading the kernel over USB using m1n1 is not supported.
 
 ## Maintenance
+
+#### Rescue
+
+If something goes wrong and NixOS doesn't boot or is otherwise unusable, you can first try rolling back to a previous generation. Instead of selecting the default GRUB option, select "NixOS - All configurations" and boot a configuration that worked previously.
+
+If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run bootcmd_usb0`.
+
+Once in the installer, you can re-mount your root partition and EFI system partition without reformatting them. Depending on what exactly went wrong, you might need to edit your configuration, copy over the latest kernel configuration module, or update U-Boot using the latest installer.
+
+Rerunning the installer will create a new generation but not touch any user data. This means you can "undo" the installation by selecting a previous generation in GRUB. To redo the installation without changing your root password or changing the version of Nixpkgs, run:
+```
+# nixos-install --no-root-password --no-channel-copy
+```
+
+In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's GRUB and bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup. 
 
 #### Kernel Update
 

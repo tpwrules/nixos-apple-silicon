@@ -33,22 +33,23 @@ jobs:
             nix_store_db.sqlite
 
       - name: restore cached nix store
-        if: steps.cache-nix-store.outputs.cache-hit == 'true'
         run: |
-          sudo systemctl stop nix-daemon
+          if [ -e nix_store_db.sqlite ]; then
+            sudo systemctl stop nix-daemon
 
-          # put cached store paths back in their proper locations
-          sudo rm -rf /nix/store /nix/var/nix/db/db.sqlite
-          sudo mv nix_store_dir /nix/store
-          sudo cp nix_store_db.sqlite /nix/var/nix/db/db.sqlite
+            # put cached store paths back in their proper locations
+            sudo rm -rf /nix/store /nix/var/nix/db/db.sqlite
+            sudo mv nix_store_dir /nix/store
+            sudo cp nix_store_db.sqlite /nix/var/nix/db/db.sqlite
 
-          # fix store permissions
-          sudo chmod 1775 /nix/store
-          sudo chown root:nixbld /nix/store
-          sudo chmod 0644 /nix/var/nix/db/db.sqlite
-          sudo chown -R root:root /nix/store /nix/var/nix/db/db.sqlite
+            # fix store permissions
+            sudo chmod 1775 /nix/store
+            sudo chown root:nixbld /nix/store
+            sudo chmod 0644 /nix/var/nix/db/db.sqlite
+            sudo chown -R root:root /nix/store /nix/var/nix/db/db.sqlite
 
-          sudo systemctl start nix-daemon
+            sudo systemctl start nix-daemon
+          fi
 
       - name: build installer
         run: |
