@@ -320,7 +320,13 @@ In extreme circumstances, you can delete the EFI system partition and stub macOS
 
 #### Kernel Update
 
-To update the Asahi kernel, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`. Alternately, you can edit the kernel config in `/etc/nixos/m1-support/kernel/config`. Consult the comments in `/etc/nixos/m1-support/kernel/default.nix` and `/etc/nixos/m1-support/kernel/package.nix` for more details. Any changes will require a configuration rebuild to take effect. Note that if the kernel device trees change, U-Boot will need to be updated and reinstalled.
+To update the Asahi kernel, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`. Alternately, you can edit the kernel config in `/etc/nixos/m1-support/kernel/config`. Consult the comments in `/etc/nixos/m1-support/kernel/default.nix` and `/etc/nixos/m1-support/kernel/package.nix` for more details. Any changes will require a configuration rebuild and reboot to take effect. Note that if the kernel device trees change, U-Boot will need to be updated too. This will be handled automatically (see below).
+
+#### U-Boot/m1n1 Update
+
+U-Boot and m1n1 are automatically managed by NixOS' bootloader system. To update them, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`, or edit the files already there. Any changes will take effect after a configuration rebuild and reboot.
+
+If you roll back to a previous generation and things do not work properly due to a device tree incompatibility, you can run `/run/current-system/bin/switch-to-configuration switch` then reboot to force the bootloader and U-Boot/m1n1 to be reinstalled and loaded.
 
 ## Removal
 

@@ -6,6 +6,7 @@
 , dtc
 , imagemagick
 , isRelease ? false
+, withTools ? true
 , withChainloading ? false
 , rust-bin ? null
 }:
@@ -52,11 +53,13 @@ in stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/{bin,build,script,toolchain-bin}
-    cp -r proxyclient $out/script
-    cp -r tools $out/script
+    mkdir -p $out/build
     cp build/m1n1.macho $out/build
     cp build/m1n1.bin $out/build
+  '' + (lib.optionalString withTools ''
+    mkdir -p $out/{bin,script,toolchain-bin}
+    cp -r proxyclient $out/script
+    cp -r tools $out/script
 
     for toolpath in $out/script/proxyclient/tools/*.py; do
       tool=$(basename $toolpath .py)
@@ -77,7 +80,7 @@ EOF
     ln -s $REAL_BINUTILS/bin/*-objcopy $out/toolchain-bin/
     ln -s $REAL_BINUTILS/bin/*-objdump $out/toolchain-bin/
     ln -s $REAL_BINUTILS/bin/*-nm $out/toolchain-bin/
-
+  '') + ''
     runHook postInstall
   '';
 }
