@@ -208,26 +208,26 @@ nixos# mkdir -p /mnt/boot
 nixos# mount /dev/disk/by-label/EFI* /mnt/boot
 ```
 
-Create a default configuration for the new system, then copy the Asahi Linux kernel configuration module and system WiFi firmware to it:
+Create a default configuration for the new system, then copy the M1 support module and system WiFi firmware into it:
 ```
 nixos# nixos-generate-config --root /mnt
-nixos# cp -r /etc/nixos/kernel /mnt/etc/nixos/
-nixos# cp /mnt/boot/vendorfw/firmware.tar /mnt/etc/nixos/kernel/firmware/
+nixos# cp -r /etc/nixos/m1-support /mnt/etc/nixos/
+nixos# cp /mnt/boot/vendorfw/firmware.tar /mnt/etc/nixos/m1-support/firmware/
 nixos# chmod -R +w /mnt/etc/nixos/
 ```
 
-Use Nano to edit the configuration of the new system to include the kernel configuration module. Be aware that other editors and most documentation has been left out of the bootstrap installer to save space and time.
+Use Nano to edit the configuration of the new system to include the M1 support module. Be aware that other editors and most documentation has been left out of the bootstrap installer to save space and time.
 ```
 nixos# nano /mnt/etc/nixos/configuration.nix
 ```
 
-Add the `./kernel` directory to the imports list and remove the three lines that mention `systemd-boot` (GRUB is set up appropriately in the kernel configuration module). That portion of the file should look like this:
+Add the `./m1-support` directory to the imports list and remove the three lines that mention `systemd-boot` (GRUB is set up appropriately in the M1 support module). That portion of the file should look like this:
 ```
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      # Include the Asahi Linux kernel module and relevant configuration.
-      ./kernel
+      # Include the necessary packages and configuration for Apple M1 support.
+      ./m1-support
     ];
 ```
 
@@ -311,7 +311,7 @@ If something goes wrong and NixOS doesn't boot or is otherwise unusable, you can
 
 If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run bootcmd_usb0`.
 
-Once in the installer, you can re-mount your root partition and EFI system partition without reformatting them. Depending on what exactly went wrong, you might need to edit your configuration, copy over the latest kernel configuration module, or update U-Boot using the latest installer.
+Once in the installer, you can re-mount your root partition and EFI system partition without reformatting them. Depending on what exactly went wrong, you might need to edit your configuration, copy over the latest M1 support module, or update U-Boot using the latest installer.
 
 Rerunning the installer will create a new generation but not touch any user data. This means you can "undo" the installation by selecting a previous generation in GRUB. To redo the installation without changing your root password or changing the version of Nixpkgs, run:
 ```
@@ -322,7 +322,7 @@ In extreme circumstances, you can delete the EFI system partition and stub macOS
 
 #### Kernel Update
 
-To update the Asahi kernel, you can download newer files under `nix/kernel` from this repo and place them under `/etc/nixos/kernel`. Alternately, you can edit the kernel config in `/etc/nixos/kernel/config`. Consult the comments in `/etc/nixos/kernel/default.nix` and `/etc/nixos/kernel/package.nix` for more details. Any changes will require a configuration rebuild to take effect. Note that if the kernel device trees change, U-Boot will need to be updated and reinstalled.
+To update the Asahi kernel, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`. Alternately, you can edit the kernel config in `/etc/nixos/m1-support/kernel/config`. Consult the comments in `/etc/nixos/m1-support/kernel/default.nix` and `/etc/nixos/m1-support/kernel/package.nix` for more details. Any changes will require a configuration rebuild to take effect. Note that if the kernel device trees change, U-Boot will need to be updated and reinstalled.
 
 ## Removal
 

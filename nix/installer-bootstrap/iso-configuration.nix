@@ -3,24 +3,22 @@
 {
   imports = [
     ./installer-configuration.nix
-    ../kernel
+    ../m1-support
   ];
 
   # include those modules so the user can rebuild the install iso. that's not
-  # especially useful at this point, but the user will need the kernel directory
-  # for their own config. eventually we will have to figure out how to get the
-  # ability to rebuild without connecting to the internet so the user can set
-  # up wifi using the proprietary drivers
+  # especially useful at this point, but the user will need the m1-support
+  # directory for their own config.
   installer.cloneConfigIncludes = [
     "./installer-configuration.nix"
-    "./kernel"
+    "./m1-support"
   ];
 
-  # copy the kernel and installer configs into the iso
+  # copy the m1-support and installer configs into the iso
   boot.postBootCommands = lib.optionalString config.installer.cloneConfig ''
-    if ! [ -e /etc/nixos/kernel ]; then
+    if ! [ -e /etc/nixos/m1-support ]; then
       cp ${./installer-configuration.nix} /etc/nixos/installer-configuration.nix
-      cp -r ${../kernel} /etc/nixos/kernel
+      cp -r ${../m1-support} /etc/nixos/m1-support
     fi
   '';
 }

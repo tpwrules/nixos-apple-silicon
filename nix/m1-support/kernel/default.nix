@@ -36,19 +36,6 @@
       device = "nodev";
     };
 
-    hardware.firmware = [
-      (pkgs.stdenvNoCC.mkDerivation {
-        name = "firmware";
-        buildCommand = ''
-          mkdir -p $out/lib/firmware
-          FIRMWARE=`echo ${./firmware}/*firmware*.tar`
-          if [ -e "$FIRMWARE" ]; then
-            tar xf "$FIRMWARE" -C $out/lib/firmware
-          fi
-        '';
-      })
-    ];
-
     nixpkgs.overlays = lib.optional config.boot.kernelBuildIs16K (self: super: {
       # patch libunwind to work with dynamic pagesizes
       libunwind = super.libunwind.overrideAttrs (o: {
