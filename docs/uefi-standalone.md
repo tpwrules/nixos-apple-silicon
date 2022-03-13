@@ -64,15 +64,13 @@ m1n1 has been built and the `.macho` and `.bin` files are now in `m1n1/build/`. 
 
 #### U-Boot
 
-U-Boot depends on a device tree specific to each model of Mac. The list of models is available in the [Asahi documentation](https://github.com/AsahiLinux/docs/wiki/Devices). For example, the Mac mini has SOC T8103 and Product J274AP. This means its device tree is `t8103-j274`.
-
-Use Nix to build U-Boot along with m1n1 and the device tree for your Mac. This command builds a U-Boot with the Mac mini device tree:
+Use Nix to build U-Boot along with m1n1 and the device trees:
 
 ```
-nixos-m1$ nix-build -A u-boot.t8103-j274 -o u-boot
+nixos-m1$ nix-build -A u-boot -o u-boot
 ```
 
-The `.macho` and `.bin` files with m1n1, the device tree, and U-Boot joined together are now in `u-boot/`.
+The `.macho` and `.bin` files with m1n1, the device trees, and U-Boot joined together are now in `u-boot/`.
 
 #### Kernel and Bootstrap Installer
 
@@ -292,7 +290,7 @@ By selecting the appropriate menu option in the Asahi Linux installer, you can a
 To run U-Boot under the hypervisor, start m1n1 and attach the Mac to the host PC using an appropriate USB cable, change directories to the repo, then run:
 
 ```
-nixos-m1$ m1n1/bin/m1n1-run_guest u-boot/u-boot.macho
+nixos-m1$ m1n1/bin/m1n1-run_guest u-boot/m1n1-u-boot.macho
 ```
 
 To access the serial console, in a separate terminal run:

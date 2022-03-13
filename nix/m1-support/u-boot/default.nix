@@ -2,7 +2,6 @@
 , fetchFromGitHub
 , pkgsCross
 , m1n1
-, withDeviceTree ? "t8103-j274"
 }: (pkgsCross.aarch64-multiplatform.buildUBoot rec {
   src = fetchFromGitHub {
     owner = "AsahiLinux";
@@ -13,18 +12,17 @@
   version = "unstable-2022-03-11";
 
   defconfig = "apple_m1_defconfig";
-  extraMakeFlags = [ "DEVICE_TREE=${withDeviceTree}" ];
   extraMeta.platforms = [ "aarch64-linux" ];
-  filesToInstall = [ "u-boot.macho" "u-boot.bin" ];
+  filesToInstall = [ "m1n1-u-boot.macho" "m1n1-u-boot.bin" ];
   extraConfig = ''
-    CONFIG_IDENT_STRING=" ${version} ${withDeviceTree}"
+    CONFIG_IDENT_STRING=" ${version}"
   '';
 }).overrideAttrs (o: {
   # nixos's downstream patches are not applicable
   patches = [ ];
 
   preInstall = ''
-    cat ${m1n1}/build/m1n1.macho u-boot.dtb u-boot-nodtb.bin > u-boot.macho
-    cat ${m1n1}/build/m1n1.bin u-boot.dtb u-boot-nodtb.bin > u-boot.bin
+    cat ${m1n1}/build/m1n1.macho arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin > m1n1-u-boot.macho
+    cat ${m1n1}/build/m1n1.bin arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin > m1n1-u-boot.bin
   '';
 })
