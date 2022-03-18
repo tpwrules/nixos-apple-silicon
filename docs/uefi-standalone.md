@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-03-13)
+# UEFI Boot Standalone NixOS (2022-03-17)
 
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
