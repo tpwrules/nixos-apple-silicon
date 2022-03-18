@@ -6,10 +6,10 @@
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "1d634946fe1456262211c9db6bed487a81d5c4bf";
-    hash = "sha256-6RaBG681f4Zavc1WwyQLlVQUro9Mp1F+ByBM5t7gYI8=";
+    rev = "b052445f0a4b7cb205120b282beccaec67bf06ad";
+    hash = "sha256-lmcMH5lgLkPSGPCSqcTZnLzSODCd0nLJdXixq3RtcXY=";
   };
-  version = "unstable-2022-03-13";
+  version = "unstable-2022-03-17";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];

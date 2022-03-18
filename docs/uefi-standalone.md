@@ -3,11 +3,11 @@
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel, as of 2022-03-11
-* m1n1, as of 2022-03-11
-* Asahi Linux's U-Boot, as of 2022-03-13
-* Nixpkgs, as of 2022-03-12
-* macOS stub 12.1
+* Asahi Linux kernel, as of 2022-03-17
+* m1n1, as of 2022-03-17
+* Asahi Linux's U-Boot, as of 2022-03-17
+* Nixpkgs, as of 2022-03-16
+* macOS stub 12.3
 
 ## Introduction
 
@@ -24,7 +24,7 @@ While you will end up with a reasonably usable computer, the exact hardware feat
 #### Prerequisites
 
 The following items are required to get started:
-* M1/Pro/Max Mac with macOS 12.1 or later
+* M1/Pro/Max Mac with macOS 12.3 or later
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
 * Familiarity with the command line and installers without GUIs
