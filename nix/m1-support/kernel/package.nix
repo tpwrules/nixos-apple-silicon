@@ -27,22 +27,11 @@
       modDirVersion = version;
 
       src = fetchFromGitHub {
-        # TO MODIFY THE KERNEL CONFIG: modify the ./config file, then run
-        # $ sudo nixos-rebuild boot
-        # and reboot.
-
-        # TO UPDATE THE KERNEL SOURCES: set the Git repo information here
+        # tracking branch: https://github.com/AsahiLinux/linux/tree/asahi
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "c1fcb91bbcc8fd1b1f874e45f55cbba682351f3c";
-        # then, set hash = lib.fakeHash; (with no quotes)
-        hash = "sha256-UTv1gGQqENMqBQ5j5nPYzaifxv7f49dTHH4O0SG3FhI=";
-        # Run `sudo nixos-rebuild boot`.
-        # Nix will download and hash the source, then tell you something like:
-        #  error: hash mismatch in fixed-output derivation
-        #   specified: sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-        #      got:    sha256-g9pzjkEhSYXILzNCyrH9qWge+H+3gpbnnNwY7xH/beo=
-        # now, set hash = "<that value>"; and run the rebuild command again.
+        rev = "00e23945f258f06ed0cb0dd9ea44272cbdfc7346";
+        hash = "sha256-oHEy0QS7RkhR9Av68rqAAmR8kXi0ZR4yot0uGWfJOzw=";
       };
 
       kernelPatches = [

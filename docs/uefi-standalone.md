@@ -3,9 +3,9 @@
 THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel, as of 2022-03-17
-* m1n1, as of 2022-03-17
-* Asahi Linux's U-Boot, as of 2022-03-17
+* Asahi Linux kernel, as of 2022-03-18
+* m1n1, as of 2022-03-18
+* Asahi Linux's U-Boot, as of 2022-03-18
 * Nixpkgs, as of 2022-03-16
 * macOS stub 12.3
 
