@@ -17,7 +17,7 @@ Perusing this guide might also be useful to users of other distros. Most of the 
 
 #### Warning
 
-Damage to the macOS recovery partitions or the partition table could result in the Mac becoming unbootable and loss of all data on the internal NVMe drive. In this circumstance, a suitable USB cable and another computer which can run [idevicerestore](https://github.com/libimobiledevice/idevicerestore) will be required to perform a DFU upgrade and restore normal operation.
+Damage to the macOS recovery partitions or the partition table could result in the Mac becoming unbootable and loss of all data on the internal NVMe drive. In this circumstance, a suitable USB cable and another computer which can run [idevicerestore](https://github.com/libimobiledevice/idevicerestore) will be required to perform a DFU upgrade and restore normal operation. Backups are always wise.
 
 While you will end up with a reasonably usable computer, the exact hardware features you want [may not be ready yet](https://github.com/AsahiLinux/docs/wiki/%22When-will-Asahi-Linux-be-done%3F%22). Please consult the [Asahi Linux Feature Support page](https://github.com/AsahiLinux/docs/wiki/Feature-Support) for information. Any features marked with a kernel version or `linux-asahi` should be supported by NixOS too.
 
@@ -111,8 +111,9 @@ Choose the following options to get started:
 
 Resize your existing macOS install:
 * Resize an existing partition to make space for a new OS (`r`)
-* Enter the new size of the macOS install (note that here 1GB = 1,000,000,000 bytes)
-* Confirm resize (this may take several minutes)
+* Enter the new size of the macOS install. It should be at least 20GB less than its current size to make room for NixOS with a GUI (note that here 1GB = 1,000,000,000 bytes)
+* Confirm the resize operation
+* Wait patiently while the partition is resized; it will take several minutes. Do not attempt to use the machine while this is in progress.
 * Press enter when finished
 
 Install UEFI environment:
@@ -400,7 +401,7 @@ Deleting APFS Container with all of its APFS Volumes
 Removing disk0s3 from partition map
 ```
 
-Expand the main macOS partition to use the newly-created free space. This command will take a few minutes to run:
+Expand the main macOS partition to use the resulting free space. This command will take a few minutes to run; do not attempt to use the machine while it is in progress:
 ```
 % diskutil apfs resizeContainer disk0s2 0
 Started APFS operation
