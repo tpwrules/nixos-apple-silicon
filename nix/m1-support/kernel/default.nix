@@ -23,6 +23,14 @@
       "console=tty0"
       "debug"
       "boot.shell_on_fail"
+      # Apple's SSDs are slow (~dozens of ms) at processing flush requests which
+      # slows down programs that make a lot of fsync calls. This parameter sets
+      # a delay in ms before actually flushing so that such requests can be
+      # coalesced. Be warned that increasing this parameter above zero (default
+      # is 1000) has the potential, though admittedly unlikely, risk of
+      # UNBOUNDED data corruption in case of power loss!!!! Don't even think
+      # about it on desktops!!
+      "nvme_apple.flush_interval=0"
     ];
 
     # U-Boot does not support EFI variables
