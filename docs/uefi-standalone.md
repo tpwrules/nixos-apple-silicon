@@ -304,17 +304,47 @@ Rerunning the installer will create a new generation but not touch any user data
 # nixos-install --no-root-password --no-channel-copy
 ```
 
-In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup. 
+In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup.
 
-#### Kernel Update
+#### NixOS Updates
 
-To update the Asahi kernel, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`. Alternately, you can edit the kernel config in `/etc/nixos/m1-support/kernel/config`. Consult the comments in `/etc/nixos/m1-support/kernel/default.nix` and `/etc/nixos/m1-support/kernel/package.nix` for more details. Any changes will require a configuration rebuild and reboot to take effect. Note that if the kernel device trees change, U-Boot will need to be updated too. This should be handled automatically (see below).
+NixOS itself can be updated like any other NixOS system. In brief, this is as follows:
+```
+$ sudo nix-channel --update
+$ sudo nixos-rebuild switch
+```
 
-#### U-Boot/m1n1 Update
+You may have to reboot after updating in some cases. If something goes wrong, you can boot a previous generation and roll back the channel update. For more details, consult the [Upgrading section](https://nixos.org/manual/nixos/stable/index.html#sec-upgrading) of the NixOS manual.
 
-U-Boot and m1n1 are automatically managed by NixOS' bootloader system. To update them, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`, or edit the files already there. Any changes will take effect after a configuration rebuild and reboot.
+#### M1 Support Updates
 
-If you roll back to a previous generation and things do not work properly due to a device tree incompatibility, you can run `/run/current-system/bin/switch-to-configuration switch` then reboot to force the bootloader and the correct version of U-Boot/m1n1 to be reinstalled and loaded.
+To update the M1 support module, including the Asahi kernel, U-Boot, and m1n1, you can simply download newer files from this repo under `nix/m1-support` and place them under `/etc/nixos/m1-support`. Any changes will require a configuration rebuild and reboot to take effect. If you wish to customize your kernel, you can edit the kernel config in `/etc/nixos/m1-support/kernel/config`. Consult the comments in `/etc/nixos/m1-support/kernel/default.nix` and `/etc/nixos/m1-support/kernel/package.nix` for more details. Note that if the kernel device trees change, U-Boot will need to be updated too.
+
+U-Boot and m1n1 are automatically managed by NixOS' bootloader system. If you roll back to a previous generation and things do not work properly due to a device tree incompatibility, you can run `/run/current-system/bin/switch-to-configuration switch` then reboot to force the bootloader and the correct version of U-Boot/m1n1 to be reinstalled and loaded.
+
+If you want the M1 support module to be upgraded in tandem with NixOS instead of manually downloading new files, you can add it as a channel with the following command:
+```
+$ sudo nix-channel --add https://github.com/tpwrules/nixos-m1/archive/main.tar.gz m1-support
+```
+
+Modify your `/etc/nixos/configuration.nix` to reference the channel instead of the local files (although we will keep referencing the local firmware):
+```
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+      # Include the necessary packages and configuration for Apple M1 support.
+      <m1-support/nix/m1-support>
+      # Include the non-redistributable Wi-Fi firmware on disk.
+      ./m1-support/firmware
+    ];
+```
+
+You can now update NixOS as normal. Note that M1 support module updates will generally reqiure reboots to load new kernels and other boot components:
+```
+$ sudo nix-channel --update
+$ sudo nixos-rebuild switch
+$ sudo reboot
+```
 
 ## Removal
 
