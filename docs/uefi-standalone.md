@@ -11,7 +11,7 @@ This guide will build and was tested with the following software:
 
 ## Introduction
 
-This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official NixOS install ISO, then boot it without the help of another computer. Aside from the M1 support module and AArch64 CPU, the resulting installation can be configured and operated like any other NixOS system.
+This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official NixOS install ISO, then boot it without the help of another computer. Aside from the M1 support module and AArch64 CPU, the resulting installation can be configured and operated like any other NixOS system. Your macOS install will still work normally, and you can easily switch between booting both macOS and NixOS.
 
 Perusing this guide might also be useful to users of other distros. Most of the hard work, including the kernel and boot software, was done by the [Asahi Linux project](https://asahilinux.org/).
 
@@ -271,6 +271,12 @@ nixos# reboot
 ```
 
 When the system reboots, the bootloader will come up and boot the default configuration after a short delay. Once NixOS boots, log in with the root password, and create your account, or set your user account password if you created your account in the configuration. To learn more about NixOS's configuration system, read the section in the manual on [changing the configuration](https://nixos.org/manual/nixos/stable/index.html#sec-changing-config).
+
+#### Dual Booting
+
+The machine is now set up to boot NixOS by default when turned on. To access the boot picker, hold the power button to turn the machine on instead of just pressing it. Let go once the options come up. You can select an OS to boot once by clicking on it, then clicking Continue.
+
+To switch the default OS, access the boot picker, then load the options. Click the Apple icon in the top left of the screen, then select the Startup Disk menu. Select the default OS you want to use, then click Restart to save and boot it.
 
 #### Hypervisor Boot
 
