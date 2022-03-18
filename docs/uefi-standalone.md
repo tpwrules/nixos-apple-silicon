@@ -1,6 +1,6 @@
-# UEFI Boot Standalone NixOS (2022-03-17)
+# UEFI Boot Standalone NixOS (2022-03-18)
 
-THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a week since the date above, there's definitely a better way to do this.
+THIS IS PROBABLY ALREADY OUT OF DATE! If it's been more than a couple weeks since the date above, there's definitely a better way to do this.
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2022-03-18
@@ -24,7 +24,7 @@ While you will end up with a reasonably usable computer, the exact hardware feat
 #### Prerequisites
 
 The following items are required to get started:
-* M1/Pro/Max Mac with macOS 12.3 or later
+* M1/Pro/Max Mac (except Mac Studio) with macOS 12.3 or later and an admin account
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
 * Familiarity with the command line and installers without GUIs
@@ -45,7 +45,7 @@ The following items are required to get started:
 
 This setup takes advantage of the Nix package manager, which handles downloading and compiling everything. You must first install it on your Linux host PC if it doesn't run NixOS. Most distros are compatible, and installation (and uninstallation) is simple. Instructions are available on the [NixOS website](https://nixos.org/download.html#nix-quick-install).
 
-If you cannot or do not wish to install Nix and/or build these components yourself, installation ISOs are automatically built and made available from the [GitHub Releases page](https://github.com/tpwrules/nixos-m1/releases). Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported. They are fully reproducible; that is, the ISO you download will be (or should be...) bit-identical to the one you will get by following these preparation instructions.
+If you cannot or do not wish to install Nix and/or build these components yourself, installation ISOs are automatically built and made available from the [GitHub Releases page](https://github.com/tpwrules/nixos-m1/releases). Download the latest one, use `dd` or similar to transfer it to your USB flash drive, then skip down to the section on [UEFI Preparation](#uefi-preparation). Programs like `unetbootin` are not supported. These ISOs are fully reproducible; that is, the ISO you download will be (or should be...) bit-identical to the one you will get by following these preparation instructions.
 
 #### nixos-m1
 
@@ -96,13 +96,13 @@ The installer ISO is now available in `installer/iso/nixos-22.05pre-git-aarch64-
 
 ## UEFI Preparation
 
-This setup uses the pre-alpha Asahi Linux installer to install a stub macOS and standard UEFI boot environment from which the NixOS installer and installed OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
+This setup uses the alpha Asahi Linux installer to install a stub macOS and standard UEFI boot environment from which the NixOS installer and installed OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
 
 #### Asahi Linux Installation
 
 Download and run the alpha installer with the following command:
 ```
-% curl -L https://alx.sh/dev | sh
+% curl https://alx.sh | sh
 ```
 
 Choose the following options to get started:
@@ -274,9 +274,7 @@ When the system reboots, the bootloader will come up and boot the default config
 
 #### Dual Booting
 
-The machine is now set up to boot NixOS by default when turned on. To access the boot picker, hold the power button to turn the machine on instead of just pressing it. Let go once the options come up. You can select an OS to boot once by clicking on it, then clicking Continue.
-
-To switch the default OS, access the boot picker, then load the options. Click the Apple icon in the top left of the screen, then select the Startup Disk menu. Select the default OS you want to use, then click Restart to save and boot it.
+The machine is now set up to boot NixOS by default when turned on. To access the boot picker, turn off the machine, then hold the power button to turn the machine on instead of just pressing it. Let go once the options come up. To boot a particular OS once, click on it, then click Continue underneath it. To switch the default OS, click on the desired default, hold Option (Alt), then click Always Use underneath it.
 
 #### Hypervisor Boot
 
