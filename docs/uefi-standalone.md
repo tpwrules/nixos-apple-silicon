@@ -70,7 +70,7 @@ m1n1 has been built and the `.macho` and `.bin` files are now in `m1n1/build/`. 
 
 #### U-Boot
 
-In the default installation, m1n1 loads U-Boot and U-Boot is used to set up a standard UEFI environment from which GRUB or systemd-boot or whatever can be booted.
+In the default installation, m1n1 loads U-Boot and U-Boot is used to set up a standard UEFI environment from which GRUB or systemd-boot or whatever can be booted. Due to the limitations of the Apple boot picker, there must be one EFI system partition per installed OS.
 
 Use Nix to build U-Boot along with m1n1 and the device trees:
 
@@ -98,58 +98,32 @@ The installer ISO is now available in `installer/iso/nixos-22.05pre-git-aarch64-
 
 This setup uses the pre-alpha Asahi Linux installer to install a stub macOS and standard UEFI boot environment from which the NixOS installer and installed OS will run. These steps must be run from Terminal.app in macOS. You must also be logged into an administrator account.
 
-#### Partitioning
-
-Space must be made on the internal drive for the macOS stub partition, EFI system partition, and Linux root partition by shrinking the partition containing the macOS install. This is done using the macOS `diskutil` command line utility.
-
-List the partitions in the internal disk to identify the partition to shrink:
-```
-% diskutil list disk0
-/dev/disk0 (internal):
-   #:                       TYPE NAME                    SIZE       IDENTIFIER
-   0:      GUID_partition_scheme                         1.0 TB     disk0
-   1:             Apple_APFS_ISC                         524.3 MB   disk0s1
-   2:                 Apple_APFS Container disk3         994.7 GB   disk0s2
-   3:        Apple_APFS_Recovery                         5.4 GB     disk0s3
-```
-
-WARNING: Unlike Linux, on macOS each partition's identifier does not necessarily equal its partition index. Double check the identifiers of your own system!
-
-Here, macOS is installed into `disk0s2`; it is the main APFS container and the largest partition. We choose to shrink it to 900GB to make room for approximately 3GB of auxiliary partitions and leave the rest free for Linux.
-
-NOTE: Unlike most disk utilities on Linux, `diskutil` uses decimal measures of capacity. In this document we use MB/GB for decimal measures (i.e. 1MB = 1 megabyte = 1,000,000 bytes) and MiB/GiB for power-of-two measures (i.e. 1MiB = 1 mebibyte = 1,048,576 bytes).
-
-Shrink the identifed macOS install to your desired size. This command will take a few minutes to run:
-```
-% diskutil apfs resizeContainer disk0s2 900GB
-Started APFS operation
-Aligning shrink delta to 94,662,586,368 bytes and targeting a new physical store size of 899,999,997,952 bytes
-[...]
-Finished APFS operation
-```
-
-The rest of the partitioning will be handled by the Asahi Linux installer and in NixOS.
-
 #### Asahi Linux Installation
 
-Download and run the pre-alpha installer with the following command:
+Download and run the alpha installer with the following command:
 ```
-% curl -L https://mrcn.st/alxsh | sh
+% curl -L https://alx.sh/dev | sh
 ```
 
-Choose the following options when prompted:
+Choose the following options to get started:
 * Enter your administrator password
+* Do not enable expert mode
+
+Resize your existing macOS install:
+* Resize an existing partition to make space for a new OS (`r`)
+* Enter the new size of the macOS install (note that here 1GB = 1,000,000,000 bytes)
+* Confirm resize (this may take several minutes)
+* Press enter when finished
+
+Install UEFI environment:
 * Install an OS into free space (`f`)
 * UEFI environment only
-* Target area created previously
 * Name it NixOS (this is what shows up in the firmware boot picker)
-* Latest macOS version for boot firmware (just press enter)
+* Wait while the installation proceeds and enter your password when prompted
+* Wait for the default boot volume to be set (this may take several seconds)
+* Read the final advice, then press enter to shut down the machine
 
-Wait while the installation proceeds and press enter when prompted.
-
-When the Startup Disk preference pane opens, click the lock to make changes, select the appropriate option in the boot picker, press Restart, then enter your password again. The system will have to think for several seconds once restart is pressed; be patient. Once the Startup Disk preference pane closes, read the final advice and press enter to shut down the system when prompted.
-
-Boot into recovery mode as directed and select the new NixOS option in the boot picker. Follow the prompts and enter your administrator password. The local policy update will take several seconds to complete. Once complete, select that you want to set a custom boot object and put your system to permissive security mode, enter your administrator username (the one you put in the password for earlier) and password, then reboot when prompted.
+Boot into recovery mode by holding the power button down as directed and select the new NixOS option in the boot picker. Follow the prompts and enter your administrator password. The local policy update will take several seconds to complete. Once complete, select that you want to set a custom boot object and put your system to permissive security mode, enter your administrator username (the same one you put in the password for earlier) and password, then reboot when prompted.
 
 If everything went well, you will restart into U-Boot with the Asahi Linux and U-Boot logos on-screen. Shut the system down by holding the power button, then proceed to the next step.
 
@@ -161,7 +135,7 @@ Shut down the machine fully. Connect the flash drive with the installer ISO to a
 
 Start the Mac, and U-Boot should start booting from the USB drive. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine). You will get a console prompt once booting completes. Run the command `sudo su` to get a root prompt in the installer.
 
-If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
+If you've already installed something to the internal NVMe drive, U-Boot may try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
 
 #### Partitioning and Formatting
 
@@ -207,11 +181,11 @@ nixos# mkfs.ext4 -L nixos /dev/nvme0n1p5
 
 The subsequent steps in this section will help you install NixOS onto your new partitions. More information is available in the Installing section of the [NixOS manual](https://nixos.org/manual/nixos/stable/index.html#sec-installation-installing). Some changes to the configuration procedure as described in that manual are needed for NixOS on M1 to work properly.
 
-Mount the root partition, then the EFI system partition:
+Mount the root partition, then the EFI system partition that was created by the Asahi Linux installer specifically for NixOS:
 ```
 nixos# mount /dev/disk/by-label/nixos /mnt
 nixos# mkdir -p /mnt/boot
-nixos# mount /dev/disk/by-label/EFI* /mnt/boot
+nixos# mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /mnt/boot
 ```
 
 Create a default configuration for the new system, then copy the M1 support module and system WiFi firmware into it:
@@ -270,10 +244,11 @@ If using WiFi, the WiFi firmare must first be installed into the live system:
 ```
 nixos# mkdir -p /lib/firmware
 nixos# tar xf /mnt/boot/vendorfw/firmware.tar -C /lib/firmware
+nixos# systemctl start wpa_supplicant
 nixos# rmmod brcmfmac && modprobe brcmfmac
 ```
 
-You can now configure wireless networking in the installer using `wpa_supplicant` by following [the directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual.
+You can now configure wireless networking in the installer using `wpa_supplicant` by following [the directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual. If you see errors about `Timeout on response for query command`, exit `wpa_cli` then try rerunning the command `rmmod brcmfmac && modprobe brcmfmac`.
 
 Once the network is set up, ensure the time is set correctly, then install the system. You will be asked to set a root password as the final step:
 ```
@@ -339,7 +314,7 @@ To update the Asahi kernel, you can download newer files under `nix/m1-support` 
 
 U-Boot and m1n1 are automatically managed by NixOS' bootloader system. To update them, you can download newer files under `nix/m1-support` from this repo and place them under `/etc/nixos/m1-support`, or edit the files already there. Any changes will take effect after a configuration rebuild and reboot.
 
-If you roll back to a previous generation and things do not work properly due to a device tree incompatibility, you can run `/run/current-system/bin/switch-to-configuration switch` then reboot to force the bootloader and U-Boot/m1n1 to be reinstalled and loaded.
+If you roll back to a previous generation and things do not work properly due to a device tree incompatibility, you can run `/run/current-system/bin/switch-to-configuration switch` then reboot to force the bootloader and the correct version of U-Boot/m1n1 to be reinstalled and loaded.
 
 ## Removal
 
