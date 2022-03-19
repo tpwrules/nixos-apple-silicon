@@ -224,7 +224,7 @@ If you used the cross-compiled installer image, i.e. you downloaded the ISO from
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-You can optionally choose to build the Asahi kernel with a 16K page size by enabling the appropriate option. This provides an improvement in compiler speed of 10-30%, but some important graphical software is currently incompatible, so this option is only recommended for build systems and the like. Patches to make the graphical software work are included, but compilation of it will take a long time!
+You can optionally choose to build the Asahi kernel with a 16K page size by enabling the appropriate option. This provides an improvement in compiler speed of 10-30%, but some important graphical software is currently incompatible, so this option is only recommended for build systems and the like. Patches to make the graphical software work are included, but be prepared to spend some time compiling!
 ```
   # Build the kernel with 16K pages for a performance boost with some workloads.
   boot.kernelBuildIs16K = true;
@@ -344,7 +344,7 @@ Modify your `/etc/nixos/configuration.nix` to reference the channel instead of t
     ];
 ```
 
-You can now update NixOS as normal. Note that M1 support module updates will generally reqiure reboots to load new kernels and other boot components:
+You can now update NixOS as normal. Note that M1 support module updates will generally require reboots to load new kernels and other boot components:
 ```
 $ sudo nix-channel --update
 $ sudo nixos-rebuild switch
