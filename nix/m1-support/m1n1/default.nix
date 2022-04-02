@@ -24,14 +24,14 @@ let
   });
 in stdenv.mkDerivation {
   pname = "m1n1";
-  version = "unstable-2022-03-18";
+  version = "unstable-2022-03-27";
 
   src = fetchFromGitHub {
     # tracking branch: https://github.com/AsahiLinux/m1n1/tree/main
     owner = "AsahiLinux";
     repo = "m1n1";
-    rev = "0a1a9348c32e2e44374720cd9d68cbe81cf696df";
-    hash = "sha256-fW1r0/k31wO89ob4Be27CrATkf4JnWkJGN8sgH3Ulj4=";
+    rev = "9af9e834bf7cdd4cadadf0c821e00e05161c373f";
+    hash = "sha256-p6tswjYCFeh2XD7ZRLYZg1oWg+mhSz2pDLuL1necsqg=";
     fetchSubmodules = true;
   };
 
