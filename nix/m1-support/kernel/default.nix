@@ -49,7 +49,7 @@
       libunwind_fixed_for_16k = super.libunwind.overrideAttrs (o: {
         patches = (o.patches or []) ++ [
           (self.fetchpatch {
-            url = "https://github.com/libunwind/libunwind/pull/330.patch";
+            url = "https://github.com/libunwind/libunwind/commit/e85b65cec757ef589f28957d0c6c21c498a03bdf.patch";
             sha256 = "sha256-z3Hpg98D4UMmrE/LC596RFcyxRTvDjD4k7llDPfz1NI=";
           })
         ];
