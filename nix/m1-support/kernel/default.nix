@@ -43,26 +43,6 @@
       efiInstallAsRemovable = true;
       device = "nodev";
     };
-
-    nixpkgs.overlays = lib.optional config.boot.kernelBuildIs16K (self: super: {
-      # patch libunwind to work with dynamic pagesizes
-      libunwind_fixed_for_16k = super.libunwind.overrideAttrs (o: {
-        patches = (o.patches or []) ++ [
-          (self.fetchpatch {
-            url = "https://github.com/libunwind/libunwind/commit/e85b65cec757ef589f28957d0c6c21c498a03bdf.patch";
-            sha256 = "sha256-z3Hpg98D4UMmrE/LC596RFcyxRTvDjD4k7llDPfz1NI=";
-          })
-        ];
-      });
-    });
-
-    # sub the fixed libunwind in for the broken copy without triggering
-    # horrendous rebuilds
-    system.replaceRuntimeDependencies = lib.optionals config.boot.kernelBuildIs16K [
-      { original = pkgs.libunwind;
-        replacement = pkgs.libunwind_fixed_for_16k;
-      }
-    ];
   };
 
   options.boot.kernelBuildIsCross = lib.mkOption {
@@ -73,7 +53,7 @@
 
   options.boot.kernelBuildIs16K = lib.mkOption {
     type = lib.types.bool;
-    default = false;
+    default = true;
     description = ''
       Set that the Asahi Linux kernel should be built with 16K pages and various
       software patched to be compatible. Some software may still be broken.
