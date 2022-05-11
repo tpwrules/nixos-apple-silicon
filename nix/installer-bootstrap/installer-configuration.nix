@@ -86,6 +86,6 @@
   # udisks fails due to gobject-introspection being not cross-compilation friendly.
   services.udisks2.enable = lib.mkForce false;
 
-  # https://github.com/NixOS/nixpkgs/issues/162001
-  services.logrotate.enable = lib.mkForce false;
+  # get rid of warning that stateVersion is unset
+  system.stateVersion = lib.mkDefault lib.trivial.release;
 }
