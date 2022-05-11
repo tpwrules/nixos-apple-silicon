@@ -1,13 +1,13 @@
-# UEFI Boot Standalone NixOS (2022-04-02)
+# UEFI Boot Standalone NixOS (2022-05-10)
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2022-03-18
 * m1n1, as of 2022-03-27
 * Asahi Linux's U-Boot, as of 2022-03-19
-* Nixpkgs, as of 2022-03-25
+* Nixpkgs, as of 2022-05-10
 * macOS stub 12.3
 
-NOTE: If it's been more than a couple weeks since the date in the title, something's probably out of date. Please read this guide [at its home](https://github.com/tpwrules/nixos-m1/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
+NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-m1/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
 
 ## Introduction
 
@@ -224,9 +224,10 @@ If you used the cross-compiled installer image, i.e. you downloaded the ISO from
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-You can optionally choose to build the Asahi kernel with a 16K page size by enabling the appropriate option. This provides an improvement in compiler speed of 10-30%, but some important graphical software is currently incompatible, so this option is only recommended for build systems and the like. Patches to make the graphical software work are included, but be prepared to spend some time compiling!
+You can optionally choose to build the Asahi kernel with a 4K page size by enabling the appropriate option. This results in a reduction in compilation speed of 10-25%, but improves software compatibility in some cases (such as with Chromium/Electron and x86 emulation).
 ```
-  # Build the kernel with 16K pages for a performance boost with some workloads.
+  # Build the kernel with 4K pages to improve software compatibility at
+  # the cost of performance in some cases.
   boot.kernelBuildIs16K = true;
 ```
 
