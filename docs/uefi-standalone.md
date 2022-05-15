@@ -134,15 +134,16 @@ If everything went well, you will restart into U-Boot with the Asahi Linux and U
 
 Shut down the machine fully. Connect the flash drive with the installer ISO to a USB-C port through the USB A to C adapter. If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
-Start the Mac, and U-Boot should start booting from the USB drive. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine). You will get a console prompt once booting completes. Run the command `sudo su` to get a root prompt in the installer.
+Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
 
-If you've already installed something to the internal NVMe drive, U-Boot may try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
+GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine). You will get a console prompt once booting completes. Run the command `sudo su` to get a root prompt in the installer. If the console font is too small, run the command `setfont ter-v32n` to increase the size.
+
 
 #### Partitioning and Formatting
 
 **DANGER: Damage to the GPT partition table, first partition (`iBootSystemContainer`), or the last partition (`RecoveryOSContainer`) could result in the loss of all data and render the Mac unbootable and unrecoverable without assistance from another computer! Do not use your distro's automated partitioner or partitioning instructions!**
 
-We will add a root partition to the remaining free space and format it as ext4. Alternative partition layouts and filesystems are possible, but not covered by this guide.
+We will add a root partition to the remaining free space and format it as ext4. Alternative partition layouts and filesystems, including LUKS encryption, are possible, but not covered by this guide.
 
 Create the root partition to fill up the free space:
 ```
@@ -228,7 +229,7 @@ You can optionally choose to build the Asahi kernel with a 4K page size by enabl
 ```
   # Build the kernel with 4K pages to improve software compatibility at
   # the cost of performance in some cases.
-  boot.kernelBuildIs16K = true;
+  boot.kernelBuildIs16K = false;
 ```
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
