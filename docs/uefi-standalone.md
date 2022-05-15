@@ -182,6 +182,12 @@ nixos# mkfs.ext4 -L nixos /dev/nvme0n1p5
 
 The subsequent steps in this section will help you install NixOS onto your new partitions. More information is available in the Installing section of the [NixOS manual](https://nixos.org/manual/nixos/stable/index.html#sec-installation-installing). Some changes to the configuration procedure as described in that manual are needed for NixOS on M1 to work properly.
 
+On MacBooks, the font will be extremely small and near unreadable. The
+`terminus_font` package is included, so switching to a larger font is possible
+by running:
+
+    setfont ter-i32b
+
 Mount the root partition, then the EFI system partition that was created by the Asahi Linux installer specifically for NixOS:
 ```
 nixos# mount /dev/disk/by-label/nixos /mnt
