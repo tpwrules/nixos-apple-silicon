@@ -44,6 +44,7 @@
   environment.systemPackages = [
     pkgs.gptfdisk
     pkgs.parted
+    pkgs.cryptsetup
   ];
 
   # save space and compilation time. might revise?
