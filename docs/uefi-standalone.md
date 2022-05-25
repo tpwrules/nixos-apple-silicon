@@ -357,7 +357,9 @@ $ sudo reboot
 
 In extremely extreme circumstances (i.e. something messed up the firmware partition, recovery partition, or partition table), your Mac may fail to boot. On the Mac mini (and presumably Mac Studio), this state is identifiable by a flashing orange power light indicating the Morse code for SOS. On a Mac laptop, this state is identifiable by an illustration of an exclamation point in a circle on the screen with a link to Apple's website.
 
-To make the Mac bootable again, you can use [idevicerestore](https://github.com/libimobiledevice/idevicerestore) from another Mac or Linux x86_64 or aarch64 VM or computer that has an Internet connection. You will need a USB cable with at least one USB-C end. Please note that this procedure may require you to unrecoverably destroy all data on the Mac's internal drive. If erasing is necessary, you will be clearly warned and asked to confirm before it happens. If you haven't made backups, make peace with yourself now. This procedure has been tested with Mac and Linux hosts restoring a Mac mini with macOS 12.4.
+To make the Mac bootable again, you can use [idevicerestore](https://github.com/libimobiledevice/idevicerestore) from another Mac or Linux x86_64 or aarch64 VM or computer that has an Internet connection. You will need a USB cable with at least one USB-C end. This procedure has been tested with Mac and Linux hosts restoring a Mac mini with macOS 12.4.
+
+Please note that this procedure may require you to unrecoverably destroy all data on the Mac's internal drive. If erasing is necessary, you will be clearly warned and asked to confirm before it happens. The drive will end up zeroed and its encryption keys (probably) regenerated, so not even the NSA will be able to save you. If you haven't made backups, make peace with yourself now.
 
 You'll need to build `idevicerestore` from source to get a version capable of restoring Apple Silicon Macs. If Nix is already installed on your second computer, this is straightforward: clone and check out [the appropriate branch](https://github.com/tpwrules/nixpkgs/tree/upgrade-idevicestuff) of this project's `nixpkgs` fork and build both `idevicerestore` and `usbmuxd` (if on Linux):
 
@@ -373,7 +375,7 @@ To start the procedure, hook up the appropriate port on your unbootable Mac to t
 
 If DFU mode was started correctly, the unbootable Mac will show up on your second computer as an `Apple, Inc. Mobile Device (DFU Mode)` in `lsusb` on Linux or System Information on macOS. If you see `Apple, Inc. Apple Mobile Device [Recovery Mode]` instead (or nothing), the procedure was not followed correctly and you need to try again.
 
-Open a terminal on your second computer and, if you are on Linux and didn't install the udev rules (which Nix did not), start `usbmuxd` in the background by running it without any arguments. Then, ask `idevicerestore` to restore the firmware by using the `--latest` flag. If you wish to erase the disk either because the restore didn't work or because you want to start with a clean slate, use the `--erase` flag also.
+Open a terminal on your second computer and, if you are on Linux and didn't install the udev rules (which Nix did not), start `usbmuxd` in the background by running it without any arguments. Then, ask `idevicerestore` to restore the firmware by using the `--latest` flag. If you wish to erase the disk either because the revive didn't work or because you want to start with a clean slate, use the `--erase` flag also.
 
 ```
 # sudo usbmuxd/bin/usbmuxd # Linux only
@@ -386,7 +388,7 @@ The following firmwares are currently being signed for Macmini9,1:
 Select the firmware you want to restore:
 ```
 
-Once `idevicerestore` detects the unbootable Mac, select the desired firmware (usually number `1`) and wait patiently while the firmware is downloaded; it's about 13GiB. If `idevicerestore` doesn't detect the unbootable Mac, make sure that your cables are hooked up correctly and that you used `sudo`.
+Once `idevicerestore` detects the unbootable Mac, select the desired firmware (usually number `1`) and wait patiently while the firmware is downloaded; it's about 13GiB. If `idevicerestore` doesn't detect the unbootable Mac, make sure that your cables are hooked up correctly, that you used `sudo`, and that you are using a suitably recent version.
 
 The restore process will automatically start once the firmware is downloaded and verified. If `idevicerestore` fails with the message `ERROR: Device did not disconnect. Possibly invalid iBEC. Reset device and try again.`, the unbootable Mac is likely not in DFU mode, or there is something wrong with your system's udev related to hotplug events. Check that you followed Apple's procedure correctly and that the appropriate USB device is detected.
 
