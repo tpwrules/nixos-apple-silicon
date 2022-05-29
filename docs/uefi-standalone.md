@@ -1,10 +1,10 @@
-# UEFI Boot Standalone NixOS (2022-05-22)
+# UEFI Boot Standalone NixOS (2022-05-29)
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel, as of 2022-03-18
-* m1n1, as of 2022-03-27
+* Asahi Linux kernel, as of 2022-05-24
+* m1n1, as of 2022-05-25
 * Asahi Linux's U-Boot, as of 2022-03-19
-* Nixpkgs, as of 2022-05-14
+* Nixpkgs, as of 2022-05-28
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-m1/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
@@ -92,7 +92,7 @@ Use Nix to build the installer ISO (if you are on an aarch64 machine, use `insta
 nixos-m1$ nix-build -A installer-bootstrap-cross -o installer -j4
 ```
 
-The installer ISO is now available in `installer/iso/nixos-22.05pre-git-aarch64-linux.iso`. Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported.
+The installer ISO is now available in `installer/iso/nixos-22.11pre-git-aarch64-linux.iso`. Use `dd` or similar to transfer it to your USB flash drive. Programs like `unetbootin` are not supported.
 
 ## UEFI Preparation
 
