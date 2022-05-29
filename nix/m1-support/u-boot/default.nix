@@ -14,7 +14,11 @@
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
-  filesToInstall = [ "m1n1-u-boot.macho" "m1n1-u-boot.bin" ];
+  filesToInstall = [
+    "u-boot-nodtb.bin.gz"
+    "m1n1-u-boot.macho"
+    "m1n1-u-boot.bin"
+  ];
   extraConfig = ''
     CONFIG_IDENT_STRING=" ${version}"
   '';
