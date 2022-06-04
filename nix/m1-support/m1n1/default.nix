@@ -4,7 +4,6 @@
 , pkgsCross
 , python3
 , dtc
-, imagemagick
 , isRelease ? false
 , withTools ? true
 , withChainloading ? false
@@ -24,14 +23,14 @@ let
   });
 in stdenv.mkDerivation {
   pname = "m1n1";
-  version = "unstable-2022-05-25";
+  version = "unstable-2022-06-04";
 
   src = fetchFromGitHub {
     # tracking branch: https://github.com/AsahiLinux/m1n1/tree/main
     owner = "AsahiLinux";
     repo = "m1n1";
-    rev = "d5ceafe41dc0fdfe6fb34a0c112f09c6ea8e66d6";
-    hash = "sha256-BEbwQvddWMogL9WhloYBHiQILEK9W/Ys5n7VfhAIP4M=";
+    rev = "5cea0db10d81d352be7d03af8439c7e317964e6b";
+    hash = "sha256-XIW3NGS6H028Uh6VwJqLcCjaSjQrKU3KyxOpgzpJMwY=";
     fetchSubmodules = true;
   };
 
@@ -41,7 +40,6 @@ in stdenv.mkDerivation {
 
   nativeBuildInputs = [
     dtc
-    imagemagick
     pkgsCross.aarch64-multiplatform.buildPackages.gcc
   ] ++ lib.optional withChainloading rustenv;
 

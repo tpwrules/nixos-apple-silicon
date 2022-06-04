@@ -7,16 +7,9 @@ let
     }
   else pkgs;
 
-  localPkgs = import (pkgs.path) { system = builtins.currentSystem; };
-
   bootM1n1 = buildPkgs.callPackage ../m1n1 {
     isRelease = true;
     withTools = false;
-    # even though this is a nativeBuildInput, using a cross system
-    # triggers a rebuild for reasons I don't quite understand
-    imagemagick = if config.boot.kernelBuildIsCross
-      then (import (pkgs.path) { system = "x86_64-linux"; }).imagemagick
-      else localPkgs.imagemagick;
   };
 
   bootUBoot = buildPkgs.callPackage ../u-boot {
