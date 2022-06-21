@@ -8,9 +8,10 @@
       _16KBuild = config.boot.kernelBuildIs16K;
     };
 
-    # set a default frequency governor the same way nixos-generate-config does
-    # so the necessary bits get properly cross-compiled
-    powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";
+    # we definitely want to use CONFIG_ENERGY_MODEL, and
+    # schedutil is a prerequisite for using it
+    # source: https://www.kernel.org/doc/html/latest/scheduler/sched-energy.html
+    powerManagement.cpuFreqGovernor = lib.mkOverride 800 "schedutil";
 
     # our kernel config is weird and doesn't really have any modules
     boot.initrd.availableKernelModules = lib.mkForce [];
