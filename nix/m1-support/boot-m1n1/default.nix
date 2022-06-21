@@ -7,26 +7,23 @@ let
     }
   else pkgs;
 
-  localPkgs = import (pkgs.path) { system = builtins.currentSystem; };
+  bootM1n1 = buildPkgs.callPackage ../m1n1 {
+    isRelease = true;
+    withTools = false;
+  };
 
-  boot = buildPkgs.callPackage ../u-boot {
-    m1n1 = buildPkgs.callPackage ../m1n1 {
-      isRelease = true;
-      withTools = false;
-      # even though this is a nativeBuildInput, using a cross system
-      # triggers a rebuild for reasons I don't quite understand
-      imagemagick = if config.boot.kernelBuildIsCross
-        then (import (pkgs.path) { system = "x86_64-linux"; }).imagemagick
-        else localPkgs.imagemagick;
-    };
+  bootUBoot = buildPkgs.callPackage ../u-boot {
+    m1n1 = bootM1n1;
   };
 
   bootFiles = {
-    "m1n1/boot.bin" = if config.boot.m1n1ExtraOptions == "" then
-      "${boot}/m1n1-u-boot.bin"
-    else pkgs.runCommand "boot.bin" {} ''
-      cat ${boot}/m1n1-u-boot.bin > $out
-      echo '${config.boot.m1n1ExtraOptions}' >> $out
+    "m1n1/boot.bin" = pkgs.runCommand "boot.bin" {} ''
+      cat ${bootM1n1}/build/m1n1.bin > $out
+      cat ${config.boot.kernelPackages.kernel}/dtbs/apple/*.dtb >> $out
+      cat ${bootUBoot}/u-boot-nodtb.bin.gz >> $out
+      if [ -n "${config.boot.m1n1ExtraOptions}" ]; then
+        echo '${config.boot.m1n1ExtraOptions}' >> $out
+      fi
     '';
   };
 in {
@@ -36,7 +33,7 @@ in {
     boot.loader.systemd-boot.extraFiles = bootFiles;
 
     # ensure the installer has m1n1 in the image
-    system.extraDependencies = lib.mkForce [ boot ];
+    system.extraDependencies = lib.mkForce [ bootM1n1 bootUBoot ];
   };
 
   options.boot.m1n1ExtraOptions = lib.mkOption {
