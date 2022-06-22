@@ -30,8 +30,8 @@
         # tracking branch: https://github.com/AsahiLinux/linux/tree/asahi
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "72eed5179ad57adf126bd2dcab116e48a96615e5";
-        hash = "sha256-mkYmVTUFXRied6NHQXeDsQxBFw5bBUDsV43pKkALIxM=";
+        rev = "23d0e6d8a3d0e4e4b7f96c3b283e856c60d1cb06";
+        hash = "sha256-MA3M7ffnNCyAAjrUB4Q48FQxKPHFaVEvmP/pqU2krXs=";
       };
 
       kernelPatches = [
