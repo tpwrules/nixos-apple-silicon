@@ -1,10 +1,10 @@
-# UEFI Boot Standalone NixOS (2022-06-18)
+# UEFI Boot Standalone NixOS (2022-06-21)
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel, as of 2022-06-13
-* m1n1, as of 2022-06-04
-* Asahi Linux's U-Boot, as of 2022-03-19
-* Nixpkgs, as of 2022-06-17
+* Asahi Linux kernel, as of 2022-06-20
+* m1n1, as of 2022-06-20
+* Asahi Linux's U-Boot, as of 2022-06-20
+* Nixpkgs, as of 2022-06-20
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-m1/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
@@ -24,7 +24,7 @@ While you will end up with a reasonably usable computer, the exact hardware feat
 #### Prerequisites
 
 The following items are required to get started:
-* M1/Pro/Max Mac (except Mac Studio) with macOS 12.3 or later and an admin account
+* M1/Pro/Max/Ultra Mac with macOS 12.3 or later and an admin account
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
 * Familiarity with the command line and installers without GUIs
