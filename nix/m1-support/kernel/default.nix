@@ -11,18 +11,18 @@
     # we definitely want to use CONFIG_ENERGY_MODEL, and
     # schedutil is a prerequisite for using it
     # source: https://www.kernel.org/doc/html/latest/scheduler/sched-energy.html
-    powerManagement.cpuFreqGovernor = lib.mkOverride 800 "schedutil";
+    powerManagement.cpuFreqGovernor = lib.mkDefault "schedutil";
 
     # our kernel config is weird and doesn't really have any modules
     boot.initrd.availableKernelModules = lib.mkForce [];
 
     # kernel parameters that are useful for debugging
-    boot.consoleLogLevel = 7;
+    boot.consoleLogLevel = 5;
     boot.kernelParams = [
       "earlycon"
       "console=ttySAC0,1500000"
       "console=tty0"
-      "debug"
+      # "debug"
       "boot.shell_on_fail"
       # Apple's SSDs are slow (~dozens of ms) at processing flush requests which
       # slows down programs that make a lot of fsync calls. This parameter sets

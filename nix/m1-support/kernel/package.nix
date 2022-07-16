@@ -53,7 +53,7 @@
       configfile = ./config;
       config = readConfig configfile;
 
-      extraMeta.branch = "5.17";
+      extraMeta.branch = "5.18";
     } // (args.argsOverride or {});
 
   linux_asahi = buildPkgs.callPackage linux_asahi_pkg { };
