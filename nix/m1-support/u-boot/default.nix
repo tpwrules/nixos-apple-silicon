@@ -7,10 +7,10 @@
     # tracking branch: https://github.com/AsahiLinux/u-boot/tree/releng/installer-release
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "756d0269dd3f57e3dc7caccf57b78403adbc1e68";
-    hash = "sha256-6WUd99dg5J26FO8n1nnGsgiuwptb6hP4cu6PtpbN1V4=";
+    rev = "300817d324f73c30c998a10435d5d830b58df894";
+    hash = "sha256-6q4l1gHAlaGM7ktlCBmehb/ZNvmpt1eah6tTdsQJfxM=";
   };
-  version = "unstable-2022-06-20";
+  version = "unstable-2022-07-11";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];

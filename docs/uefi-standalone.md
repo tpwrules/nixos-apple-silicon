@@ -1,17 +1,17 @@
-# UEFI Boot Standalone NixOS (2022-07-12)
+# UEFI Boot Standalone NixOS (2022-07-18)
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel, as of 2022-06-20
-* m1n1, as of 2022-06-20
-* Asahi Linux's U-Boot, as of 2022-06-20
-* Nixpkgs, as of 2022-07-11
+* Asahi Linux kernel, as of 2022-07-17 (5.19.0-rc5-asahi)
+* m1n1, as of 2022-07-16 (v1.1.3)
+* Asahi Linux's U-Boot, as of 2022-07-11
+* Nixpkgs, as of 2022-07-18
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-m1/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
 
 ## Introduction
 
-This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max Mac using a customized version of the official NixOS install ISO, then boot it without the help of another computer. Aside from the M1 support module and AArch64 CPU, the resulting installation can be configured and operated like any other NixOS system. Your macOS install will still work normally, and you can easily switch between booting both macOS and NixOS.
+This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max/Ultra Mac using a customized version of the official NixOS install ISO, then boot it without the help of another computer. Aside from the M1 support module and AArch64 CPU, the resulting installation can be configured and operated like any other NixOS system. Your macOS install will still work normally, and you can easily switch between booting both macOS and NixOS.
 
 Perusing this guide might also be useful to users of other distros. Most of the hard work, including the kernel and boot software, was done by the [Asahi Linux project](https://asahilinux.org/).
 
@@ -361,12 +361,11 @@ To make the Mac bootable again, you can use [idevicerestore](https://github.com/
 
 Please note that this procedure may require you to unrecoverably destroy all data on the Mac's internal drive. If erasing is necessary, you will be clearly warned and asked to confirm before it happens. The drive will end up zeroed and its encryption keys (probably) regenerated, so not even the NSA will be able to save you. If you haven't made backups, make peace with yourself now.
 
-You'll need to build `idevicerestore` from source to get a version capable of restoring Apple Silicon Macs. If Nix is already installed on your second computer, this is straightforward: clone and check out [the appropriate branch](https://github.com/tpwrules/nixpkgs/tree/upgrade-idevicestuff) of this project's `nixpkgs` fork and build both `idevicerestore` and `usbmuxd` (if on Linux):
+You'll need to build `idevicerestore` from source to get a version capable of restoring Apple Silicon Macs. If Nix is already installed on your second computer, an appropriate version is already packaged in recent `nixpkgs-unstable`. Check out and build both `idevicerestore` and `usbmuxd` (if on Linux):
 
 ```
-# git clone https://github.com/tpwrules/nixpkgs/
+# git clone https://github.com/NixOS/nixpkgs/
 # cd nixpkgs
-# git checkout upgrade-idevicestuff
 # nix-build -A pkgs.idevicerestore -o idevicerestore
 # nix-build -A pkgs.usbmuxd -o usbmuxd # if on Linux
 ```

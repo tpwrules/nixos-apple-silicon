@@ -21,16 +21,16 @@ let
   rustenv = rust-bin.selectLatestNightlyWith (toolchain: toolchain.minimal.override {
     targets = [ "aarch64-unknown-none-softfloat" ];
   });
-in stdenv.mkDerivation {
+in stdenv.mkDerivation rec {
   pname = "m1n1";
-  version = "unstable-2022-06-20";
+  version = "1.1.3";
 
   src = fetchFromGitHub {
     # tracking branch: https://github.com/AsahiLinux/m1n1/tree/main
     owner = "AsahiLinux";
     repo = "m1n1";
-    rev = "e2d671d5974bb94f141ba712487e8e667b60357c";
-    hash = "sha256-AgBtDyv6vduW927FJGNLJirSeeYf76h4n4er/C3WzK0=";
+    rev = "v${version}";
+    hash = "sha256-S2HLBLmgER0ZZJ5Q4EX2f1KDxnol0yCDrloDMJaLwBE=";
     fetchSubmodules = true;
   };
 
