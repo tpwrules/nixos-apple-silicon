@@ -16,13 +16,10 @@
     # our kernel config is weird and doesn't really have any modules
     boot.initrd.availableKernelModules = lib.mkForce [];
 
-    # kernel parameters that are useful for debugging
-    boot.consoleLogLevel = 7;
     boot.kernelParams = [
       "earlycon"
       "console=ttySAC0,1500000"
       "console=tty0"
-      "debug"
       "boot.shell_on_fail"
       # Apple's SSDs are slow (~dozens of ms) at processing flush requests which
       # slows down programs that make a lot of fsync calls. This parameter sets
