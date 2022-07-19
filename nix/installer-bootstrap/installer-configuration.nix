@@ -56,6 +56,9 @@
   documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
 
+  # avoid having to compile a cross rustc to make the ramfs
+  systemd.shutdownRamfs.enable = false;
+
   networking.wireless.enable = true;
   networking.wireless.userControlled.enable = true;
   systemd.services.wpa_supplicant.wantedBy = lib.mkOverride 50 [];
