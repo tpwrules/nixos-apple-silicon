@@ -34,6 +34,11 @@ in {
 
     # ensure the installer has m1n1 in the image
     system.extraDependencies = lib.mkForce [ bootM1n1 bootUBoot ];
+
+    # give the user the utilities to re-extract the firmware if necessary
+    environment.systemPackages = [
+      (buildPkgs.callPackage ../asahi-fwextract {})
+    ];
   };
 
   options.boot.m1n1ExtraOptions = lib.mkOption {

@@ -11,5 +11,6 @@ in {
     installer-bootstrap-cross = callPackage ./installer-bootstrap {
       crossBuild = true;
     };
+    asahi-fwextract = callPackage ./m1-support/asahi-fwextract {};
   });
 }
