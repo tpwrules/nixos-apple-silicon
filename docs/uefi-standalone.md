@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-07-18)
+# UEFI Boot Standalone NixOS (2022-07-19)
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel, as of 2022-07-17 (5.19.0-rc5-asahi)
@@ -350,6 +350,13 @@ You can now update NixOS as normal. Note that M1 support module updates will gen
 ```
 $ sudo nix-channel --update
 $ sudo nixos-rebuild switch
+$ sudo reboot
+```
+
+In some cases, a kernel update may require new or different firmware to enable a particular feature such as Wi-Fi or Bluetooth support. To re-extract the firmware without recreating the stub partition, use the `asahi-fwextract` tool. You will need to upgrade the M1 support module to the latest version and rebuild your system with it in order to get an `asahi-fwextract` that knows the latest firmware needs. Once this is done, you can run the tool, then rebuild your system again:
+```
+$ sudo asahi-fwextract /boot/asahi/ /etc/nixos-m1/support/firmware/firmware.tar /dev/null
+$ sudo nixos-rebuild boot
 $ sudo reboot
 ```
 
