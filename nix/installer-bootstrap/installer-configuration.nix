@@ -63,11 +63,19 @@
   networking.wireless.userControlled.enable = true;
   systemd.services.wpa_supplicant.wantedBy = lib.mkOverride 50 [];
 
-  # avoids the need to cross-compile rustc and spidermonkey and polkit
   nixpkgs.overlays = [
     (self: super: {
+      # avoids the need to cross-compile rustc and spidermonkey and polkit
       wpa_supplicant = super.wpa_supplicant.override {
         withPcsclite = false;
+      };
+
+      # avoids triggering a buggy cross compilation situation with
+      # gobject-introspection triggered by commit
+      # https://github.com/NixOS/nixpkgs/commit/6940e5b55b2109529bad415d05cd027f6eb46850
+      # fixed by: https://github.com/NixOS/nixpkgs/pull/182417
+      util-linux = super.util-linux.override {
+        translateManpages = false;
       };
     })
   ];

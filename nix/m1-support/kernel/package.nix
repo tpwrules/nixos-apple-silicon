@@ -23,15 +23,15 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "5.19.0-rc5-asahi";
+      version = "5.19.0-rc7-asahi";
       modDirVersion = version;
 
       src = fetchFromGitHub {
         # tracking branch: https://github.com/AsahiLinux/linux/tree/asahi
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "7f6b104b64539e3047b474c13dba17bdf5446d47";
-        hash = "sha256-tZB7+cIGYcEkoM8FCMFB842VUmv56VBCE/XYxXZuo7Q=";
+        rev = "c7d02d6615a5fb4afefd3084fce93d86e5fb184d";
+        hash = "sha256-sed405+6L5U7S+Na2DNLGPNTNf3tv96LjK3CimeRjNU=";
       };
 
       kernelPatches = [
