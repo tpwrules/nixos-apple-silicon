@@ -4,4 +4,6 @@ let
     (import ./nix/overlay.nix)
     (import pins.rust-overlay)
   ];
-in (import pins.nixpkgs { overlays = overlays; }).nixos-m1
+in {
+  nixpkgs ? pins.nixpkgs
+}: (import nixpkgs { overlays = overlays; }).nixos-m1
