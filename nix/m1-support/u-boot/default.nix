@@ -4,13 +4,13 @@
 , m1n1
 }: (pkgsCross.aarch64-multiplatform.buildUBoot rec {
   src = fetchFromGitHub {
-    # tracking branch: https://github.com/AsahiLinux/u-boot/tree/releng/installer-release
+    # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "300817d324f73c30c998a10435d5d830b58df894";
-    hash = "sha256-6q4l1gHAlaGM7ktlCBmehb/ZNvmpt1eah6tTdsQJfxM=";
+    rev = "asahi-v2022.07-2";
+    hash = "sha256-VOOkLQdQXnRD/SMUePPNKgHLNXWR815mQx8t3W95m5E=";
   };
-  version = "unstable-2022-07-11";
+  version = "2022.07_rc100.asahi2";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];

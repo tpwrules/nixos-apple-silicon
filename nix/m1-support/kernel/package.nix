@@ -23,15 +23,15 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "5.19.0-rc7-asahi";
+      version = "5.19.0-asahi";
       modDirVersion = version;
 
       src = fetchFromGitHub {
         # tracking branch: https://github.com/AsahiLinux/linux/tree/asahi
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "c7d02d6615a5fb4afefd3084fce93d86e5fb184d";
-        hash = "sha256-sed405+6L5U7S+Na2DNLGPNTNf3tv96LjK3CimeRjNU=";
+        rev = "570e5d3a0b4895c1199ecb1aeb1419d63404f087";
+        hash = "sha256-Z4q1qjQsNjyWLkkfKODlKSJ4Tfza2zi2prHKoIH1bQw=";
       };
 
       kernelPatches = [
@@ -56,12 +56,5 @@
       extraMeta.branch = "5.19";
     } // (args.argsOverride or {});
 
-  linux_asahi = (buildPkgs.callPackage linux_asahi_pkg { }).overrideAttrs (o: {
-    # use 5.19 suitable randstruct seed patch
-    # to be removed when https://github.com/NixOS/nixpkgs/pull/180750 is
-    # accepted and percolates through
-    patches = (builtins.filter
-      (v: (pkgs.lib.hasInfix "randstruct" (builtins.path { path = v; })) != true)
-      o.patches) ++ [ ./randstruct-provide-seed-5.19.patch ];
-  });
+  linux_asahi = (buildPkgs.callPackage linux_asahi_pkg { });
 in buildPkgs.recurseIntoAttrs (buildPkgs.linuxPackagesFor linux_asahi)

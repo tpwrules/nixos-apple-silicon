@@ -26,7 +26,7 @@ in stdenv.mkDerivation rec {
   version = "1.1.3";
 
   src = fetchFromGitHub {
-    # tracking branch: https://github.com/AsahiLinux/m1n1/tree/main
+    # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/m1n1/PKGBUILD
     owner = "AsahiLinux";
     repo = "m1n1";
     rev = "v${version}";
@@ -71,14 +71,12 @@ EOF
     done
 
     GCC=${pkgsCross.aarch64-multiplatform.buildPackages.gcc}
-    BINUTILS=${pkgsCross.aarch64-multiplatform.buildPackages.binutils}
-    REAL_BINUTILS=$(grep -o '/nix/store/[^ ]*binutils[^ ]*' $BINUTILS/nix-support/propagated-user-env-packages)
 
     ln -s $GCC/bin/*-gcc $out/toolchain-bin/
     ln -s $GCC/bin/*-ld $out/toolchain-bin/
-    ln -s $REAL_BINUTILS/bin/*-objcopy $out/toolchain-bin/
-    ln -s $REAL_BINUTILS/bin/*-objdump $out/toolchain-bin/
-    ln -s $REAL_BINUTILS/bin/*-nm $out/toolchain-bin/
+    ln -s $GCC/bin/*-objcopy $out/toolchain-bin/
+    ln -s $GCC/bin/*-objdump $out/toolchain-bin/
+    ln -s $GCC/bin/*-nm $out/toolchain-bin/
   '') + ''
     runHook postInstall
   '';
