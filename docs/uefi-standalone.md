@@ -11,7 +11,7 @@ NOTE: The latest version of this guide will always be [at its home](https://gith
 
 ## Introduction
 
-This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max/Ultra Mac using a customized version of the official NixOS install ISO, then boot it without the help of another computer. Aside from the M1 support module and AArch64 CPU, the resulting installation can be configured and operated like any other NixOS system. Your macOS install will still work normally, and you can easily switch between booting both macOS and NixOS.
+This guide will explain how to install NixOS on the internal NVMe drive of an M1/Pro/Max/Ultra or M2 Mac using a customized version of the official NixOS install ISO, then boot it without the help of another computer. Aside from the M1 support module and AArch64 CPU, the resulting installation can be configured and operated like any other NixOS system. Your macOS install will still work normally, and you can easily switch between booting both macOS and NixOS.
 
 Perusing this guide might also be useful to users of other distros. Most of the hard work, including the kernel and boot software, was done by the [Asahi Linux project](https://asahilinux.org/).
 
@@ -24,7 +24,7 @@ While you will end up with a reasonably usable computer, the exact hardware feat
 #### Prerequisites
 
 The following items are required to get started:
-* M1/Pro/Max/Ultra Mac with macOS 12.3 or later and an admin account
+* M1/Pro/Max/Ultra or M2 Mac with macOS 12.3 or later and an admin account
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
 * USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
 * Familiarity with the command line and installers without GUIs
