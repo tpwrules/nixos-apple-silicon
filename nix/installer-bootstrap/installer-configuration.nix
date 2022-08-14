@@ -56,47 +56,15 @@
   documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
 
-  # avoid having to compile a cross rustc to make the ramfs
-  systemd.shutdownRamfs.enable = false;
-
   networking.wireless.enable = true;
   networking.wireless.userControlled.enable = true;
   systemd.services.wpa_supplicant.wantedBy = lib.mkOverride 50 [];
 
   nixpkgs.overlays = [
     (self: super: {
-      # avoids the need to cross-compile rustc and spidermonkey and polkit
-      wpa_supplicant = super.wpa_supplicant.override {
-        withPcsclite = false;
-      };
 
-      # avoids triggering a buggy cross compilation situation with
-      # gobject-introspection triggered by commit
-      # https://github.com/NixOS/nixpkgs/commit/6940e5b55b2109529bad415d05cd027f6eb46850
-      # fixed by: https://github.com/NixOS/nixpkgs/pull/182417
-      util-linux = super.util-linux.override {
-        translateManpages = false;
-      };
     })
   ];
-
-  # (Failing build in a dep to be investigated)
-  security.polkit.enable = false;
-
-  # cifs-utils fails to cross-compile
-  # Let's simplify this by removing all unneeded filesystems from the image.
-  boot.supportedFilesystems = lib.mkForce [ "vfat" ];
-
-  # texinfoInteractive has trouble cross-compiling
-  documentation.info.enable = lib.mkForce false;
-
-  # `xterm` is being included even though this is GUI-less.
-  # → https://github.com/NixOS/nixpkgs/pull/62852
-  services.xserver.desktopManager.xterm.enable = lib.mkForce false;
-
-  # ec6224b6cd147943eee685ef671811b3683cb2ce re-introduced udisks in the installer
-  # udisks fails due to gobject-introspection being not cross-compilation friendly.
-  services.udisks2.enable = lib.mkForce false;
 
   # get rid of warning that stateVersion is unset
   system.stateVersion = lib.mkDefault lib.trivial.release;
