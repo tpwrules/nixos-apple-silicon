@@ -7,10 +7,10 @@
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2022.07-2";
-    hash = "sha256-VOOkLQdQXnRD/SMUePPNKgHLNXWR815mQx8t3W95m5E=";
+    rev = "asahi-v2022.07-3";
+    hash = "sha256-Je8h8kstWTBfrITsOrSAPzHjiSe7pIDKPLKoWUAK9ZE=";
   };
-  version = "2022.07_rc100.asahi2";
+  version = "2022.07_rc100.asahi3";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];

@@ -1,9 +1,9 @@
-# UEFI Boot Standalone NixOS (2022-08-05)
+# UEFI Boot Standalone NixOS (2022-08-14)
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel version 5.19.0-asahi
-* m1n1 version v1.1.3
-* Asahi Linux's U-Boot version 2022.07_rc100.asahi2
+* m1n1 version v1.1.4
+* Asahi Linux's U-Boot version 2022.07_rc100.asahi3
 * Nixpkgs, as of 2022-08-03
 * macOS stub 12.3
 
