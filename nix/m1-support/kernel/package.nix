@@ -6,9 +6,12 @@
     }
   else pkgs;
 
-  # we do this so the config can be read on any system and not affect
-  # the output hash
-  localPkgs = import (pkgs.path) { system = builtins.currentSystem; };
+  localPkgs =
+    # we do this so the config can be read on any system and not affect
+    # the output hash
+    if builtins ? currentSystem then import (pkgs.path) { system = builtins.currentSystem; }
+    else pkgs;
+
   readConfig = configfile: import (localPkgs.runCommand "config.nix" {} ''
     echo "{" > "$out"
     while IFS='=' read key val; do
