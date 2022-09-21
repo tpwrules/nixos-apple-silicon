@@ -1,8 +1,13 @@
 { lib
 , fetchFromGitHub
+, pkgs
 , pkgsCross
 , m1n1
-}: (pkgsCross.aarch64-multiplatform.buildUBoot rec {
+}: let
+  # u-boot's buildInputs get a different hash and don't build right if we try to
+  # cross-build for aarch64 on itself for whatever reason
+  buildPkgs = if pkgs.system == "aarch64-linux" then pkgs else pkgsCross.aarch64-multiplatform;
+in (buildPkgs.buildUBoot rec {
   src = fetchFromGitHub {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
