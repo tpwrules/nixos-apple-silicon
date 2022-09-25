@@ -10,6 +10,7 @@ let
   bootM1n1 = buildPkgs.callPackage ../m1n1 {
     isRelease = true;
     withTools = false;
+    customLogo = config.boot.m1n1CustomLogo;
   };
 
   bootUBoot = buildPkgs.callPackage ../u-boot {
@@ -41,13 +42,23 @@ in {
     ];
   };
 
-  options.boot.m1n1ExtraOptions = lib.mkOption {
-    type = lib.types.str;
-    default = "";
-    description = ''
-      Append extra options to the m1n1 boot binary. Might be useful for fixing
-      display problems on Mac minis.
-      https://github.com/AsahiLinux/m1n1/issues/159
-    '';
+  options.boot = {
+    m1n1ExtraOptions = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = ''
+        Append extra options to the m1n1 boot binary. Might be useful for fixing
+        display problems on Mac minis.
+        https://github.com/AsahiLinux/m1n1/issues/159
+      '';
+    };
+
+    m1n1CustomLogo = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = ''
+        Custom logo to build into m1n1. The path must point to a 256x256 PNG.
+      '';
+    };
   };
 }

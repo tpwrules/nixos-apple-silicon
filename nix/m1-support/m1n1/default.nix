@@ -4,10 +4,12 @@
 , pkgsCross
 , python3
 , dtc
+, imagemagick
 , isRelease ? false
 , withTools ? true
 , withChainloading ? false
 , rust-bin ? null
+, customLogo ? null
 }:
 
 assert withChainloading -> rust-bin != null;
@@ -41,12 +43,27 @@ in stdenv.mkDerivation rec {
   nativeBuildInputs = [
     dtc
     pkgsCross.aarch64-multiplatform.buildPackages.gcc
-  ] ++ lib.optional withChainloading rustenv;
+  ] ++ lib.optional withChainloading rustenv
+    ++ lib.optional (customLogo != null) imagemagick;
 
   postPatch = ''
     substituteInPlace proxyclient/m1n1/asm.py \
       --replace 'aarch64-linux-gnu-' 'aarch64-unknown-linux-gnu-' \
       --replace 'TOOLCHAIN = ""' 'TOOLCHAIN = "'$out'/toolchain-bin/"'
+  '';
+
+  preConfigure = lib.optionalString (customLogo != null) ''
+    pushd data &>/dev/null
+    ln -fs ${customLogo} bootlogo_256.png
+    if [[ "$(magick identify bootlogo_256.png)" != 'bootlogo_256.png PNG 256x256'* ]]; then
+      echo "Custom logo is not a 256x256 PNG"
+      exit 1
+    fi
+
+    rm bootlogo_128.png
+    convert bootlogo_256.png -resize 128x128 bootlogo_128.png
+    ./makelogo.sh
+    popd &>/dev/null
   '';
 
   installPhase = ''
