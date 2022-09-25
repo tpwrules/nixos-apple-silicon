@@ -23,14 +23,14 @@ let
   });
 in stdenv.mkDerivation rec {
   pname = "m1n1";
-  version = "1.1.4";
+  version = "1.1.5";
 
   src = fetchFromGitHub {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/m1n1/PKGBUILD
     owner = "AsahiLinux";
     repo = "m1n1";
     rev = "v${version}";
-    hash = "sha256-YI1hKeeu00x2wS7tj3ewDQYtU3rRttfoVKpv48ISQCU=";
+    hash = "sha256-NImplYWps0O8LBZsbgJNwk/jlSvSmmgFDJgaIR2+jfU=";
     fetchSubmodules = true;
   };
 
@@ -71,11 +71,12 @@ EOF
     done
 
     GCC=${pkgsCross.aarch64-multiplatform.buildPackages.gcc}
+    BINUTILS=${pkgsCross.aarch64-multiplatform.buildPackages.binutils-unwrapped}
 
     ln -s $GCC/bin/*-gcc $out/toolchain-bin/
     ln -s $GCC/bin/*-ld $out/toolchain-bin/
-    ln -s $GCC/bin/*-objcopy $out/toolchain-bin/
-    ln -s $GCC/bin/*-objdump $out/toolchain-bin/
+    ln -s $BINUTILS/bin/*-objcopy $out/toolchain-bin/
+    ln -s $BINUTILS/bin/*-objdump $out/toolchain-bin/
     ln -s $GCC/bin/*-nm $out/toolchain-bin/
   '') + ''
     runHook postInstall
