@@ -53,6 +53,7 @@
   sound.enable = false;
   # avoid including non-reproducible dbus docs
   documentation.doc.enable = false;
+  documentation.info.enable = lib.mkForce false;
   documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
 
@@ -61,10 +62,34 @@
   systemd.services.wpa_supplicant.wantedBy = lib.mkOverride 50 [];
 
   nixpkgs.overlays = [
-    (self: super: {
+    (final: prev: {
+      # avoids the need to cross-compile gobject introspection stuff which works
+      # now but is slow and unnecessary
+      wpa_supplicant = prev.wpa_supplicant.override {
+        withPcsclite = false;
+      };
+      systemd = prev.systemd.override {
+        withCryptsetup = false; # TODO: reenable; needed to fully disable Fido2
+        withFido2 = false;
+      };
+      openssh = (prev.openssh.override {
+        withFIDO = false;
+      }).overrideAttrs (old: {
+        # the tests take quite a long time to run
+        doCheck = false;
+      });
 
+      # avoids having to compile a bunch of big things (like texlive) to
+      # compute translations
+      util-linux = prev.util-linux.override {
+        translateManpages = false;
+      };
     })
   ];
+
+  # avoids the need to cross-compile gobject introspection stuff which works
+  # now but is slow and unnecessary
+  security.polkit.enable = false;
 
   # get rid of warning that stateVersion is unset
   system.stateVersion = lib.mkDefault lib.trivial.release;
