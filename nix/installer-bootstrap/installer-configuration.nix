@@ -63,19 +63,17 @@
 
   nixpkgs.overlays = [
     (final: prev: {
-      # avoids the need to cross-compile gobject introspection stuff which works
-      # now but is slow and unnecessary
+      # disabling pcsclite avoids the need to cross-compile gobject
+      # introspection stuff which works now but is slow and unnecessary
       wpa_supplicant = prev.wpa_supplicant.override {
         withPcsclite = false;
       };
-      systemd = prev.systemd.override {
-        withCryptsetup = false; # TODO: reenable; needed to fully disable Fido2
-        withFido2 = false;
+      libfido2 = prev.libfido2.override {
+        withPcsclite = false;
       };
-      openssh = (prev.openssh.override {
-        withFIDO = false;
-      }).overrideAttrs (old: {
-        # the tests take quite a long time to run
+      openssh = prev.openssh.overrideAttrs (old: {
+        # we have to cross compile openssh ourselves for whatever reason
+        # but the tests take quite a long time to run
         doCheck = false;
       });
 
