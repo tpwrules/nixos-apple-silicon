@@ -13,8 +13,41 @@
     # source: https://www.kernel.org/doc/html/latest/scheduler/sched-energy.html
     powerManagement.cpuFreqGovernor = lib.mkOverride 800 "schedutil";
 
-    # our kernel config is weird and doesn't really have any modules
-    boot.initrd.availableKernelModules = lib.mkForce [];
+    boot.initrd.includeDefaultModules = false;
+    boot.initrd.availableKernelModules = [
+      # list of initrd modules stolen from
+      # https://github.com/AsahiLinux/asahi-scripts/blob/e4d6151a7dcb63ae5e3779c3cf57362eb37d908a/initcpio/install/asahi
+      "apple-mailbox"
+      "nvme_apple"
+      "pinctrl-apple-gpio"
+      "macsmc"
+      "macsmc-rtkit"
+      "i2c-apple"
+      "tps6598x"
+      "apple-dart"
+      "dwc3"
+      "dwc3-of-simple"
+      "xhci-pci"
+      "pcie-apple"
+      "gpio_macsmc"
+      "spi-apple"
+      "spi-hid-apple"
+      "spi-hid-apple-of"
+      "rtc-macsmc"
+      "simple-mfd-spmi"
+      "spmi-apple-controller"
+      "nvmem_spmi_mfd"
+      "apple-dockchannel"
+      "dockchannel-hid"
+      "apple-rtkit-helper"
+
+      # additional stuff necessary to boot off USB for the installer
+      # and if the initrd (i.e. stage 1) goes wrong
+      "usb-storage"
+      "xhci-plat-hcd"
+      "usbhid"
+      "hid_generic"
+    ];
 
     boot.kernelParams = [
       "earlycon"
