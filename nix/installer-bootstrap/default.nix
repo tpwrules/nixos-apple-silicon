@@ -9,4 +9,4 @@
     };
     boot.kernelBuildIsCross = true;
   } ] else [ ]);
-}).config.system.build.isoImage
+}).config
