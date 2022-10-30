@@ -190,11 +190,10 @@ nixos# mkdir -p /mnt/boot
 nixos# mount /dev/disk/by-partuuid/`cat /proc/device-tree/chosen/asahi,efi-system-partition` /mnt/boot
 ```
 
-Create a default configuration for the new system, then copy the M1 support module and system WiFi firmware into it:
+Create a default configuration for the new system, then copy the M1 support module into it:
 ```
 nixos# nixos-generate-config --root /mnt
 nixos# cp -r /etc/nixos/m1-support /mnt/etc/nixos/
-nixos# cp /mnt/boot/vendorfw/firmware.tar /mnt/etc/nixos/m1-support/firmware/
 nixos# chmod -R +w /mnt/etc/nixos/
 ```
 
@@ -225,6 +224,16 @@ If you used the cross-compiled installer image, i.e. you downloaded the ISO from
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
+Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi. The Asahi Linux installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the M1 support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
+
+Currently, the only supported way to update the peripheral firmware files is to destroy and re-create the EFI system partition, so they will not change unexpectedly. If you do not want the impurity of referencing them (or are using flakes where this is prohibited), copy them off the EFI system partition (e.g. `mkdir -p /etc/nixos/firmware && cp /mnt/boot/asahi/{all_firmware.tar.gz,kernelcache*} /etc/nixos/firmware`) and specify this path in your configuration:
+```
+  # Specify path to peripheral firmware files.
+  hardware.asahi.peripheralFirmareDirectory = ./firmware;
+  # Or disable extraction and management of them completely.
+  # hardware.asahi.extractPeripheralFirmware = false;
+```
+
 You can choose to build the Asahi kernel with a 4K page size by enabling the appropriate option. This results in a reduction in raw compilation speed of 10-25%, but improves software compatibility in some cases (such as with Chromium/Electron and x86 emulation).
 ```
   # Build the kernel with 4K pages to improve software compatibility at
@@ -243,15 +252,7 @@ If you want to install a desktop environment, you will have to uncomment the opt
 
 Once you are happy with your initial configuration, you may install the system. This will have to download a large amount of data.
 
-If using WiFi, the WiFi firmare must first be installed into the live system:
-```
-nixos# mkdir -p /lib/firmware
-nixos# tar xf /mnt/boot/vendorfw/firmware.tar -C /lib/firmware
-nixos# systemctl start wpa_supplicant
-nixos# rmmod brcmfmac && modprobe brcmfmac
-```
-
-You can now configure wireless networking in the installer using `wpa_supplicant` by following [the directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual. If you see errors about `Timeout on response for query command`, exit `wpa_cli` then try rerunning the command `rmmod brcmfmac && modprobe brcmfmac`.
+You can configure wireless networking in the installer using `wpa_supplicant` by following [the minimal installer directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual.
 
 Once the network is set up, ensure the time is set correctly, then install the system. You will be asked to set a root password as the final step:
 ```
@@ -311,7 +312,7 @@ Rerunning the installer will create a new generation but not touch any user data
 # nixos-install --no-root-password --no-channel-copy
 ```
 
-In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup.
+In extreme circumstances, you can delete the EFI system partition and stub macOS install and rerun the Asahi Linux installer, then follow the steps above to reinstall NixOS's bootloader menu. You will need to regenerate the hardware configuration using `nixos-generate-config --root /mnt` because the EFI system partition's ID will change. This shouldn't modify your root partition or other NixOS configuration, but of course it's always smart to have a backup. You might also wish to re-copy the peripheral firmware files.
 
 #### NixOS Updates
 
@@ -334,15 +335,13 @@ If you want the M1 support module to be upgraded in tandem with NixOS instead of
 $ sudo nix-channel --add https://github.com/tpwrules/nixos-m1/archive/main.tar.gz m1-support
 ```
 
-Modify your `/etc/nixos/configuration.nix` to reference the channel instead of the local files (although we will keep referencing the local firmware):
+Modify your `/etc/nixos/configuration.nix` to reference the channel instead of the local files:
 ```
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       # Include the necessary packages and configuration for Apple M1 support.
       <m1-support/nix/m1-support>
-      # Include the non-redistributable Wi-Fi firmware on disk.
-      ./m1-support/firmware
     ];
 ```
 
@@ -350,13 +349,6 @@ You can now update NixOS as normal. Note that M1 support module updates will gen
 ```
 $ sudo nix-channel --update
 $ sudo nixos-rebuild switch
-$ sudo reboot
-```
-
-In some cases, a kernel update may require new or different firmware to enable a particular feature such as Wi-Fi or Bluetooth support. To re-extract the firmware without recreating the stub partition, use the `asahi-fwextract` tool. You will need to upgrade the M1 support module to the latest version and rebuild your system with it in order to get an `asahi-fwextract` that knows the latest firmware needs. Once this is done, you can run the tool, then rebuild your system again:
-```
-$ sudo asahi-fwextract /boot/asahi/ /etc/nixos-m1/support/firmware/firmware.tar /dev/null
-$ sudo nixos-rebuild boot
 $ sudo reboot
 ```
 

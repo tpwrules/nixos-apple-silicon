@@ -2,7 +2,7 @@
 {
   imports = [
     ./kernel
-    ./firmware
+    ./peripheral-firmware
     ./boot-m1n1
   ];
 
