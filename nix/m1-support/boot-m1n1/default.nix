@@ -1,19 +1,12 @@
 { config, pkgs, lib, ... }:
 let
-  buildPkgs = if config.boot.kernelBuildIsCross then
-    import (pkgs.path) {
-      system = "x86_64-linux";
-      crossSystem.system = "aarch64-linux";
-    }
-  else pkgs;
-
-  bootM1n1 = buildPkgs.callPackage ../m1n1 {
+  bootM1n1 = config.hardware.asahi.pkgs.callPackage ../m1n1 {
     isRelease = true;
     withTools = false;
     customLogo = config.boot.m1n1CustomLogo;
   };
 
-  bootUBoot = buildPkgs.callPackage ../u-boot {
+  bootUBoot = config.hardware.asahi.pkgs.callPackage ../u-boot {
     m1n1 = bootM1n1;
   };
 
@@ -39,7 +32,7 @@ in {
 
     # give the user the utilities to re-extract the firmware if necessary
     environment.systemPackages = [
-      (buildPkgs.callPackage ../asahi-fwextract {})
+      (config.hardware.asahi.pkgs.callPackage ../asahi-fwextract {})
     ];
   };
 

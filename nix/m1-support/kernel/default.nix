@@ -3,9 +3,8 @@
 { config, pkgs, lib, ... }:
 {
   config = {
-    boot.kernelPackages = pkgs.callPackage ./package.nix {
-      crossBuild = config.boot.kernelBuildIsCross;
-      _16KBuild = config.boot.kernelBuildIs16K;
+    boot.kernelPackages = config.hardware.asahi.pkgs.callPackage ./package.nix {
+      _4KBuild = config.hardware.asahi.use4KPages;
     };
 
     # we definitely want to use CONFIG_ENERGY_MODEL, and
@@ -76,18 +75,23 @@
     };
   };
 
-  options.boot.kernelBuildIsCross = lib.mkOption {
+  imports = [
+    (lib.mkRemovedOptionModule [ "boot" "kernelBuildIsCross" ] ''
+      If it should still be true (which is unlikely), replace it
+      with 'hardware.asahi.pkgsSystem = "x86_64-linux"'. Otherwise, delete it.
+    '')
+
+    (lib.mkRemovedOptionModule [ "boot" "kernelBuildIs16K" ] ''
+      Replaced with 'hardware.asahi.use4KPages' which defaults to false.
+    '')
+  ];
+
+  options.hardware.asahi.use4KPages = lib.mkOption {
     type = lib.types.bool;
     default = false;
-    description = "Set that the Asahi Linux kernel should be cross-compiled.";
-  };
-
-  options.boot.kernelBuildIs16K = lib.mkOption {
-    type = lib.types.bool;
-    default = true;
     description = ''
-      Set that the Asahi Linux kernel should be built with 16K pages and various
-      software patched to be compatible. Some software may still be broken.
+      Build the Asahi Linux kernel with 4K pages to improve compatibility in
+      some cases at the cost of performance in others.
     '';
   };
 }

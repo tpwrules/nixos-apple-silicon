@@ -7,6 +7,6 @@
     nixpkgs.crossSystem = {
       system = "aarch64-linux";
     };
-    boot.kernelBuildIsCross = true;
+    hardware.asahi.pkgsSystem = pkgs.stdenv.system;
   } ] else [ ]);
 }).config

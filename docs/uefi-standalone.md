@@ -217,19 +217,19 @@ Add the `./m1-support` directory to the imports list and switch off the `canTouc
   boot.loader.efi.canTouchEfiVariables = false;
 ```
 
-If you used the cross-compiled installer image, i.e. you downloaded the ISO from GitHub or built `installer-bootstrap-cross`, add the following line to re-use the cross-compiled kernel. If you don't, the kernel will be rebuilt in the installer, which wastes time. If at any point you change the kernel configuration or update the system, and the kernel needs to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
+If you used the cross-compiled installer image, i.e. you downloaded the ISO from GitHub or built `installer-bootstrap-cross`, you may add the following line to re-use the cross-compiled Asahi packages. If you don't, they will be rebuilt in the installer, which wastes time. When you update the system and they need to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
 ```
   # Remove if you get an error that an x86_64-linux builder is required.
-  boot.kernelBuildIsCross = true;
+  hardware.asahi.pkgsSystem = "x86_64-linux";
 ```
 
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
-You can optionally choose to build the Asahi kernel with a 4K page size by enabling the appropriate option. This results in a reduction in compilation speed of 10-25%, but improves software compatibility in some cases (such as with Chromium/Electron and x86 emulation).
+You can choose to build the Asahi kernel with a 4K page size by enabling the appropriate option. This results in a reduction in raw compilation speed of 10-25%, but improves software compatibility in some cases (such as with Chromium/Electron and x86 emulation).
 ```
   # Build the kernel with 4K pages to improve software compatibility at
   # the cost of performance in some cases.
-  boot.kernelBuildIs16K = false;
+  hardware.asahi.use4KPages = true;
 ```
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:

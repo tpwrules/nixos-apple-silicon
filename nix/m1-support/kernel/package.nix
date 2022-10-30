@@ -1,11 +1,4 @@
-{ pkgs, crossBuild ? false, _16KBuild ? false }: let
-  buildPkgs = if crossBuild then
-    import (pkgs.path) {
-      system = "x86_64-linux";
-      crossSystem.system = "aarch64-linux";
-    }
-  else pkgs;
-
+{ pkgs, _4KBuild ? false }: let
   localPkgs =
     # we do this so the config can be read on any system and not affect
     # the output hash
@@ -38,16 +31,17 @@
       };
 
       kernelPatches = [
-      ] ++ lib.optionals (!_16KBuild) [
+      ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
         { name = "sven-iommu-4k";
           patch = ./sven-iommu-4k.patch;
         }
-      ] ++ lib.optionals _16KBuild [
-        # patch the kernel to set the default size to 16k so we don't need to
-        # convert our config to the nixos infrastructure or patch it and thus
-        # introduce a dependency on the host system architecture
+      ] ++ lib.optionals (!_4KBuild) [
+        # patch the kernel to set the default size to 16k instead of modifying
+        # the config so we don't need to convert our config to the nixos
+        # infrastructure or patch it and thus introduce a dependency on the host
+        # system architecture
         { name = "default-pagesize-16k";
           patch = ./default-pagesize-16k.patch;
         }
@@ -59,5 +53,5 @@
       extraMeta.branch = "5.19";
     } // (args.argsOverride or {});
 
-  linux_asahi = (buildPkgs.callPackage linux_asahi_pkg { });
-in buildPkgs.recurseIntoAttrs (buildPkgs.linuxPackagesFor linux_asahi)
+  linux_asahi = (pkgs.callPackage linux_asahi_pkg { });
+in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux_asahi)
