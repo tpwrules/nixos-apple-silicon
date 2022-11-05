@@ -229,7 +229,7 @@ Various non-free non-redistributable peripheral firmware files are required to u
 Currently, the only supported way to update the peripheral firmware files is to destroy and re-create the EFI system partition, so they will not change unexpectedly. If you do not want the impurity of referencing them (or are using flakes where this is prohibited), copy them off the EFI system partition (e.g. `mkdir -p /etc/nixos/firmware && cp /mnt/boot/asahi/{all_firmware.tar.gz,kernelcache*} /etc/nixos/firmware`) and specify this path in your configuration:
 ```
   # Specify path to peripheral firmware files.
-  hardware.asahi.peripheralFirmareDirectory = ./firmware;
+  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
   # Or disable extraction and management of them completely.
   # hardware.asahi.extractPeripheralFirmware = false;
 ```
