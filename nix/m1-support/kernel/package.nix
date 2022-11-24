@@ -19,18 +19,24 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "5.19.0-asahi";
+      version = "6.1.0-rc6-asahi";
       modDirVersion = version;
 
       src = fetchFromGitHub {
-        # tracking branch: https://github.com/AsahiLinux/linux/tree/asahi
+        # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/stable/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "f8c0d18173a7b649999ee27515393f7aae40310c";
-        hash = "sha256-6Pceu4eBF8kl//8CV57+yfYnywZxNk17BU0YgLkGVc0=";
+        rev = "asahi-6.1-rc6-5";
+        hash = "sha256-HHPfAtNh5wR0TCsEYuMdSbp55p1IVhF07tg4dlfgXk0=";
       };
 
       kernelPatches = [
+        # sven says this is okay since our kernel config supports it, and that
+        # it will be fixed at some point to not be necessary. but this allows
+        # new kernels to get USB up with old device trees
+        { name = "0001-drivers-usb-dwc3-remove-apple-dr_mode-check";
+          patch = ./0001-drivers-usb-dwc3-remove-apple-dr_mode-check.patch;
+        }
       ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
@@ -50,7 +56,7 @@
       configfile = ./config;
       config = readConfig configfile;
 
-      extraMeta.branch = "5.19";
+      extraMeta.branch = "6.1";
     } // (args.argsOverride or {});
 
   linux_asahi = (pkgs.callPackage linux_asahi_pkg { });

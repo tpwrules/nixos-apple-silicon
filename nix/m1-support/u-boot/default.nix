@@ -9,13 +9,13 @@
   buildPkgs = if pkgs.stdenv.system == "aarch64-linux" then pkgs else pkgsCross.aarch64-multiplatform;
 in (buildPkgs.buildUBoot rec {
   src = fetchFromGitHub {
-    # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
+    # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/stable/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2022.07-3";
-    hash = "sha256-Je8h8kstWTBfrITsOrSAPzHjiSe7pIDKPLKoWUAK9ZE=";
+    rev = "asahi-v2022.10-1";
+    hash = "sha256-/dtTJ+GxC2GFlqduAa2WWPGwktLjM7tUKus6/aUyPNQ=";
   };
-  version = "2022.07_rc100.asahi3";
+  version = "2022.10.asahi1-1";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];

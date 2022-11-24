@@ -1,0 +1,29 @@
+From 1c60b7662b82d7d5d54aca1cd24f9517a8c4595f Mon Sep 17 00:00:00 2001
+From: Thomas Watson <twatson52@icloud.com>
+Date: Thu, 24 Nov 2022 11:00:43 -0600
+Subject: [PATCH] drivers/usb/dwc3: remove apple dr_mode check
+
+This check prevents the driver from probing with old device trees.
+Allegedly this check is incorrect anyway as the dr_mode should default
+to OTG but this is not true at the time of the check.
+---
+ drivers/usb/dwc3/core.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
+index 1d88119cdbb8..b92401c1ee0c 100644
+--- a/drivers/usb/dwc3/core.c
++++ b/drivers/usb/dwc3/core.c
+@@ -1882,8 +1882,7 @@ static int dwc3_probe(struct platform_device *pdev)
+ 		}
+ 
+ 		if (of_device_is_compatible(dev->of_node, "apple,dwc3")) {
+-			if (!IS_ENABLED(CONFIG_USB_ROLE_SWITCH) ||
+-			    dwc->dr_mode != USB_DR_MODE_OTG) {
++			if (!IS_ENABLED(CONFIG_USB_ROLE_SWITCH)) {
+ 				dev_err(dev,
+ 				    "Apple DWC3 requires role switch support.\n"
+ 				    );
+-- 
+2.17.1
+
