@@ -4,6 +4,7 @@
 {
   config = {
     boot.kernelPackages = config.hardware.asahi.pkgs.callPackage ./package.nix {
+      inherit (config.boot) kernelPatches;
       _4KBuild = config.hardware.asahi.use4KPages;
     };
 
