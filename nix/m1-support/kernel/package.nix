@@ -5,6 +5,16 @@
     if builtins ? currentSystem then import (pkgs.path) { system = builtins.currentSystem; }
     else pkgs;
 
+  lib = localPkgs.lib;
+
+  parseExtraConfig = cfg: let
+    lines = builtins.filter (s: s != "") (lib.strings.splitString "\n" cfg);
+    perLine = line: let
+      kv = lib.strings.splitString " " line;
+    in assert (builtins.length kv == 2);
+       "CONFIG_${builtins.elemAt kv 0}=${builtins.elemAt kv 1}";
+    in lib.strings.concatMapStringsSep "\n" perLine lines;
+
   readConfig = configfile: import (localPkgs.runCommand "config.nix" { } ''
     echo "{ } // " > "$out"
     while IFS='=' read key val; do
@@ -22,7 +32,7 @@
         ${builtins.readFile ./config}
 
         # Patches
-        ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: extraConfig) kernelPatches}
+        ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) kernelPatches}
       '';
 
       _kernelPatches = kernelPatches;
