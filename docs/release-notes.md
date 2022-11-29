@@ -2,6 +2,18 @@
 
 This file contains important information for each release.
 
+## 2022-11-29
+
+This release corrects an issue which would cause booting off a USB flash
+drive from a boot environment with the latest device trees to fail with
+the message "An error occurred in stage 1 of the boot process."
+
+The cause was new functionality in new kernel modules which was required
+for the USB ports to work. These modules were made available in the
+initrd so the system can mount the USB flash drive and continue booting.
+
+The fix has been verified on a MacBook Pro M1 Max 16".
+
 ## 2022-11-24
 
 This release updates to the latest Asahi kernel and other stuff. Currently only
