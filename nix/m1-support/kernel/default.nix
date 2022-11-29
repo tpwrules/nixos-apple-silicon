@@ -15,7 +15,7 @@
     boot.initrd.includeDefaultModules = false;
     boot.initrd.availableKernelModules = [
       # list of initrd modules stolen from
-      # https://github.com/AsahiLinux/asahi-scripts/blob/e4d6151a7dcb63ae5e3779c3cf57362eb37d908a/initcpio/install/asahi
+      # https://github.com/AsahiLinux/asahi-scripts/blob/f461f080a1d2575ae4b82879b5624360db3cff8c/initcpio/install/asahi
       "apple-mailbox"
       "nvme_apple"
       "pinctrl-apple-gpio"
@@ -29,6 +29,8 @@
       "xhci-pci"
       "pcie-apple"
       "gpio_macsmc"
+      "phy-apple-atc"
+      "nvmem_apple_efuses"
       "spi-apple"
       "spi-hid-apple"
       "spi-hid-apple-of"
