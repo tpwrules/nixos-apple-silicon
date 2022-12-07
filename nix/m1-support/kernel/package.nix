@@ -1,21 +1,42 @@
-{ pkgs, _4KBuild ? false }: let
+{ pkgs, _4KBuild ? false, kernelPatches ? [ ] }: let
   localPkgs =
     # we do this so the config can be read on any system and not affect
     # the output hash
     if builtins ? currentSystem then import (pkgs.path) { system = builtins.currentSystem; }
     else pkgs;
 
-  readConfig = configfile: import (localPkgs.runCommand "config.nix" {} ''
-    echo "{" > "$out"
+  lib = localPkgs.lib;
+
+  parseExtraConfig = cfg: let
+    lines = builtins.filter (s: s != "") (lib.strings.splitString "\n" cfg);
+    perLine = line: let
+      kv = lib.strings.splitString " " line;
+    in assert (builtins.length kv == 2);
+       "CONFIG_${builtins.elemAt kv 0}=${builtins.elemAt kv 1}";
+    in lib.strings.concatMapStringsSep "\n" perLine lines;
+
+  readConfig = configfile: import (localPkgs.runCommand "config.nix" { } ''
+    echo "{ } // " > "$out"
     while IFS='=' read key val; do
       [ "x''${key#CONFIG_}" != "x$key" ] || continue
       no_firstquote="''${val#\"}";
-      echo '  "'"$key"'" = "'"''${no_firstquote%\"}"'";' >> "$out"
+      echo '{  "'"$key"'" = "'"''${no_firstquote%\"}"'"; } //' >> "$out"
     done < "${configfile}"
-    echo "}" >> $out
+    echo "{ }" >> $out
   '').outPath;
 
   linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel, ... } @ args:
+    let
+      configfile = if kernelPatches == [ ] then ./config else
+      pkgs.writeText "config" ''
+        ${builtins.readFile ./config}
+
+        # Patches
+        ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) kernelPatches}
+      '';
+
+      _kernelPatches = kernelPatches;
+    in
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
@@ -51,9 +72,9 @@
         { name = "default-pagesize-16k";
           patch = ./default-pagesize-16k.patch;
         }
-      ];
+      ] ++ _kernelPatches;
 
-      configfile = ./config;
+      inherit configfile;
       config = readConfig configfile;
 
       extraMeta.branch = "6.1";
@@ -61,3 +82,4 @@
 
   linux_asahi = (pkgs.callPackage linux_asahi_pkg { });
 in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux_asahi)
+
