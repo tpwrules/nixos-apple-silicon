@@ -2,6 +2,14 @@
 
 This file contains important information for each release.
 
+## 2022-12-06
+
+This release updates upstream dependencies including nixpkgs, the kernel,
+and m1n1. Nixpkgs is now officially 23.05pre.
+
+The `boot.kernelPackages` NixOS option is now respected properly by the
+manual kernel builder. (Thanks natsukagami!)
+
 ## 2022-11-29
 
 This release corrects an issue which would cause booting off a USB flash

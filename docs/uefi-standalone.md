@@ -1,10 +1,10 @@
-# UEFI Boot Standalone NixOS (2022-11-29)
+# UEFI Boot Standalone NixOS (2022-12-06)
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel version 6.1rc6.asahi5-1
-* m1n1 version v1.1.8
+* Asahi Linux kernel version 6.1rc8.asahi2-1
+* m1n1 version v1.2.2
 * Asahi Linux's U-Boot version 2022.10.asahi1-1
-* Nixpkgs, as of 2022-11-20
+* Nixpkgs, as of 2022-12-05
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-m1/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
@@ -226,7 +226,7 @@ The configuration above is the minimum required to produce a bootable system, bu
 
 Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi. The Asahi Linux installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the M1 support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
 
-Currently, the only supported way to update the peripheral firmware files is to destroy and re-create the EFI system partition, so they will not change unexpectedly. If you do not want the impurity of referencing them (or are using flakes where this is prohibited), copy them off the EFI system partition (e.g. `mkdir -p /etc/nixos/firmware && cp /mnt/boot/asahi/{all_firmware.tar.gz,kernelcache*} /etc/nixos/firmware`) and specify this path in your configuration:
+Currently, the only supported way to update the peripheral firmware files is to destroy and re-create the EFI system partition, so they will not change unexpectedly. If you do not want the impurity of referencing them (or are using flakes where this is prohibited), copy them off the EFI system partition (e.g. on the installation ISO `mkdir -p /mnt/etc/nixos/firmware && cp /mnt/boot/asahi/{all_firmware.tar.gz,kernelcache*} /mnt/etc/nixos/firmware`) and specify this path in your configuration:
 ```
   # Specify path to peripheral firmware files.
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
