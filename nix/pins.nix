@@ -2,9 +2,9 @@
   # https://hydra.nixos.org/jobset/mobile-nixos/unstable/evals
   # these evals have a cross-compiled stdenv available
   nixpkgs = fetchTarball {
-    name   = "nixpkgs-unstable-2022-11-20";
-    url    = "https://github.com/NixOS/nixpkgs/archive/af50806f7c6ab40df3e6b239099e8f8385f6c78b.tar.gz";
-    sha256 = "sha256:19sgfjdzqkigajbns6jiyqr6yvacqjx5xqbz6p6aghzjfblb2nnn";
+    name   = "nixpkgs-unstable-2022-12-05";
+    url    = "https://github.com/NixOS/nixpkgs/archive/6e51c97f1c849efdfd4f3b78a4870e6aa2da4198.tar.gz";
+    sha256 = "sha256:0d0alwdd07lsy4jl29wgn0m1z17ah9rwwggh7kpvg7a7skny24lc";
   };
 
   rust-overlay = fetchTarball {
