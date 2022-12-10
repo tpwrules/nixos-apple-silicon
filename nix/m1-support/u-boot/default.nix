@@ -21,11 +21,11 @@ in (buildPkgs.buildUBoot rec {
   extraMeta.platforms = [ "aarch64-linux" ];
   filesToInstall = [
     "u-boot-nodtb.bin.gz"
-    "m1n1-u-boot.macho"
     "m1n1-u-boot.bin"
   ];
   extraConfig = ''
     CONFIG_IDENT_STRING=" ${version}"
+    CONFIG_VIDEO_LOGO=n
   '';
 }).overrideAttrs (o: {
   # nixos's downstream patches are not applicable
@@ -34,7 +34,6 @@ in (buildPkgs.buildUBoot rec {
   preInstall = ''
     # compress so that m1n1 knows U-Boot's size and can find things after it
     gzip -n u-boot-nodtb.bin
-    cat ${m1n1}/build/m1n1.macho arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin.gz > m1n1-u-boot.macho
     cat ${m1n1}/build/m1n1.bin arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin.gz > m1n1-u-boot.bin
   '';
 })

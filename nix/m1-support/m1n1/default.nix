@@ -1,6 +1,7 @@
 { stdenv
 , lib
 , fetchFromGitHub
+, fetchpatch
 , pkgsCross
 , python3
 , dtc
@@ -25,16 +26,25 @@ let
   });
 in stdenv.mkDerivation rec {
   pname = "m1n1";
-  version = "1.2.2";
+  version = "1.2.3";
 
   src = fetchFromGitHub {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/stable/m1n1/PKGBUILD
     owner = "AsahiLinux";
     repo = "m1n1";
     rev = "v${version}";
-    hash = "sha256-KbiFE0eg/w/GcDRXSPysy1MMC3gcLyKRasal+lbIsdo=";
+    hash = "sha256-HEhsg3/OkMvAHvu16VFun87SNBPin69CL6XllE7sb4g=";
     fetchSubmodules = true;
   };
+  
+  # disable m1n1's silent mode and let it spew text to the screen
+  patches = [
+    (fetchpatch {
+      url = "https://github.com/zzywysm/m1n1/commit/a3def19ba1c10ada0eeea1abc6e8d945dcb4f669.patch";
+      sha256 = "sha256-BjvV28ka/gMDJ2yalLTdim7gqm6VMlycy2lXe2u2nJk=";
+      revert = false;
+    }) 
+  ];
 
   makeFlags = [ "ARCH=aarch64-unknown-linux-gnu-" ]
     ++ lib.optional isRelease "RELEASE=1"
