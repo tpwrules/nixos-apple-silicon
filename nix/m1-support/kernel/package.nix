@@ -1,4 +1,4 @@
-{ pkgs, _4KBuild ? false, kernelPatches ? [ ] }: let
+{ pkgs, _4KBuild ? false, withRust ? false, kernelPatches ? [ ] }: let
   localPkgs =
     # we do this so the config can be read on any system and not affect
     # the output hash
@@ -25,7 +25,8 @@
     echo "{ }" >> $out
   '').outPath;
 
-  linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel, ... } @ args:
+  linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
+      rustPlatform, rustfmt, rust-bindgen, ... } @ args:
     let
       configfile = if kernelPatches == [ ] then ./config else
       pkgs.writeText "config" ''
@@ -37,7 +38,7 @@
 
       _kernelPatches = kernelPatches;
     in
-    linuxKernel.manualConfig rec {
+    (linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
       version = "6.1.0-asahi";
@@ -72,7 +73,11 @@
       config = readConfig configfile;
 
       extraMeta.branch = "6.1";
-    } // (args.argsOverride or {});
+    } // (args.argsOverride or {})).overrideAttrs (old: if withRust then {
+      nativeBuildInputs = (old.nativeBuildInputs or [])
+        ++ [rust-bindgen rustfmt rustPlatform.rust.rustc ];
+      RUST_LIB_SRC = rustPlatform.rustLibSrc;
+    } else {});
 
   linux_asahi = (pkgs.callPackage linux_asahi_pkg { });
 in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux_asahi)

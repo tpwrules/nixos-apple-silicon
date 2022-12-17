@@ -6,6 +6,7 @@
     boot.kernelPackages = config.hardware.asahi.pkgs.callPackage ./package.nix {
       inherit (config.boot) kernelPatches;
       _4KBuild = config.hardware.asahi.use4KPages;
+      withRust = config.hardware.asahi.withRust;
     };
 
     # we definitely want to use CONFIG_ENERGY_MODEL, and
@@ -95,6 +96,14 @@
     description = ''
       Build the Asahi Linux kernel with 4K pages to improve compatibility in
       some cases at the cost of performance in others.
+    '';
+  };
+
+  options.hardware.asahi.withRust = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = ''
+      Build the Asahi Linux kernel with Rust support.
     '';
   };
 }
