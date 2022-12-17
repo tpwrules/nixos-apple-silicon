@@ -40,15 +40,15 @@
     linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "6.1.0-rc8-asahi";
+      version = "6.1.0-asahi";
       modDirVersion = version;
 
       src = fetchFromGitHub {
         # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/stable/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.1-rc8-2";
-        hash = "sha256-P4PiqD4tF8ZiOxY59O4mYhDuQMZkoMjJuqmRGN0hJ/o=";
+        rev = "asahi-6.1-2";
+        hash = "sha256-grQytmYoAlPxRI8mYQjZFduD3BH7PA7rz1hyInJb4JA=";
       };
 
       kernelPatches = [
