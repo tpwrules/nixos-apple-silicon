@@ -14,46 +14,20 @@
     powerManagement.cpuFreqGovernor = lib.mkOverride 800 "schedutil";
 
     boot.initrd.includeDefaultModules = false;
-    boot.initrd.availableKernelModules = [
-      # list of initrd modules stolen from
-      # https://github.com/AsahiLinux/asahi-scripts/blob/f461f080a1d2575ae4b82879b5624360db3cff8c/initcpio/install/asahi
-      "apple-mailbox"
-      "nvme_apple"
-      "pinctrl-apple-gpio"
-      "macsmc"
-      "macsmc-rtkit"
-      "i2c-apple"
-      "tps6598x"
-      "apple-dart"
+    boot.initrd.availableKernelModules = [ 
+      "xhci-hcd"
       "dwc3"
+      "dwc3-haps"
       "dwc3-of-simple"
       "xhci-pci"
-      "pcie-apple"
-      "gpio_macsmc"
-      "phy-apple-atc"
-      "nvmem_apple_efuses"
-      "spi-apple"
-      "spi-hid-apple"
-      "spi-hid-apple-of"
-      "rtc-macsmc"
-      "simple-mfd-spmi"
-      "spmi-apple-controller"
-      "nvmem_spmi_mfd"
-      "apple-dockchannel"
+      "uas"
+      "udc_core"
       "dockchannel-hid"
-      "apple-rtkit-helper"
-
-      # additional stuff necessary to boot off USB for the installer
-      # and if the initrd (i.e. stage 1) goes wrong
-      "usb-storage"
       "xhci-plat-hcd"
-      "usbhid"
-      "hid_generic"
     ];
 
     boot.kernelParams = [
       "earlycon"
-      "console=ttySAC0,1500000"
       "console=tty0"
       "boot.shell_on_fail"
       # Apple's SSDs are slow (~dozens of ms) at processing flush requests which
