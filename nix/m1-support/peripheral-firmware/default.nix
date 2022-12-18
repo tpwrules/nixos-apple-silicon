@@ -1,5 +1,7 @@
 { config, pkgs, lib, ... }:
-{
+let
+  pkgs' = config.hardware.asahi.pkgs;
+in {
   config = {
     assertions = lib.mkIf config.hardware.asahi.extractPeripheralFirmware [
       { assertion = config.hardware.asahi.peripheralFirmwareDirectory != null;
@@ -14,7 +16,7 @@
       (config.hardware.asahi.peripheralFirmwareDirectory != null)
         && config.hardware.asahi.extractPeripheralFirmware) [
       (
-        pkgs.callPackage ./package.nix {
+        pkgs'.peripheral-firmware.override {
           inherit (config.hardware.asahi) peripheralFirmwareDirectory;
         }
       )

@@ -8,10 +8,6 @@ in {
       installer-config = self.callPackage ./installer-bootstrap {};
       installer-config-cross = self.callPackage ./installer-bootstrap { crossBuild = true; };
     in {
-      m1n1 = self.callPackage ./m1-support/m1n1 {};
-      u-boot = self.callPackage ./m1-support/u-boot {};
-      asahi-fwextract = self.callPackage ./m1-support/asahi-fwextract {};
-
       installer-bootstrap = installer-config.system.build.isoImage;
       installer-bootstrap-cross = installer-config-cross.system.build.isoImage;
       

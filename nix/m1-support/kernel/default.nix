@@ -1,9 +1,11 @@
 # the Asahi Linux kernel and options that must go along with it
 
 { config, pkgs, lib, ... }:
-{
+let
+  pkgs' = config.hardware.asahi.pkgs;
+in {
   config = {
-    boot.kernelPackages = config.hardware.asahi.pkgs.callPackage ./package.nix {
+    boot.kernelPackages = pkgs'.asahi-kernel.override {
       inherit (config.boot) kernelPatches;
       _4KBuild = config.hardware.asahi.use4KPages;
     };

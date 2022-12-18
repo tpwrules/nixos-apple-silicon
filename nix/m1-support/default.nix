@@ -6,14 +6,22 @@
     ./boot-m1n1
   ];
 
-  config = {
-    hardware.asahi.pkgs = if config.hardware.asahi.pkgsSystem != "aarch64-linux"
-    then import (pkgs.path) {
-        system = config.hardware.asahi.pkgsSystem;
-        crossSystem.system = "aarch64-linux";
-      }
-    else pkgs;
-  };
+  config =
+    let
+      tweaks =
+        if config.hardware.asahi.pkgsSystem == "aarch64-linux"
+        then {}
+        else {
+          system = config.hardware.asahi.pkgsSystem;
+          crossSystem.system = "aarch64-linux";
+        };
+
+      overlays = [
+        (import ./overlay.nix)
+      ];
+    in {
+      hardware.asahi.pkgs = import pkgs.path (tweaks // { inherit overlays; });
+    };
 
   options.hardware.asahi = {
     pkgsSystem = lib.mkOption {

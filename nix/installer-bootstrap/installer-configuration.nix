@@ -6,8 +6,9 @@
 # https://github.com/samueldr/cross-system/blob/master/configuration.nix
 
 { config, pkgs, lib, modulesPath, ... }:
-
-{
+let
+  pkgs' = config.hardware.asahi.pkgs;
+in {
   imports = [
     (modulesPath + "/profiles/minimal.nix")
     (modulesPath + "/profiles/installation-device.nix")
@@ -29,13 +30,13 @@
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
   boot.postBootCommands = let
-    asahi-fwextract = pkgs.callPackage ../m1-support/asahi-fwextract {};
+    inherit (pkgs') asahi-fwextract shadow cpio;
   in ''
     for o in $(</proc/cmdline); do
       case "$o" in
         live.nixos.passwd=*)
           set -- $(IFS==; echo $o)
-          echo "nixos:$2" | ${pkgs.shadow}/bin/chpasswd
+          echo "nixos:$2" | ${shadow}/bin/chpasswd
           ;;
       esac
     done
@@ -48,7 +49,7 @@
     umount /tmp/.fwsetup/esp
 
     pushd /tmp/.fwsetup/
-    cat /tmp/.fwsetup/extracted/firmware.cpio | ${pkgs.cpio}/bin/cpio -id --quiet --no-absolute-filenames
+    cat /tmp/.fwsetup/extracted/firmware.cpio | ${cpio}/bin/cpio -id --quiet --no-absolute-filenames
     mkdir -p /lib/firmware
     mv vendorfw/* /lib/firmware
     popd

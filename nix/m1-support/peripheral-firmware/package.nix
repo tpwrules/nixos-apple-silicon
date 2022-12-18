@@ -1,12 +1,10 @@
 { pkgs
 , peripheralFirmwareDirectory ? null # is this a smell?
 ,... }:
-let
-  asahi-fwextract = pkgs.callPackage ../asahi-fwextract {};
-in pkgs.stdenv.mkDerivation {
+pkgs.stdenv.mkDerivation {
   name = "asahi-peripheral-firmware";
 
-  nativeBuildInputs = [ asahi-fwextract pkgs.cpio ];
+  nativeBuildInputs = with pkgs; [ asahi-fwextract cpio ];
 
   buildCommand = ''
     mkdir extracted
