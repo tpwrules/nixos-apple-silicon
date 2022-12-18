@@ -25,10 +25,21 @@ in (buildPkgs.buildUBoot rec {
   ];
   extraConfig = ''
     CONFIG_IDENT_STRING=" ${version}"
+    CONFIG_VIDEO_FONT_4X6=n
+    CONFIG_VIDEO_FONT_8X16=n
+    CONFIG_VIDEO_FONT_SUN12X22=n
+    CONFIG_VIDEO_FONT_TER12X24=n
+    CONFIG_VIDEO_FONT_TER16X32=y
   '';
 }).overrideAttrs (o: {
   # nixos's downstream patches are not applicable
-  patches = [ ];
+  # however, we add in bigger u-boot fonts because the mac laptop screens are high-res
+  # these patches obtained via:
+  # https://git.alpinelinux.org/aports/tree/testing/u-boot-asahi
+  patches = [ 
+    ./apritzel-first5-video.patch
+    ./mps-u-boot-ter12x24.patch 
+  ];
 
   preInstall = ''
     # compress so that m1n1 knows U-Boot's size and can find things after it
