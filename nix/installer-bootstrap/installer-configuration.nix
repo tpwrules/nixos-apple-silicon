@@ -65,11 +65,14 @@
     pkgs.gptfdisk
     pkgs.parted
     pkgs.cryptsetup
+    pkgs.wget
+    pkgs.curl
+    pkgs.magic-wormhole
   ];
 
-  # save space and compilation time. might revise?
-  hardware.enableAllFirmware = lib.mkForce false;
-  hardware.enableRedistributableFirmware = lib.mkForce false;
+  # add in firmware so usb-ethernet adapters work
+  hardware.enableAllFirmware = lib.mkForce true;
+  hardware.enableRedistributableFirmware = lib.mkForce true;
   sound.enable = false;
   # avoid including non-reproducible dbus docs
   documentation.doc.enable = false;
