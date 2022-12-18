@@ -73,6 +73,7 @@
   # add in firmware so usb-ethernet adapters work
   hardware.enableAllFirmware = lib.mkForce true;
   hardware.enableRedistributableFirmware = lib.mkForce true;
+  nixpkgs.config.allowUnfree = true;
   sound.enable = false;
   # avoid including non-reproducible dbus docs
   documentation.doc.enable = false;
