@@ -213,6 +213,7 @@ Add the `./m1-support` directory to the imports list and switch off the `canTouc
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.consoleMode = "0";
   boot.loader.efi.canTouchEfiVariables = false;
 ```
 
