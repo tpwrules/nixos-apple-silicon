@@ -1,4 +1,4 @@
-# UEFI Boot Standalone NixOS (2022-12-06)
+# UEFI Boot Standalone NixOS (2022-12-18)
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel version 6.1.0-asahi2

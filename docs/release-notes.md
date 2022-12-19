@@ -2,6 +2,35 @@
 
 This file contains important information for each release.
 
+## 2022-12-18
+
+This release updates upstream dependencies including nixpkgs, the kernel,
+and m1n1.
+
+Updating nixpkgs resolves an issue that might have caused NetworkManager's GUI
+to crash after entering a Wi-Fi password.
+
+Support for Rust in the kernel, the Asahi edge kernel config, and the
+experimental Mesa driver are now included as NixOS options.
+
+* Enable the option `hardware.asahi.withRust` to build the kernel with the
+Rust toolchain present. GCC is still used for the kernel's C code.
+* Enable the option `hardware.asahi.addEdgeKernelConfig` to add the official
+Asahi edge kernel configuration options. This implies the previous option.
+* Enable the option `hardware.asahi.useExperimentalGPUDriver` to switch the
+system version of Mesa to the Asahi project's fork which includes experimental
+support for the Apple Silicon GPU. This implies the previous two options.
+
+Please note that, as outlined in the
+[official blog post](https://asahilinux.org/2022/12/gpu-drivers-now-in-asahi-linux/),
+there are likely to be issues with many applications using the experimental
+GPU drivers. **Do not report any GPU driver issues encountered under NixOS to
+the Asahi project. Replicate your issue and gather relevant information as
+described in the post using the official distro instead!**
+
+The GPU drivers have been tested and verified functional under NixOS on an
+M1 Max MacBook Pro 16" with X11, Xfce, SuperTuxKart, and WebGL under Firefox.
+
 ## 2022-12-06
 
 This release updates upstream dependencies including nixpkgs, the kernel,
