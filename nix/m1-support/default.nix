@@ -2,6 +2,7 @@
 {
   imports = [
     ./kernel
+    ./mesa
     ./peripheral-firmware
     ./boot-m1n1
   ];
