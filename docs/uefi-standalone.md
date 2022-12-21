@@ -66,7 +66,7 @@ Change directories to the repository, then use Nix to build m1n1 and symlink the
 nixos-m1$ nix-build -A m1n1 -o m1n1
 ```
 
-m1n1 has been built and the `.macho` and `.bin` files are now in `m1n1/build/`. You can also run m1n1's scripts such as `chainload.py` using a command like `m1n1/bin/m1n1-chainload`.
+m1n1 has been built and the build products are now in `m1n1/build/`. You can also run m1n1's scripts such as `chainload.py` using a command like `m1n1/bin/m1n1-chainload`.
 
 #### U-Boot
 
@@ -78,7 +78,7 @@ Use Nix to build U-Boot along with m1n1 and the device trees:
 nixos-m1$ nix-build -A u-boot -o u-boot
 ```
 
-The `.macho` and `.bin` files with m1n1, the device trees, and U-Boot joined together are now in `u-boot/`.
+The `.bin` file with m1n1, the device trees, and U-Boot joined together is now in `u-boot/`.
 
 #### Kernel and Bootstrap Installer
 
@@ -286,7 +286,7 @@ By selecting the appropriate menu option in the Asahi Linux installer, you can a
 To run U-Boot under the hypervisor, start m1n1 and attach the Mac to the host PC using an appropriate USB cable, change directories to the repo, then run:
 
 ```
-nixos-m1$ m1n1/bin/m1n1-run_guest u-boot/m1n1-u-boot.macho
+nixos-m1$ m1n1/bin/m1n1-run_guest --raw u-boot/m1n1-u-boot.bin
 ```
 
 To access the serial console, in a separate terminal run:
