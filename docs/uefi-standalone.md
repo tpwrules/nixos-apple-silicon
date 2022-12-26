@@ -2,9 +2,10 @@
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel version 6.1.0-asahi2
+* Asahi Linux's Mesa version 23.0.0_pre20221219-1
 * m1n1 version v1.2.3
 * Asahi Linux's U-Boot version 2022.10.asahi1-1
-* Nixpkgs, as of 2022-12-16
+* Nixpkgs, as of 2022-12-22
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-m1/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
