@@ -65,6 +65,9 @@
     pkgs.gptfdisk
     pkgs.parted
     pkgs.cryptsetup
+    pkgs.curl
+    pkgs.wget
+    pkgs.wormhole-william
   ];
 
   # save space and compilation time. might revise?

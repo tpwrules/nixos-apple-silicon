@@ -70,7 +70,6 @@ in stdenv.mkDerivation rec {
     runHook preInstall
 
     mkdir -p $out/build
-    cp build/m1n1.macho $out/build
     cp build/m1n1.bin $out/build
   '' + (lib.optionalString withTools ''
     mkdir -p $out/{bin,script,toolchain-bin}
