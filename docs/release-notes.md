@@ -2,6 +2,23 @@
 
 This file contains important information for each release.
 
+## 2022-12-26
+
+This release updates upstream dependencies, including nixpkgs and Mesa.
+
+Updating nixpkgs in particular resolves an issue which broke reproducibility of
+the installer ISO when building on some filesystems, like ZFS.
+
+The curl, wget, and
+[wormhole-william](https://github.com/psanford/wormhole-william) utilities are
+now included in the installer image to ease file transfer and initial setup.
+wormhole-william is interoperable with the
+[Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/) utility.
+(Thanks zzywysm!)
+
+U-Boot is now built with a double-size font so that its console can be
+practically read on Retina displays. (Thanks again zzywysm!)
+
 ## 2022-12-18
 
 This release updates upstream dependencies including nixpkgs, the kernel,
