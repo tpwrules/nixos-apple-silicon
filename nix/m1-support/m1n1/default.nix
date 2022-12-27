@@ -36,6 +36,8 @@ in stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
+  patches = [ ./spew.patch ];
+
   makeFlags = [ "ARCH=aarch64-unknown-linux-gnu-" ]
     ++ lib.optional isRelease "RELEASE=1"
     ++ lib.optional withChainloading "CHAINLOADING=1";

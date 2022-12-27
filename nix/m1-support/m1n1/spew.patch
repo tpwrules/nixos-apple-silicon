@@ -1,0 +1,25 @@
+From a3def19ba1c10ada0eeea1abc6e8d945dcb4f669 Mon Sep 17 00:00:00 2001
+From: Zzy Wysm <zzy@zzywysm.com>
+Date: Fri, 9 Dec 2022 14:28:04 -0500
+Subject: [PATCH] zzy m1n1 customizations
+
+i like boot scroll and faster boots
+---
+ config.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/config.h b/config.h
+index 7ba015662..3712e0ad2 100644
+--- a/config.h
++++ b/config.h
+@@ -20,9 +20,8 @@
+ //#define TARGET T8103
+ 
+ #ifdef RELEASE
+-# define FB_SILENT_MODE
+ # ifdef CHAINLOADING
+-#  define EARLY_PROXY_TIMEOUT 5
++#  define EARLY_PROXY_TIMEOUT 2
+ # endif
+ #endif
+ 
