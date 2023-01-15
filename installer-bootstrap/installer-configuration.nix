@@ -29,7 +29,7 @@
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
   boot.postBootCommands = let
-    asahi-fwextract = pkgs.callPackage ../m1-support/asahi-fwextract {};
+    asahi-fwextract = pkgs.callPackage ../packages/asahi-fwextract {};
   in ''
     for o in $(</proc/cmdline); do
       case "$o" in

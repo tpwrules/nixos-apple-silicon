@@ -13,11 +13,11 @@
         systems = [ "aarch64-linux" "x86_64-linux" "aarch64-darwin" "x86_64-darwin" ];
 
         flake = {
-          overlays.default = import nix/overlay.nix;
+          overlays.default = import packages/overlay.nix;
 
           # TODO: make the nixos module use our overlay
           nixosModules = rec {
-            m1-support = nix/m1-support;
+            m1-support = ./nixos-module;
             default = m1-support;
           };
 
@@ -29,7 +29,7 @@
               # https://github.com/NixOS/nix/issues/4265
 
               installer-bootstrap =
-                let installer-config = pkgs.callPackage nix/installer-bootstrap {};
+                let installer-config = pkgs.callPackage ./installer-bootstrap {};
                 in installer-config.system.build.isoImage;
             }
           );
@@ -46,7 +46,7 @@
 
           packages = {
             installer-bootstrap-cross =
-              let installer-config-cross = pkgs.callPackage nix/installer-bootstrap { crossBuild = true; };
+              let installer-config-cross = pkgs.callPackage ./installer-bootstrap { crossBuild = true; };
               in installer-config-cross.system.build.isoImage;
           };
         };

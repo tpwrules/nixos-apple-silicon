@@ -3,7 +3,7 @@
 { config, pkgs, lib, ... }:
 {
   config = {
-    boot.kernelPackages = config.hardware.asahi.pkgs.callPackage ./package.nix {
+    boot.kernelPackages = config.hardware.asahi.pkgs.callPackage ../../packages/kernel {
       inherit (config.boot) kernelPatches;
       _4KBuild = config.hardware.asahi.use4KPages;
       withRust = config.hardware.asahi.withRust;

@@ -1,12 +1,12 @@
 { config, pkgs, lib, ... }:
 let
-  bootM1n1 = config.hardware.asahi.pkgs.callPackage ../m1n1 {
+  bootM1n1 = config.hardware.asahi.pkgs.callPackage ../../packages/m1n1 {
     isRelease = true;
     withTools = false;
     customLogo = config.boot.m1n1CustomLogo;
   };
 
-  bootUBoot = config.hardware.asahi.pkgs.callPackage ../u-boot {
+  bootUBoot = config.hardware.asahi.pkgs.callPackage ../../packages/u-boot {
     m1n1 = bootM1n1;
   };
 

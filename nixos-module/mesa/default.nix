@@ -10,7 +10,7 @@
       # it over the original Mesa)
       nixpkgs.overlays = [
         (final: prev: {
-          mesa-asahi-edge = final.callPackage ./package.nix { inherit (prev) mesa; };
+          mesa-asahi-edge = final.callPackage ../../packagex/mesa { inherit (prev) mesa; };
         })
       ];
 

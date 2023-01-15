@@ -11,7 +11,7 @@
     ];
 
     hardware.firmware = let
-      asahi-fwextract = pkgs.callPackage ../asahi-fwextract {};
+      asahi-fwextract = pkgs.callPackage ../../packages/asahi-fwextract {};
     in lib.mkIf ((config.hardware.asahi.peripheralFirmwareDirectory != null)
         && config.hardware.asahi.extractPeripheralFirmware) [
       (pkgs.stdenv.mkDerivation {
