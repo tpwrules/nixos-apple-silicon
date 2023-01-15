@@ -29,6 +29,9 @@
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
   boot.postBootCommands = let
+    # TODO: this is wrong! we need to make sure that this path is valid
+    # when building the iso *and* when this file is copied into the final
+    # configuration. This is currently broken in the final configuration.
     asahi-fwextract = pkgs.callPackage ../packages/asahi-fwextract {};
   in ''
     for o in $(</proc/cmdline); do
@@ -61,13 +64,13 @@
 
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
-  environment.systemPackages = [
-    pkgs.gptfdisk
-    pkgs.parted
-    pkgs.cryptsetup
-    pkgs.curl
-    pkgs.wget
-    pkgs.wormhole-william
+  environment.systemPackages = with pkgs; [
+    gptfdisk
+    parted
+    cryptsetup
+    curl
+    wget
+    wormhole-william
   ];
 
   # save space and compilation time. might revise?

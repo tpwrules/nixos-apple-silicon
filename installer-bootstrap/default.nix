@@ -4,10 +4,10 @@
   specialArgs = { modulesPath = pkgs.path + "/nixos/modules"; };
   modules = [
     ./iso-configuration.nix
-  ] ++ (if crossBuild then [ {
-    nixpkgs.crossSystem = {
-      system = "aarch64-linux";
-    };
-    hardware.asahi.pkgsSystem = pkgs.stdenv.system;
-  } ] else [ ]);
+  ] ++ (
+    pkgs.lib.optional crossBuild {
+      nixpkgs.crossSystem.system = "aarch64-linux";
+      hardware.asahi.pkgsSystem = pkgs.stdenv.system;
+    }
+  );
 }).config

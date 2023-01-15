@@ -3,7 +3,7 @@
 {
   imports = [
     ./installer-configuration.nix
-    ../m1-support
+    ../nixos-module
   ];
 
   # include those modules so the user can rebuild the install iso. that's not
@@ -11,14 +11,15 @@
   # directory for their own config.
   installer.cloneConfigIncludes = [
     "./installer-configuration.nix"
-    "./m1-support"
+    "./m1-support/nixos-module"
   ];
 
   # copy the m1-support and installer configs into the iso
   boot.postBootCommands = lib.optionalString config.installer.cloneConfig ''
     if ! [ -e /etc/nixos/m1-support ]; then
+      mkdir -p /etc/nixos/m1-support
       cp ${./installer-configuration.nix} /etc/nixos/installer-configuration.nix
-      cp -r ${../m1-support} /etc/nixos/m1-support
+      cp -r ${../packages} ${../nixos-module} -t /etc/nixos/m1-support
     fi
   '';
 }
