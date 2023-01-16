@@ -2,6 +2,15 @@
 
 This file contains important information for each release.
 
+## 2023-01-16
+
+This release updates nixpkgs. There have been no changes to Asahi's
+stable package versions since the last release.
+
+This release also solves an issue where Plasma Wayland sessions would
+not launch when using experimental GPU support due to mismatched Mesa
+versions. (Thanks bkchr!)
+
 ## 2022-12-26
 
 This release updates upstream dependencies, including nixpkgs and Mesa.
