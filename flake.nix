@@ -28,7 +28,8 @@
         # all nixpkgs systems
         systems = inputs.nixpkgs.lib.systems.flakeExposed;
 
-        perSystem = { system, pkgs, ... }: {
+        perSystem = { system, ... }: {
+          # override the `pkgs` argument used by flake-parts modules
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
             overlays = [
