@@ -10,8 +10,6 @@
   outputs = { self, flake-parts, ... }@inputs:
     flake-parts.lib.mkFlake { inherit inputs; } (
       { withSystem, ... }: {
-        systems = [ "aarch64-linux" "x86_64-linux" "aarch64-darwin" "x86_64-darwin" ];
-
         flake = {
           overlays.default = import packages/overlay.nix;
 
@@ -28,6 +26,9 @@
           );
         };
 
+        # all nixpkgs systems
+        systems = inputs.nixpkgs.lib.systems.flakeExposed;
+
         perSystem = { system, pkgs, ... }: {
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
@@ -38,11 +39,20 @@
           };
 
           packages = {
-            # exposing installer-config breaks `nix flake show`
-            # https://github.com/NixOS/nix/issues/4265
             installer-bootstrap =
-              let installer-config = import ./installer-bootstrap { inherit pkgs; };
-              in installer-config.system.build.isoImage;
+              let
+                installer-system = inputs.nixpkgs.lib.nixosSystem {
+                  specialArgs = { modulesPath = inputs.nixpkgs + "/nixos/modules"; };
+                  modules = [
+                    ./iso-configuration
+                    {
+                      nixpkgs.crossSystem.system = "aarch64-linux";
+                      nixpkgs.localSystem.system = system;
+                      hardware.asahi.pkgsSystem = system;
+                    }
+                  ];
+                };
+              in installer-system.config.system.build.isoImage;
           };
         };
       }
