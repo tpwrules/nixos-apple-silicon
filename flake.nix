@@ -24,13 +24,6 @@
           packages.aarch64-linux = withSystem "aarch64-linux" (
             { pkgs, ... }: {
               inherit (pkgs) m1n1 u-boot asahi-fwextract;
-
-              # exposing installer-config breaks `nix flake show`
-              # https://github.com/NixOS/nix/issues/4265
-
-              installer-bootstrap =
-                let installer-config = pkgs.callPackage ./installer-bootstrap {};
-                in installer-config.system.build.isoImage;
             }
           );
         };
@@ -45,9 +38,11 @@
           };
 
           packages = {
-            installer-bootstrap-cross =
-              let installer-config-cross = pkgs.callPackage ./installer-bootstrap { crossBuild = true; };
-              in installer-config-cross.system.build.isoImage;
+            # exposing installer-config breaks `nix flake show`
+            # https://github.com/NixOS/nix/issues/4265
+            installer-bootstrap =
+              let installer-config = import ./installer-bootstrap { inherit pkgs; };
+              in installer-config.system.build.isoImage;
           };
         };
       }

@@ -1,13 +1,12 @@
-{ pkgs, crossBuild ? false }:
+{ pkgs }:
 (import (pkgs.path + "/nixos/lib/eval-config.nix") {
-  inherit (pkgs) system;
   specialArgs = { modulesPath = pkgs.path + "/nixos/modules"; };
   modules = [
     ./iso-configuration.nix
-  ] ++ (
-    pkgs.lib.optional crossBuild {
+    {
       nixpkgs.crossSystem.system = "aarch64-linux";
-      hardware.asahi.pkgsSystem = pkgs.stdenv.system;
+      nixpkgs.localSystem.system = pkgs.system;
+      hardware.asahi.pkgsSystem = pkgs.system;
     }
-  );
+  ];
 }).config
