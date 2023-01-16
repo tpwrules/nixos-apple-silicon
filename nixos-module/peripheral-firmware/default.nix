@@ -11,24 +11,25 @@
     ];
 
     hardware.firmware = let
-      asahi-fwextract = pkgs.callPackage ../../packages/asahi-fwextract {};
-    in lib.mkIf ((config.hardware.asahi.peripheralFirmwareDirectory != null)
-        && config.hardware.asahi.extractPeripheralFirmware) [
-      (pkgs.stdenv.mkDerivation {
-        name = "asahi-peripheral-firmware";
+      pkgs' = config.hardware.asahi.pkgs;
+    in
+      lib.mkIf ((config.hardware.asahi.peripheralFirmwareDirectory != null)
+          && config.hardware.asahi.extractPeripheralFirmware) [
+        (pkgs.stdenv.mkDerivation {
+          name = "asahi-peripheral-firmware";
 
-        nativeBuildInputs = [ asahi-fwextract pkgs.cpio ];
+          nativeBuildInputs = [ pkgs'.asahi-fwextract pkgs.cpio ];
 
-        buildCommand = ''
-          mkdir extracted
-          asahi-fwextract ${config.hardware.asahi.peripheralFirmwareDirectory} extracted
+          buildCommand = ''
+            mkdir extracted
+            asahi-fwextract ${config.hardware.asahi.peripheralFirmwareDirectory} extracted
 
-          mkdir -p $out/lib/firmware
-          cat extracted/firmware.cpio | cpio -id --quiet --no-absolute-filenames
-          mv vendorfw/* $out/lib/firmware
-        '';
-      })
-    ];
+            mkdir -p $out/lib/firmware
+            cat extracted/firmware.cpio | cpio -id --quiet --no-absolute-filenames
+            mv vendorfw/* $out/lib/firmware
+          '';
+        })
+      ];
   };
 
   options.hardware.asahi = {

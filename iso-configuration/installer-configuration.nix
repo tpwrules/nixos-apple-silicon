@@ -29,10 +29,7 @@
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
   boot.postBootCommands = let
-    # TODO: this is wrong! we need to make sure that this path is valid
-    # when building the iso *and* when this file is copied into the final
-    # configuration. This is currently broken in the final configuration.
-    asahi-fwextract = pkgs.callPackage ../packages/asahi-fwextract {};
+    inherit (config.hardware.asahi.pkgs) asahi-fwextract;
   in ''
     for o in $(</proc/cmdline); do
       case "$o" in

@@ -13,7 +13,6 @@
         flake = {
           overlays.default = import packages/overlay.nix;
 
-          # TODO: make the nixos module use our overlay
           nixosModules = rec {
             m1-support = ./nixos-module;
             default = m1-support;
