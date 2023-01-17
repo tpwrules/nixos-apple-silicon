@@ -11,24 +11,21 @@
     flake-parts.lib.mkFlake { inherit inputs; } (
       { withSystem, ... }: {
         flake = {
-          overlays.default = import packages/overlay.nix;
+          overlays = rec {
+            asahi-overlay = import packages/overlay.nix;
+            default = asahi-overlay;
+          };
 
           nixosModules = rec {
             m1-support = ./nixos-module;
             default = m1-support;
           };
-
-          packages.aarch64-linux = withSystem "aarch64-linux" (
-            { pkgs, ... }: {
-              inherit (pkgs) m1n1 uboot-asahi asahi-fwextract;
-            }
-          );
         };
 
-        # all nixpkgs systems
-        systems = inputs.nixpkgs.lib.systems.flakeExposed;
+        # build platforms supported for uboot in nixpkgs
+        systems = [ "aarch64-linux" "x86_64-linux" "i686-linux" ];
 
-        perSystem = { system, ... }: {
+        perSystem = { system, pkgs, ... }: {
           # override the `pkgs` argument used by flake-parts modules
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
@@ -39,6 +36,8 @@
           };
 
           packages = {
+            inherit (pkgs) m1n1 uboot-asahi;
+
             installer-bootstrap =
               let
                 installer-system = inputs.nixpkgs.lib.nixosSystem {
