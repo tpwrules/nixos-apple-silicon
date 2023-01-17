@@ -11,7 +11,7 @@
     let
       cfg = config.hardware.asahi;
     in {
-      nixpkgs.overlays = [ cfg.overlay ];
+      nixpkgs.overlays = lib.mkBefore [ cfg.overlay ];
 
       hardware.asahi.pkgs =
         if cfg.pkgsSystem != "aarch64-linux"
