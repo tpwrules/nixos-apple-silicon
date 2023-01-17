@@ -8,7 +8,7 @@ let
     customLogo = config.boot.m1n1CustomLogo;
   };
 
-  bootUBoot = pkgs'.u-boot.override {
+  bootUBoot = pkgs'.uboot-asahi.override {
     m1n1 = bootM1n1;
   };
 

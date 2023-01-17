@@ -20,7 +20,7 @@
 
           packages.aarch64-linux = withSystem "aarch64-linux" (
             { pkgs, ... }: {
-              inherit (pkgs) m1n1 u-boot asahi-fwextract;
+              inherit (pkgs) m1n1 uboot-asahi asahi-fwextract;
             }
           );
         };
