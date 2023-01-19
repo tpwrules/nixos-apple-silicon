@@ -44,20 +44,15 @@
 
     peripheralFirmwareDirectory = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
-      default = let
-        paths = [
+
+      default = lib.findFirst (path: builtins.pathExists (path + "/all_firmware.tar.gz")) null
+        [
           # path when the system is operating normally
           "/boot/asahi"
           # path when the system is mounted in the installer
           "/mnt/boot/asahi"
         ];
 
-        validPaths = (builtins.filter
-          (p: builtins.pathExists (p + "/all_firmware.tar.gz"))
-          paths) ++ [ null ];
-
-        firstPath = builtins.elemAt validPaths 0;
-      in if firstPath != null then "${/. + firstPath}" else null;
       description = ''
         Path to the directory containing the non-free non-redistributable
         peripheral firmware necessary for features like Wi-Fi. Ordinarily, this
