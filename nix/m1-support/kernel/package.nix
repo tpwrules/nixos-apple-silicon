@@ -74,9 +74,26 @@
 
       extraMeta.branch = "6.1";
     } // (args.argsOverride or {})).overrideAttrs (old: if withRust then {
-      nativeBuildInputs = (old.nativeBuildInputs or [])
-        ++ [rust-bindgen rustfmt rustPlatform.rust.rustc ];
+      nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+        rust-bindgen
+        rustfmt
+        # rustc 1.66.x has problems relating to the sad old aarch64 GCC9.
+        # we need it to pass -lgcc to gcc through the nix machinery but only when rustc
+        # is running, so we give the kernel build a rustc that wraps the real rustc
+        # while setting the appropriate environment variable during its execution.
+        # https://github.com/NixOS/nixpkgs/pull/209113
+        (pkgs.writeShellScriptBin "rustc" ''
+          NIX_LDFLAGS=-lgcc ${rustPlatform.rust.rustc}/bin/rustc "$@"
+        '')
+      ];
       RUST_LIB_SRC = rustPlatform.rustLibSrc;
+
+      preConfigure = ''
+        # Fixes for Rust 1.66.x
+        sed -i -e 's/rustc_allocator_nounwind/rustc_nounwind/g' rust/alloc/alloc.rs
+        sed -i -e 's/const Unpin/Unpin/' rust/alloc/boxed.rs
+        sed -i -e '/^pub unsafe trait RawDeviceId/i #[const_trait]' rust/kernel/driver.rs
+      '';
     } else {});
 
   linux_asahi = (pkgs.callPackage linux_asahi_pkg { });
