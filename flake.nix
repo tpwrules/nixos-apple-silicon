@@ -27,9 +27,9 @@
 
         perSystem = { system, pkgs, ... }: {
           # override the `pkgs` argument used by flake-parts modules
-          # TODO: import nixpkgs with cross-compilation
           _module.args.pkgs = import inputs.nixpkgs {
-            inherit system;
+            crossSystem.system = "aarch64-linux";
+            localSystem.system = system;
             overlays = [
               inputs.rust-overlay.overlays.default
               self.overlays.default
@@ -42,14 +42,23 @@
             installer-bootstrap =
               let
                 installer-system = inputs.nixpkgs.lib.nixosSystem {
-                  specialArgs = { modulesPath = inputs.nixpkgs + "/nixos/modules"; };
+                  inherit system;
+
+                  # make sure this matches the post-install
+                  # `hardware.asahi.pkgsSystem`
+                  pkgs = import inputs.nixpkgs {
+                    crossSystem.system = "aarch64-linux";
+                    localSystem.system = system;
+                    overlays = [ self.overlays.default ];
+                  };
+
+                  specialArgs = {
+                    modulesPath = inputs.nixpkgs + "/nixos/modules";
+                  };
+
                   modules = [
                     ./iso-configuration
-                    {
-                      nixpkgs.crossSystem.system = "aarch64-linux";
-                      nixpkgs.localSystem.system = system;
-                      hardware.asahi.pkgsSystem = system;
-                    }
+                    { hardware.asahi.pkgsSystem = system; }
                   ];
                 };
               in installer-system.config.system.build.isoImage;
