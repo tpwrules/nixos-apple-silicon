@@ -27,6 +27,7 @@
 
         perSystem = { system, pkgs, ... }: {
           # override the `pkgs` argument used by flake-parts modules
+          # TODO: import nixpkgs with cross-compilation
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
             overlays = [

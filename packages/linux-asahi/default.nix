@@ -1,9 +1,15 @@
-{ pkgs, _4KBuild ? false, withRust ? false, kernelPatches ? [ ] }: let
-  localPkgs =
-    # we do this so the config can be read on any system and not affect
-    # the output hash
-    if builtins ? currentSystem then import (pkgs.path) { system = builtins.currentSystem; }
-    else pkgs;
+{ pkgs, _4KBuild ? false, withRust ? false, kernelPatches ? [ ] }:
+
+let
+  # we do this so the config IFDs will have the same output hash
+  # when evaluated in the cross system
+  #
+  # TODO: is this really necessary? the hash shoud remain the same
+  #       as long as `hardware.asahi.pkgsSystem` is set correctly.
+  localPkgs = import (pkgs.path) {
+    crossSystem = pkgs.stdenv.buildPlatform;
+    localSystem = pkgs.stdenv.buildPlatform;
+  };
 
   lib = localPkgs.lib;
 
@@ -25,7 +31,7 @@
     echo "{ }" >> $out
   '').outPath;
 
-  linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
+  linux-asahi-pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
       rustPlatform, rustfmt, rust-bindgen, ... } @ args:
     let
       configfile = if kernelPatches == [ ] then ./config else
@@ -96,6 +102,6 @@
       '';
     } else {});
 
-  linux_asahi = (pkgs.callPackage linux_asahi_pkg { });
-in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux_asahi)
+  linux-asahi = (pkgs.callPackage linux-asahi-pkg { });
+in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux-asahi)
 

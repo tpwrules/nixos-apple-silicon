@@ -1,7 +1,7 @@
-{ stdenv
+{ pkgs
+, stdenv
 , lib
 , fetchFromGitHub
-, pkgsCross
 , python3
 , dtc
 , imagemagick
@@ -15,6 +15,11 @@
 assert withChainloading -> rust-bin != null;
 
 let
+  crossPkgs = import pkgs.path {
+    crossSystem.system = "aarch64-linux";
+    localSystem.system = pkgs.stdenv.buildPlatform.system;
+  };
+
   pyenv = python3.withPackages (p: with p; [
     construct
     pyserial
@@ -36,13 +41,13 @@ in stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
-  makeFlags = [ "ARCH=aarch64-unknown-linux-gnu-" ]
+  makeFlags = [ "ARCH=${stdenv.cc.targetPrefix}" ]
     ++ lib.optional isRelease "RELEASE=1"
     ++ lib.optional withChainloading "CHAINLOADING=1";
 
   nativeBuildInputs = [
     dtc
-    pkgsCross.aarch64-multiplatform.buildPackages.gcc
+    crossPkgs.buildPackages.gcc
   ] ++ lib.optional withChainloading rustenv
     ++ lib.optional (customLogo != null) imagemagick;
 
@@ -86,8 +91,8 @@ EOF
       chmod +x $script
     done
 
-    GCC=${pkgsCross.aarch64-multiplatform.buildPackages.gcc}
-    BINUTILS=${pkgsCross.aarch64-multiplatform.buildPackages.binutils-unwrapped}
+    GCC=${crossPkgs.buildPackages.gcc}
+    BINUTILS=${crossPkgs.buildPackages.binutils-unwrapped}
 
     ln -s $GCC/bin/*-gcc $out/toolchain-bin/
     ln -s $GCC/bin/*-ld $out/toolchain-bin/
