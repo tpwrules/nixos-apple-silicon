@@ -2,6 +2,25 @@
 
 This file contains important information for each release.
 
+## 2023-01-18
+
+This release updates nixpkgs. There have been no changes to Asahi's
+stable package versions since the last release.
+
+This release corrects build failures when the kernel is built with Rust support.
+These were a result of Nixpkgs' upgrade to Rust 1.66.
+
+This release also adds an option `hardware.asahi.experimentalGPUInstallMode` to
+select the way in which the experimental GPU driver is installed.
+There are three choices:
+* `driver`: install only as a driver, do not replace system Mesa. Causes issues
+  with certain programs like Plasma Wayland.
+* `replace` (the default): use `system.replaceRuntimeDependencies` to replace
+  system Mesa with Asahi Mesa. Does not work in pure evaluation context (i.e. in
+  flakes by default).
+* `overlay`: overlay system Mesa with Asahi Mesa. Requires rebuilding the
+  world.
+
 ## 2023-01-16
 
 This release updates nixpkgs. There have been no changes to Asahi's
