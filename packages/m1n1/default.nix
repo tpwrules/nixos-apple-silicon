@@ -1,5 +1,5 @@
-{ pkgs
-, stdenv
+{ stdenv
+, buildPackages
 , lib
 , fetchFromGitHub
 , python3
@@ -15,11 +15,6 @@
 assert withChainloading -> rust-bin != null;
 
 let
-  crossPkgs = import pkgs.path {
-    crossSystem.system = "aarch64-linux";
-    localSystem.system = pkgs.stdenv.buildPlatform.system;
-  };
-
   pyenv = python3.withPackages (p: with p; [
     construct
     pyserial
@@ -47,7 +42,7 @@ in stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     dtc
-    crossPkgs.buildPackages.gcc
+    buildPackages.gcc
   ] ++ lib.optional withChainloading rustenv
     ++ lib.optional (customLogo != null) imagemagick;
 
@@ -91,8 +86,8 @@ EOF
       chmod +x $script
     done
 
-    GCC=${crossPkgs.buildPackages.gcc}
-    BINUTILS=${crossPkgs.buildPackages.binutils-unwrapped}
+    GCC=${buildPackages.gcc}
+    BINUTILS=${buildPackages.binutils-unwrapped}
 
     ln -s $GCC/bin/*-gcc $out/toolchain-bin/
     ln -s $GCC/bin/*-ld $out/toolchain-bin/

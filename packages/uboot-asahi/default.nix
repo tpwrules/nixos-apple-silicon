@@ -1,16 +1,11 @@
 { lib
 , fetchFromGitHub
 , fetchpatch
-, pkgs
+, buildUBoot
 , m1n1
 }:
 
-let
-  crossPkgs = import pkgs.path {
-    crossSystem.system = "aarch64-linux";
-    localSystem.system = pkgs.stdenv.buildPlatform.system;
-  };
-in (crossPkgs.buildUBoot rec {
+(buildUBoot rec {
   src = fetchFromGitHub {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/stable/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";

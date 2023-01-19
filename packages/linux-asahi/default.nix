@@ -1,18 +1,15 @@
-{ pkgs, _4KBuild ? false, withRust ? false, kernelPatches ? [ ] }:
+{ lib
+, callPackage
+, runCommand
+, writeShellScriptBin
+, writeText
+, linuxPackagesFor
+, _4KBuild ? false
+, withRust ? false
+, kernelPatches ? [ ]
+}:
 
 let
-  # we do this so the config IFDs will have the same output hash
-  # when evaluated in the cross system
-  #
-  # TODO: is this really necessary? the hash shoud remain the same
-  #       as long as `hardware.asahi.pkgsSystem` is set correctly.
-  localPkgs = import (pkgs.path) {
-    crossSystem = pkgs.stdenv.buildPlatform;
-    localSystem = pkgs.stdenv.buildPlatform;
-  };
-
-  lib = localPkgs.lib;
-
   parseExtraConfig = cfg: let
     lines = builtins.filter (s: s != "") (lib.strings.splitString "\n" cfg);
     perLine = line: let
@@ -21,7 +18,7 @@ let
        "CONFIG_${builtins.elemAt kv 0}=${builtins.elemAt kv 1}";
     in lib.strings.concatMapStringsSep "\n" perLine lines;
 
-  readConfig = configfile: import (localPkgs.runCommand "config.nix" { } ''
+  readConfig = configfile: import (runCommand "config.nix" { } ''
     echo "{ } // " > "$out"
     while IFS='=' read key val; do
       [ "x''${key#CONFIG_}" != "x$key" ] || continue
@@ -35,12 +32,12 @@ let
       rustPlatform, rustfmt, rust-bindgen, ... } @ args:
     let
       configfile = if kernelPatches == [ ] then ./config else
-      pkgs.writeText "config" ''
-        ${builtins.readFile ./config}
+        writeText "config" ''
+          ${builtins.readFile ./config}
 
-        # Patches
-        ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) kernelPatches}
-      '';
+          # Patches
+          ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) kernelPatches}
+        '';
 
       _kernelPatches = kernelPatches;
     in
@@ -88,7 +85,7 @@ let
         # is running, so we give the kernel build a rustc that wraps the real rustc
         # while setting the appropriate environment variable during its execution.
         # https://github.com/NixOS/nixpkgs/pull/209113
-        (pkgs.writeShellScriptBin "rustc" ''
+        (writeShellScriptBin "rustc" ''
           NIX_LDFLAGS=-lgcc ${rustPlatform.rust.rustc}/bin/rustc "$@"
         '')
       ];
@@ -102,6 +99,6 @@ let
       '';
     } else {});
 
-  linux-asahi = (pkgs.callPackage linux-asahi-pkg { });
-in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux-asahi)
+  linux-asahi = (callPackage linux-asahi-pkg { });
+in lib.recurseIntoAttrs (linuxPackagesFor linux-asahi)
 
