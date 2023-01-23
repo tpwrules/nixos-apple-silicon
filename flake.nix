@@ -2,41 +2,47 @@
   description = "Apple M1 support for NixOS";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    rust-overlay.url = "github:oxalica/rust-overlay";
-    flake-parts.url = "github:hercules-ci/flake-parts";
+    nixpkgs = {
+      # https://hydra.nixos.org/jobset/mobile-nixos/unstable/evals
+      # these evals have a cross-compiled stdenv available
+      url = "github:nixos/nixpkgs/6dccdc458512abce8d19f74195bb20fdb067df50";
+    };
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      flake = false;
+    };
   };
 
-  outputs = { self, flake-parts, ... }@inputs:
-    flake-parts.lib.mkFlake { inherit inputs; } (
-      { withSystem, ... }: {
-        flake = {
-          overlays = rec {
-            asahi-overlay = import packages/overlay.nix;
-            default = asahi-overlay;
-          };
+  outputs = { self, ... }@inputs:
+    let
+      # build platforms supported for uboot in nixpkgs
+      systems = [ "aarch64-linux" "x86_64-linux" ]; # "i686-linux" omitted
 
-          nixosModules = rec {
-            m1-support = ./nixos-module;
-            default = m1-support;
-          };
+      forAllSystems = inputs.nixpkgs.lib.genAttrs systems;
+    in
+      {
+        overlays = rec {
+          asahi-overlay = import packages/overlay.nix;
+          default = asahi-overlay;
         };
 
-        # build platforms supported for uboot in nixpkgs
-        systems = [ "aarch64-linux" "x86_64-linux" "i686-linux" ];
+        nixosModules = rec {
+          m1-support = ./nixos-module;
+          default = m1-support;
+        };
 
-        perSystem = { system, pkgs, ... }: {
-          # override the `pkgs` argument used by flake-parts modules
-          _module.args.pkgs = import inputs.nixpkgs {
-            crossSystem.system = "aarch64-linux";
-            localSystem.system = system;
-            overlays = [
-              inputs.rust-overlay.overlays.default
-              self.overlays.default
-            ];
-          };
-
-          packages = {
+        packages = forAllSystems (system:
+          let
+            pkgs = import inputs.nixpkgs {
+              crossSystem.system = "aarch64-linux";
+              localSystem.system = system;
+              overlays = [
+                (import inputs.rust-overlay)
+                self.overlays.default
+              ];
+            };
+          in {
             inherit (pkgs) m1n1 uboot-asahi;
 
             installer-bootstrap =
@@ -62,8 +68,6 @@
                   ];
                 };
               in installer-system.config.system.build.isoImage;
-          };
-        };
-      }
-    );
+          });
+      };
 }
