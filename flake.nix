@@ -1,5 +1,5 @@
 {
-  description = "Apple M1 support for NixOS";
+  description = "Apple Silicon support for NixOS";
 
   inputs = {
     nixpkgs = {
@@ -23,13 +23,13 @@
     in
       {
         overlays = rec {
-          asahi-overlay = import packages/overlay.nix;
-          default = asahi-overlay;
+          apple-silicon-overlay = import ./apple-silicon-support/packages/overlay.nix;
+          default = apple-silicon-overlay;
         };
 
         nixosModules = rec {
-          m1-support = ./nixos-module;
-          default = m1-support;
+          apple-silicon-support = ./apple-silicon-support;
+          default = apple-silicon-support;
         };
 
         packages = forAllSystems (system:

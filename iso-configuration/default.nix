@@ -3,23 +3,22 @@
 {
   imports = [
     ./installer-configuration.nix
-    ../nixos-module
+    ../apple-silicon-support
   ];
 
   # include those modules so the user can rebuild the install iso. that's not
-  # especially useful at this point, but the user will need the m1-support
+  # especially useful at this point, but the user will need the apple-silicon-support
   # directory for their own config.
   installer.cloneConfigIncludes = [
     "./installer-configuration.nix"
-    "./m1-support/nixos-module"
+    "./apple-silicon-support"
   ];
 
-  # copy the m1-support and installer configs into the iso
+  # copy the apple-silicon-support and installer configs into the iso
   boot.postBootCommands = lib.optionalString config.installer.cloneConfig ''
-    if ! [ -e /etc/nixos/m1-support ]; then
-      mkdir -p /etc/nixos/m1-support
+    if ! [ -e /etc/nixos/apple-silicon-support ]; then
       cp ${./installer-configuration.nix} /etc/nixos/installer-configuration.nix
-      cp -r ${../packages} ${../nixos-module} -t /etc/nixos/m1-support
+      cp -r ${../apple-silicon-support} /etc/nixos/apple-silicon-support
     fi
   '';
 }
