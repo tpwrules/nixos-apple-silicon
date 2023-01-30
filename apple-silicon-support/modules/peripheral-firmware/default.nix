@@ -48,9 +48,9 @@
       default = lib.findFirst (path: builtins.pathExists (path + "/all_firmware.tar.gz")) null
         [
           # path when the system is operating normally
-          "/boot/asahi"
+          /boot/asahi
           # path when the system is mounted in the installer
-          "/mnt/boot/asahi"
+          /mnt/boot/asahi
         ];
 
       description = ''
