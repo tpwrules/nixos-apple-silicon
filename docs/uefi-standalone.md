@@ -249,6 +249,14 @@ If you want to install a desktop environment, you will have to uncomment the opt
   services.xserver.desktopManager.xfce.enable = true;
 ```
 
+Some keyboard layouts are not detected correctly. On some devices, the \` key is swapped with `<`, and `~` with `>`. The layout can be fixed by setting options in `boot.extraModprobeConfig`. Which option needs to be set depends on your hardware keyboard's layout (see: [Arch Wiki - Apple Keyboard](https://wiki.archlinux.org/title/Apple_Keyboard)).
+ ```
+ # For ` to < and ~ to > (for those with US keyboards)
+ boot.extraModprobeConfig = ''
+   options hid_apple iso_layout=0
+ '';
+ ```
+
 #### NixOS Installation
 
 Once you are happy with your initial configuration, you may install the system. This will have to download a large amount of data.
