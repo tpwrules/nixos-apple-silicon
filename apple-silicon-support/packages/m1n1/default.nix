@@ -89,11 +89,11 @@ EOF
     GCC=${buildPackages.gcc}
     BINUTILS=${buildPackages.binutils-unwrapped}
 
-    ln -s $GCC/bin/*-gcc $out/toolchain-bin/
-    ln -s $GCC/bin/*-ld $out/toolchain-bin/
-    ln -s $BINUTILS/bin/*-objcopy $out/toolchain-bin/
-    ln -s $BINUTILS/bin/*-objdump $out/toolchain-bin/
-    ln -s $GCC/bin/*-nm $out/toolchain-bin/
+    ln -s $GCC/bin/${stdenv.cc.targetPrefix}gcc $out/toolchain-bin/
+    ln -s $GCC/bin/${stdenv.cc.targetPrefix}ld $out/toolchain-bin/
+    ln -s $BINUTILS/bin/${stdenv.cc.targetPrefix}objcopy $out/toolchain-bin/
+    ln -s $BINUTILS/bin/${stdenv.cc.targetPrefix}objdump $out/toolchain-bin/
+    ln -s $GCC/bin/${stdenv.cc.targetPrefix}nm $out/toolchain-bin/
   '') + ''
     runHook postInstall
   '';

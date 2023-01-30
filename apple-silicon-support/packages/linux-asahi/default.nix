@@ -1,6 +1,6 @@
 { lib
+, pkgs
 , callPackage
-, runCommand
 , writeShellScriptBin
 , writeText
 , linuxPackagesFor
@@ -10,6 +10,16 @@
 }:
 
 let
+  # TODO: use a pure nix regex parser instead of an IFD, and remove this workaround
+  localPkgs = if builtins ? currentSystem
+    then import (pkgs.path) {
+      crossSystem.system = builtins.currentSystem;
+      localSystem.system = builtins.currentSystem;
+    }
+    else pkgs;
+
+  inherit (localPkgs) runCommand;
+
   parseExtraConfig = cfg: let
     lines = builtins.filter (s: s != "") (lib.strings.splitString "\n" cfg);
     perLine = line: let
