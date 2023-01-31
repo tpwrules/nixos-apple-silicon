@@ -3,11 +3,14 @@
 { config, pkgs, lib, ... }:
 {
   config = {
-    boot.kernelPackages = config.hardware.asahi.pkgs.callPackage ./package.nix {
-      inherit (config.boot) kernelPatches;
-      _4KBuild = config.hardware.asahi.use4KPages;
-      withRust = config.hardware.asahi.withRust;
-    };
+    boot.kernelPackages = let
+      pkgs' = config.hardware.asahi.pkgs;
+    in
+      pkgs'.linux-asahi.override {
+        inherit (config.boot) kernelPatches;
+        _4KBuild = config.hardware.asahi.use4KPages;
+        withRust = config.hardware.asahi.withRust;
+      };
 
     # we definitely want to use CONFIG_ENERGY_MODEL, and
     # schedutil is a prerequisite for using it

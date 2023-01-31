@@ -1,11 +1,24 @@
-{ pkgs, _4KBuild ? false, withRust ? false, kernelPatches ? [ ] }: let
-  localPkgs =
-    # we do this so the config can be read on any system and not affect
-    # the output hash
-    if builtins ? currentSystem then import (pkgs.path) { system = builtins.currentSystem; }
+{ lib
+, pkgs
+, callPackage
+, writeShellScriptBin
+, writeText
+, linuxPackagesFor
+, _4KBuild ? false
+, withRust ? false
+, kernelPatches ? [ ]
+}:
+
+let
+  # TODO: use a pure nix regex parser instead of an IFD, and remove this workaround
+  localPkgs = if builtins ? currentSystem
+    then import (pkgs.path) {
+      crossSystem.system = builtins.currentSystem;
+      localSystem.system = builtins.currentSystem;
+    }
     else pkgs;
 
-  lib = localPkgs.lib;
+  inherit (localPkgs) runCommand;
 
   parseExtraConfig = cfg: let
     lines = builtins.filter (s: s != "") (lib.strings.splitString "\n" cfg);
@@ -15,7 +28,7 @@
        "CONFIG_${builtins.elemAt kv 0}=${builtins.elemAt kv 1}";
     in lib.strings.concatMapStringsSep "\n" perLine lines;
 
-  readConfig = configfile: import (localPkgs.runCommand "config.nix" { } ''
+  readConfig = configfile: import (runCommand "config.nix" { } ''
     echo "{ } // " > "$out"
     while IFS='=' read key val; do
       [ "x''${key#CONFIG_}" != "x$key" ] || continue
@@ -25,16 +38,16 @@
     echo "{ }" >> $out
   '').outPath;
 
-  linux_asahi_pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
+  linux-asahi-pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
       rustPlatform, rustfmt, rust-bindgen, ... } @ args:
     let
       configfile = if kernelPatches == [ ] then ./config else
-      pkgs.writeText "config" ''
-        ${builtins.readFile ./config}
+        writeText "config" ''
+          ${builtins.readFile ./config}
 
-        # Patches
-        ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) kernelPatches}
-      '';
+          # Patches
+          ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) kernelPatches}
+        '';
 
       _kernelPatches = kernelPatches;
     in
@@ -82,7 +95,7 @@
         # is running, so we give the kernel build a rustc that wraps the real rustc
         # while setting the appropriate environment variable during its execution.
         # https://github.com/NixOS/nixpkgs/pull/209113
-        (pkgs.writeShellScriptBin "rustc" ''
+        (writeShellScriptBin "rustc" ''
           NIX_LDFLAGS=-lgcc ${rustPlatform.rust.rustc}/bin/rustc "$@"
         '')
       ];
@@ -96,6 +109,6 @@
       '';
     } else {});
 
-  linux_asahi = (pkgs.callPackage linux_asahi_pkg { });
-in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux_asahi)
+  linux-asahi = (callPackage linux-asahi-pkg { });
+in lib.recurseIntoAttrs (linuxPackagesFor linux-asahi)
 

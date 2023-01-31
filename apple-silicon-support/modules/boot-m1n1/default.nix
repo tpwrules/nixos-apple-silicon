@@ -1,12 +1,14 @@
 { config, pkgs, lib, ... }:
 let
-  bootM1n1 = config.hardware.asahi.pkgs.callPackage ../m1n1 {
+  pkgs' = config.hardware.asahi.pkgs;
+
+  bootM1n1 = pkgs'.m1n1.override {
     isRelease = true;
     withTools = false;
     customLogo = config.boot.m1n1CustomLogo;
   };
 
-  bootUBoot = config.hardware.asahi.pkgs.callPackage ../u-boot {
+  bootUBoot = pkgs'.uboot-asahi.override {
     m1n1 = bootM1n1;
   };
 

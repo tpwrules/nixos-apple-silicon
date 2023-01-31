@@ -29,7 +29,7 @@
   fileSystems = lib.mkOverride 60 config.lib.isoFileSystems;
 
   boot.postBootCommands = let
-    asahi-fwextract = pkgs.callPackage ../m1-support/asahi-fwextract {};
+    inherit (config.hardware.asahi.pkgs) asahi-fwextract;
   in ''
     for o in $(</proc/cmdline); do
       case "$o" in
@@ -61,13 +61,13 @@
 
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
-  environment.systemPackages = [
-    pkgs.gptfdisk
-    pkgs.parted
-    pkgs.cryptsetup
-    pkgs.curl
-    pkgs.wget
-    pkgs.wormhole-william
+  environment.systemPackages = with pkgs; [
+    gptfdisk
+    parted
+    cryptsetup
+    curl
+    wget
+    wormhole-william
   ];
 
   # save space and compilation time. might revise?

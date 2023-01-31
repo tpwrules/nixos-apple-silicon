@@ -5,14 +5,6 @@
         && config.hardware.asahi.experimentalGPUInstallMode == mode);
   in lib.mkMerge [
     (lib.mkIf config.hardware.asahi.useExperimentalGPUDriver {
-      # make the Asahi Mesa available via an overlay so the user has access to it
-      # (being careful not to create infinite recursion if the user wants to overlay
-      # it over the original Mesa)
-      nixpkgs.overlays = [
-        (final: prev: {
-          mesa-asahi-edge = final.callPackage ./package.nix { inherit (prev) mesa; };
-        })
-      ];
 
       # install the drivers
       hardware.opengl.package = pkgs.mesa-asahi-edge.drivers;

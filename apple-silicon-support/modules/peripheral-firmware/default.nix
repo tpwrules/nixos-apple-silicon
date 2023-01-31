@@ -11,24 +11,25 @@
     ];
 
     hardware.firmware = let
-      asahi-fwextract = pkgs.callPackage ../asahi-fwextract {};
-    in lib.mkIf ((config.hardware.asahi.peripheralFirmwareDirectory != null)
-        && config.hardware.asahi.extractPeripheralFirmware) [
-      (pkgs.stdenv.mkDerivation {
-        name = "asahi-peripheral-firmware";
+      pkgs' = config.hardware.asahi.pkgs;
+    in
+      lib.mkIf ((config.hardware.asahi.peripheralFirmwareDirectory != null)
+          && config.hardware.asahi.extractPeripheralFirmware) [
+        (pkgs.stdenv.mkDerivation {
+          name = "asahi-peripheral-firmware";
 
-        nativeBuildInputs = [ asahi-fwextract pkgs.cpio ];
+          nativeBuildInputs = [ pkgs'.asahi-fwextract pkgs.cpio ];
 
-        buildCommand = ''
-          mkdir extracted
-          asahi-fwextract ${config.hardware.asahi.peripheralFirmwareDirectory} extracted
+          buildCommand = ''
+            mkdir extracted
+            asahi-fwextract ${config.hardware.asahi.peripheralFirmwareDirectory} extracted
 
-          mkdir -p $out/lib/firmware
-          cat extracted/firmware.cpio | cpio -id --quiet --no-absolute-filenames
-          mv vendorfw/* $out/lib/firmware
-        '';
-      })
-    ];
+            mkdir -p $out/lib/firmware
+            cat extracted/firmware.cpio | cpio -id --quiet --no-absolute-filenames
+            mv vendorfw/* $out/lib/firmware
+          '';
+        })
+      ];
   };
 
   options.hardware.asahi = {
@@ -43,20 +44,15 @@
 
     peripheralFirmwareDirectory = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
-      default = let
-        paths = [
+
+      default = lib.findFirst (path: builtins.pathExists (path + "/all_firmware.tar.gz")) null
+        [
           # path when the system is operating normally
-          "/boot/asahi"
+          /boot/asahi
           # path when the system is mounted in the installer
-          "/mnt/boot/asahi"
+          /mnt/boot/asahi
         ];
 
-        validPaths = (builtins.filter
-          (p: builtins.pathExists (p + "/all_firmware.tar.gz"))
-          paths) ++ [ null ];
-
-        firstPath = builtins.elemAt validPaths 0;
-      in if firstPath != null then "${/. + firstPath}" else null;
       description = ''
         Path to the directory containing the non-free non-redistributable
         peripheral firmware necessary for features like Wi-Fi. Ordinarily, this
