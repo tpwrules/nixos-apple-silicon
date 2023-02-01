@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: cachix/install-nix-action@v16
+      - uses: cachix/install-nix-action@v18
         with:
-          install_url: https://releases.nixos.org/nix/nix-2.7.0/install
+          install_url: https://releases.nixos.org/nix/nix-2.13.2/install
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
             # save space on disk and in cache
@@ -27,11 +27,11 @@ jobs:
 
       - name: cache nix store
         id: cache-nix-store
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          key: installer4-${{ github.sha }}
+          key: installer5-${{ github.sha }}
           restore-keys: |
-            installer4-
+            installer5
           path: |
             nix_store_dir
             nix_store_db.sqlite
@@ -57,8 +57,8 @@ jobs:
 
       - name: build installer
         run: |
-          nix-build -A installer-bootstrap-cross -j2
-          cp result/iso/*.iso nixos-23.05pre-m1-${{ github.ref_name }}.iso
+          nix build --extra-experimental-features 'nix-command flakes' .#installer-bootstrap -j2 -L
+          cp result/iso/*.iso $(basename result/iso/*.iso | sed s/aarch64-linux/apple-silicon-${{ github.ref_name }}/)
 
       - uses: actions/upload-artifact@v3
         with:
