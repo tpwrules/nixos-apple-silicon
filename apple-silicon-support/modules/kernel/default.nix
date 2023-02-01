@@ -87,15 +87,6 @@
 
   imports = [
     ./edge.nix
-
-    (lib.mkRemovedOptionModule [ "boot" "kernelBuildIsCross" ] ''
-      If it should still be true (which is unlikely), replace it
-      with 'hardware.asahi.pkgsSystem = "x86_64-linux"'. Otherwise, delete it.
-    '')
-
-    (lib.mkRemovedOptionModule [ "boot" "kernelBuildIs16K" ] ''
-      Replaced with 'hardware.asahi.use4KPages' which defaults to false.
-    '')
   ];
 
   options.hardware.asahi.use4KPages = lib.mkOption {
