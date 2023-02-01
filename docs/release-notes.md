@@ -2,6 +2,34 @@
 
 This file contains important information for each release.
 
+## 2023-01-31
+
+**This release reorganizes the project substantially. Please follow the
+directions below or the upgrade might not take effect.**
+
+This release updates nixpkgs and reorganizes the project. There have been no
+changes to Asahi's stable package versions since the last release.
+
+To upgrade (assuming you used the standard installation instructions):
+* Remove `/etc/nixos/m1-support`
+* Procure the `apple-silicon-support` directory from the repo and place it in
+  `/etc/nixos/apple-silicon-support`
+* Change the `./m1-support` include path in your configuration.nix to
+  `./apple-silicon-support`.
+
+Thanks primarily to the hard work of oati, the project has been reorganized to
+cleanly separate the Nixpkgs package definitions and overlay, the NixOS
+modules, and the custom bootstrap installer configuration. This will make
+development and customization more straightforward. The project has also been
+renamed to emphasize compatibility with all generations of Apple Silicon Macs
+(though be mindful that support of a particular machine by this project cannot
+come until Asahi Linux does the hard parts!).
+
+Flakes support is now required to build the installer. The installer ISO and
+development versions of m1n1 and U-Boot are now available as outputs of this
+repository's flake. The overlay and NixOS modules are also available as outputs
+for the convenience of system flakes users.
+
 ## 2023-01-18
 
 This release updates nixpkgs. There have been no changes to Asahi's
