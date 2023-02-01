@@ -106,6 +106,10 @@ let
         sed -i -e 's/rustc_allocator_nounwind/rustc_nounwind/g' rust/alloc/alloc.rs
         sed -i -e 's/const Unpin/Unpin/' rust/alloc/boxed.rs
         sed -i -e '/^pub unsafe trait RawDeviceId/i #[const_trait]' rust/kernel/driver.rs
+
+        # Fixes for rust-bindgen 0.63.0
+        sed -i -e 's/blacklist/blocklist/g' rust/Makefile
+        sed -i -e 's/whitelist/allowlist/g' rust/Makefile
       '';
     } else {});
 
