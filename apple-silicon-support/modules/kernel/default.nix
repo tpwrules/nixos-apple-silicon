@@ -70,6 +70,14 @@
       "nvme_apple.flush_interval=0"
     ];
 
+    boot.kernelPatches = [
+      {
+        name = "rust-1.67.0";
+        patch = ./rust_1_67_0.patch;
+        extraConfig = '''';
+      }
+    ];
+
     # U-Boot does not support EFI variables
     boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
 
