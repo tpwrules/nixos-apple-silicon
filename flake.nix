@@ -67,7 +67,12 @@
                     { hardware.asahi.pkgsSystem = system; }
                   ];
                 };
-              in installer-system.config.system.build.isoImage;
+
+                config = installer-system.config;
+              in (config.system.build.isoImage.overrideAttrs (old: {
+                # add ability to access the whole config from the command line
+                passthru = (old.passthru or {}) // { inherit config; };
+              }));
           });
       };
 }
