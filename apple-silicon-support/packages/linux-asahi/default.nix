@@ -80,6 +80,10 @@ let
         { name = "default-pagesize-16k";
           patch = ./default-pagesize-16k.patch;
         }
+      ] ++ lib.optionals withRust [
+        { name = "rust-1.67.0";
+          patch = ./rust_1_67_0.patch;
+        }
       ] ++ _kernelPatches;
 
       inherit configfile;
