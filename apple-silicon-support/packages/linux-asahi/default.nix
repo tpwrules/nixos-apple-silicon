@@ -81,6 +81,12 @@ let
           patch = ./default-pagesize-16k.patch;
         }
       ] ++ lib.optionals withRust [
+        { name = "rust-1.66.0";
+          patch = ./rust_1_66_0.patch;
+        }
+        { name = "rust-bindgen";
+          patch = ./rust-bindgen-fix.patch;
+        }
         { name = "rust-1.67.0";
           patch = ./rust_1_67_0.patch;
         }
@@ -104,17 +110,6 @@ let
         '')
       ];
       RUST_LIB_SRC = rustPlatform.rustLibSrc;
-
-      preConfigure = ''
-        # Fixes for Rust 1.66.x
-        sed -i -e 's/rustc_allocator_nounwind/rustc_nounwind/g' rust/alloc/alloc.rs
-        sed -i -e 's/const Unpin/Unpin/' rust/alloc/boxed.rs
-        sed -i -e '/^pub unsafe trait RawDeviceId/i #[const_trait]' rust/kernel/driver.rs
-
-        # Fixes for rust-bindgen 0.63.0
-        sed -i -e 's/blacklist/blocklist/g' rust/Makefile
-        sed -i -e 's/whitelist/allowlist/g' rust/Makefile
-      '';
     } else {});
 
   linux-asahi = (callPackage linux-asahi-pkg { });
