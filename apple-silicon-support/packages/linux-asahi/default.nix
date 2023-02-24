@@ -75,6 +75,7 @@ let
         { name = "sven-iommu-4k";
           patch = ./sven-iommu-4k.patch;
         }
+        (builtins.throw "The Asahi 4K kernel patch is currently broken. Contributions to fix are welcome.")
       ] ++ lib.optionals (!_4KBuild) [
         # patch the kernel to set the default size to 16k instead of modifying
         # the config so we don't need to convert our config to the nixos
