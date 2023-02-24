@@ -50,6 +50,9 @@ let
         '';
 
       _kernelPatches = kernelPatches;
+
+      rustAtLeast = version: withRust && (lib.versionAtLeast rustPlatform.rust.rustc.version version);
+      bindgenAtLeast = version: withRust && (lib.versionAtLeast rust-bindgen.unwrapped.version version);
     in
     (linuxKernel.manualConfig rec {
       inherit stdenv lib;
@@ -80,13 +83,15 @@ let
         { name = "default-pagesize-16k";
           patch = ./default-pagesize-16k.patch;
         }
-      ] ++ lib.optionals withRust [
+      ] ++ lib.optionals (rustAtLeast "1.66.0") [
         { name = "rust-1.66.0";
           patch = ./rust_1_66_0.patch;
         }
+      ] ++ lib.optionals (bindgenAtLeast "0.63.0") [
         { name = "rust-bindgen";
           patch = ./rust-bindgen-fix.patch;
         }
+      ] ++ lib.optionals (rustAtLeast "1.67.0") [
         { name = "rust-1.67.0";
           patch = ./rust_1_67_0.patch;
         }
