@@ -2,6 +2,14 @@
 
 This file contains important information for each release.
 
+## 2023-02-23
+
+This release updates nixpkgs. There have been no changes to Asahi's stable
+package versions since the last release.
+
+This release corrects build failures of the Linux kernel using either the latest
+NixOS unstable or NixOS 22.11 versions of the Rust compiler.
+
 ## 2023-01-31
 
 **This release reorganizes the project substantially. Please follow the
