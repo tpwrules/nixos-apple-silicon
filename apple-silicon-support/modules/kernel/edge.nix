@@ -16,7 +16,7 @@
           APPLE_SMC m
           APPLE_SMC_RTKIT m
           APPLE_RTKIT m
-          APPLE_MAILBOX m
+          APPLE_MBOX m
           GPIO_MACSMC m
           DRM_VGEM n
           DRM_SCHED y
