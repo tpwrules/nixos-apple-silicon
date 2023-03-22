@@ -7,13 +7,13 @@
 
 (buildUBoot rec {
   src = fetchFromGitHub {
-    # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/stable/uboot-asahi/PKGBUILD
+    # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2022.10-1";
-    hash = "sha256-/dtTJ+GxC2GFlqduAa2WWPGwktLjM7tUKus6/aUyPNQ=";
+    rev = "asahi-v2023.01-3";
+    hash = "sha256-UJEQ+BJ2AhgE6MvBRrG/vI6c4F7+Qt1GUejCa5SoeQo=";
   };
-  version = "2022.10.asahi1-1";
+  version = "2023.01.asahi3-1";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
