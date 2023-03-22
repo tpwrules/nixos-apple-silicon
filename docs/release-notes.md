@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2023-03-21
+
+This release updates nixpkgs and the Asahi packages, including the kernel, m1n1,
+U-Boot, and Mesa.
+
+Updating nixpkgs finally brings GCC 12 as the default compiler.
+
 ## 2023-02-23
 
 This release updates nixpkgs. There have been no changes to Asahi's stable
