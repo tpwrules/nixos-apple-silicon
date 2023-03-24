@@ -27,7 +27,7 @@ While you will end up with a reasonably usable computer, the exact hardware feat
 The following items are required to get started:
 * Apple Silicon Mac [supported by Asahi Linux](https://github.com/AsahiLinux/docs/wiki/Feature-Support#table-of-contents) with macOS 12.3 or later and an admin account
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
-* USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter
+* USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter if the flash drive is not USB-C
 * Familiarity with the command line and installers without GUIs
 * Optional: an x86_64 or aarch64 Linux PC or VM (any distro is fine)
 
@@ -131,7 +131,7 @@ If everything went well, you will restart into U-Boot with the Asahi Linux and U
 
 #### Booting the Installer
 
-Shut down the machine fully. Connect the flash drive with the installer ISO to a USB-C port through the USB A to C adapter. If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
+Shut down the machine fully. Connect the flash drive with the installer ISO to a USB-C port. (If the flash drive is not USB-C, you will need to use a USB A to C adapter.) If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
 Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
 
