@@ -74,6 +74,9 @@ let
       };
 
       kernelPatches = [
+        { name = "rust-bindgen-version";
+          patch = ./rust-bindgen-version.patch;
+        }
       ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
