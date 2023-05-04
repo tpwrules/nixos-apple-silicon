@@ -3,6 +3,7 @@
 , callPackage
 , writeShellScriptBin
 , writeText
+, removeReferencesTo
 , linuxPackagesFor
 , _4KBuild ? false
 , withRust ? false
@@ -121,10 +122,18 @@ let
         rust-bindgen
         rustfmt
         rustPlatform.rust.rustc
+        removeReferencesTo
       ];
       RUST_LIB_SRC = rustPlatform.rustLibSrc;
     } else {});
 
-  linux-asahi = (callPackage linux-asahi-pkg { });
+  linux-asahi = (callPackage linux-asahi-pkg { })
+  # HACK: references shouldn't have been there in the first place
+  .overrideAttrs (_: prev: prev // {
+      postFixup = ''
+        remove-references-to -t $out $dev/lib/modules/${prev.version}/build/vmlinux
+        remove-references-to -t $dev $out/Image
+      '';
+  });
 in lib.recurseIntoAttrs (linuxPackagesFor linux-asahi)
 
