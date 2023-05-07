@@ -112,6 +112,9 @@
   # now but is slow and unnecessary
   security.polkit.enable = false;
 
+  # bootspec generation is currently broken under cross-compilation
+  boot.bootspec.enable = false;
+
   # get rid of warning that stateVersion is unset
   system.stateVersion = lib.mkDefault lib.trivial.release;
 }
