@@ -10,16 +10,6 @@
 }:
 
 let
-  # TODO: use a pure nix regex parser instead of an IFD, and remove this workaround
-  localPkgs = if builtins ? currentSystem
-    then import (pkgs.path) {
-      crossSystem.system = builtins.currentSystem;
-      localSystem.system = builtins.currentSystem;
-    }
-    else pkgs;
-
-  inherit (localPkgs) runCommand;
-
   parseExtraConfig = cfg: let
     lines = builtins.filter (s: s != "") (lib.strings.splitString "\n" cfg);
     perLine = line: let
@@ -28,15 +18,18 @@ let
        "CONFIG_${builtins.elemAt kv 0}=${builtins.elemAt kv 1}";
     in lib.strings.concatMapStringsSep "\n" perLine lines;
 
-  readConfig = configfile: import (runCommand "config.nix" { } ''
-    echo "{ } // " > "$out"
-    while IFS='=' read key val; do
-      [ "x''${key#CONFIG_}" != "x$key" ] || continue
-      no_firstquote="''${val#\"}";
-      echo '{  "'"$key"'" = "'"''${no_firstquote%\"}"'"; } //' >> "$out"
-    done < "${configfile}"
-    echo "{ }" >> $out
-  '').outPath;
+  parseConfig = config:
+    let
+      parseLine = builtins.match "(CONFIG_[[:upper:][:digit:]_]+)=(y|m|n)";
+      lines = lib.strings.splitString "\n" config;
+      pairs = builtins.filter (x: x != null) (map parseLine lines);
+    in
+    builtins.listToAttrs (map
+      (pair: lib.nameValuePair
+        (builtins.elemAt pair 0)
+        (builtins.elemAt pair 1))
+      pairs);
+  readConfig = configfile: parseConfig (builtins.readFile configfile);
 
   linux-asahi-pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
       rustPlatform, rustfmt, rust-bindgen, ... } @ args:
