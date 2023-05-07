@@ -133,26 +133,23 @@ If everything went well, you will restart into U-Boot with the Asahi Linux and U
 
 Shut down the machine fully. Connect the flash drive with the installer ISO to a USB-C port. (If the flash drive is not USB-C, you will need to use a USB A to C adapter.) If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
-Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`.
-
-GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine). You will get a console prompt once booting completes. Finally, run the command `sudo su` to get a root prompt in the installer. If the console font is too small, run the command `setfont ter-v32n` to increase the size.
+Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
 
 <details>
   <summary>If "mounting `/dev/root` on `/mnt-root/iso` failed: No such file or directory" during boot…</summary>
   
   1. Was the ISO transferred to your flash drive correctly as described above? `dd` is the only correct way to do this. The ISO must be transferred to the drive block device itself, not a partition on the drive.
-  2. The flash drive might be quirky. Try a different one. If you can't, you can probably get the installer to start with the following steps:
+  2. There is sometimes a [race condition](https://github.com/tpwrules/nixos-apple-silicon/issues/60) which causes booting to fail. Reboot the machine and try again.
+  3. Some flash drives have quirks. Try a different drive, or use the following steps:
 
       1. Attempt to start the installer normally
       1. When the boot fails and you are prompted, hit i to start a shell
       1. Unplug your flash drive, plug it into a different port, then wait 30 seconds
       1. Run the command `mount -t iso9660 /dev/root /mnt-root/iso`
-      1. Exit the shell by running exit to continue the boot process
-   
-   (See [further discussion](https://github.com/tpwrules/nixos-apple-silicon/issues/17).)
-
-  There [might additionally be a timing issue](https://github.com/tpwrules/nixos-apple-silicon/issues/60); consider following the "Booting the Installer" instructions again, in case you were unlucky.
+      1. Exit the shell by running `exit` to continue the boot process
 </details>
+
+You will get a console prompt once booting completes. Run the command `sudo su` to get a root prompt in the installer. If the console font is too small, run the command `setfont ter-v32n` to increase the size.
 
 #### Partitioning and Formatting
 
@@ -166,6 +163,12 @@ nixos# sgdisk /dev/nvme0n1 -n 0:0 -s
 [...]
 The operation has completed successfully.
 ```
+
+<details>
+  <summary>If the `/dev/nvme0n1` device does not exist…</summary>
+
+  There is an issue with outdated boot files which may cause the NVMe device to not be detected on some machine types from a fresh setup using the Asahi Linux installer. This issue cannot be fixed until the Asahi Linux folks update the installer images. However, a workaround is available [here](https://github.com/tpwrules/nixos-apple-silicon/issues/61#issuecomment-1537286595).
+</details>
 
 Identify the number of the new root partition (type code 8300, typically second to last):
 ```
