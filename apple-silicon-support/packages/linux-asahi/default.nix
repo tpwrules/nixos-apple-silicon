@@ -124,16 +124,14 @@ let
         rustPlatform.rust.rustc
         removeReferencesTo
       ];
+      # HACK: references shouldn't have been there in the first place
+      postFixup = (old.postFixup or "") + ''
+        remove-references-to -t $out $dev/lib/modules/${old.version}/build/vmlinux
+        remove-references-to -t $dev $out/Image
+      '';
       RUST_LIB_SRC = rustPlatform.rustLibSrc;
     } else {});
 
-  linux-asahi = (callPackage linux-asahi-pkg { })
-  # HACK: references shouldn't have been there in the first place
-  .overrideAttrs (_: prev: prev // {
-      postFixup = ''
-        remove-references-to -t $out $dev/lib/modules/${prev.version}/build/vmlinux
-        remove-references-to -t $dev $out/Image
-      '';
-  });
+  linux-asahi = (callPackage linux-asahi-pkg { });
 in lib.recurseIntoAttrs (linuxPackagesFor linux-asahi)
 
