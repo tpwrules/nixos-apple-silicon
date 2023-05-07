@@ -3,6 +3,7 @@
 , callPackage
 , writeShellScriptBin
 , writeText
+, removeReferencesTo
 , linuxPackagesFor
 , _4KBuild ? false
 , withRust ? false
@@ -67,6 +68,9 @@ let
       };
 
       kernelPatches = [
+        { name = "rust-bindgen-version";
+          patch = ./rust-bindgen-version.patch;
+        }
       ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
@@ -111,7 +115,13 @@ let
         rust-bindgen
         rustfmt
         rustPlatform.rust.rustc
+        removeReferencesTo
       ];
+      # HACK: references shouldn't have been there in the first place
+      postFixup = (old.postFixup or "") + ''
+        remove-references-to -t $out $dev/lib/modules/${old.version}/build/vmlinux
+        remove-references-to -t $dev $out/Image
+      '';
       RUST_LIB_SRC = rustPlatform.rustLibSrc;
     } else {});
 
