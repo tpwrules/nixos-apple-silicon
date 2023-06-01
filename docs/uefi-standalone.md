@@ -278,7 +278,21 @@ Some keyboard layouts are not detected correctly. On some devices, the \` key is
 
 Once you are happy with your initial configuration, you may install the system. This will have to download a large amount of data.
 
-You can configure wireless networking in the installer using `wpa_supplicant` by following [the minimal installer directions](https://nixos.org/manual/nixos/stable/index.html#sec-installation-booting-networking) in the NixOS manual.
+We use iwd instead of wpa_supplicant because the latter [does not support WPA3 on broadcom chips](https://www.reddit.com/r/AsahiLinux/comments/12igyoa/comment/jftvl3c) (which are installed on macs) and in general iwd is more modern, easy to use and maintained then wpa_supplicant.<br>
+You can configure WiFi in the installer using `iwctl`:
+```
+nixos# iwctl
+NetworkConfigurationEnabled: enabled
+StateDirectory: /var/lib/iwd
+Version: 2.4
+[iwd]# station wlan0 connect <SSID>
+Type the network passphrase for <SSID> psk.
+Passphrase: <your passphrase>
+[iwd]# station wlan0 show
+[...]
+[iwd] exit
+```
+
 
 Once the network is set up, ensure the time is set correctly, then install the system. You will be asked to set a root password as the final step:
 ```
