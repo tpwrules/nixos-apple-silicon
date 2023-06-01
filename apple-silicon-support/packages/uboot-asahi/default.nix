@@ -1,4 +1,4 @@
-{ lib
+{ stdenv
 , fetchFromGitHub
 , fetchpatch
 , buildUBoot
@@ -10,10 +10,12 @@
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2023.01-3";
-    hash = "sha256-UJEQ+BJ2AhgE6MvBRrG/vI6c4F7+Qt1GUejCa5SoeQo=";
+    # This commit contains various fixes (mainly usb-related crashes), so use it instead of tag
+    rev = "4ff04ece6d0a0293b570eadf213995b944833937";
+    hash = "sha256-vGuZrT+siynhXWnvvR3b3v2f/imF5qapyO0EgMc+4ZQ=";
   };
-  version = "2023.01.asahi3-1";
+  # Should we use another version to not confuse with tag?
+  version = "2023.04.asahi1-1";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
@@ -30,6 +32,11 @@
     CONFIG_VIDEO_FONT_TER16X32=y
   '';
 }).overrideAttrs (o: {
+  # Without that build fails for some reason (buildUBoot adds DTC=dtc by default, looks like that is the reason) 
+  # https://github.com/NixOS/nixpkgs/blob/master/pkgs/misc/uboot/default.nix#L89
+  makeFlags = [
+    "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
+  ];
   # nixos's downstream patches are not applicable
   # however, we add in bigger u-boot fonts because the mac laptop screens are high-res
   patches = [ 
