@@ -80,15 +80,20 @@
   documentation.nixos.enable = lib.mkOverride 49 false;
   system.extraDependencies = lib.mkForce [ ];
 
-  networking.wireless.enable = true;
-  networking.wireless.userControlled.enable = true;
-  systemd.services.wpa_supplicant.wantedBy = lib.mkOverride 50 [];
+  # Disable wpa_supplicant because it can't use WPA3-SAE on broadcom chips that are used on macs and it is harder to use and less mainained than iwd in general
+  networking.wireless.enable = false;
+  # Enable iwd
+  networking.wireless.iwd = {
+    enable = true;
+    settings.General.EnableNetworkConfiguration = true;
+  };
+  
 
   nixpkgs.overlays = [
     (final: prev: {
       # disabling pcsclite avoids the need to cross-compile gobject
       # introspection stuff which works now but is slow and unnecessary
-      wpa_supplicant = prev.wpa_supplicant.override {
+      iwd = prev.iwd.override {
         withPcsclite = false;
       };
       libfido2 = prev.libfido2.override {
