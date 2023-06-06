@@ -43,7 +43,7 @@
               ];
             };
           in {
-            inherit (pkgs) m1n1 uboot-asahi;
+            inherit (pkgs) m1n1 uboot-asahi linux-asahi;
 
             installer-bootstrap =
               let
