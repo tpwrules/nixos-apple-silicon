@@ -7,7 +7,7 @@
       pkgs' = config.hardware.asahi.pkgs;
     in
       pkgs'.linux-asahi.override {
-        inherit (config.boot) kernelPatches;
+        _kernelPatches = config.boot.kernelPatches;
         _4KBuild = config.hardware.asahi.use4KPages;
         withRust = config.hardware.asahi.withRust;
       };

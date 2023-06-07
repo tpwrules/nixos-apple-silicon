@@ -7,7 +7,7 @@
 , linuxPackagesFor
 , _4KBuild ? false
 , withRust ? false
-, kernelPatches ? [ ]
+, _kernelPatches ? [ ]
 }:
 
 let
@@ -35,15 +35,13 @@ let
   linux-asahi-pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
       rustPlatform, rustfmt, rust-bindgen, ... } @ args:
     let
-      configfile = if kernelPatches == [ ] then ./config else
+      configfile = if _kernelPatches == [ ] then ./config else
         writeText "config" ''
           ${builtins.readFile ./config}
 
           # Patches
-          ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) kernelPatches}
+          ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) _kernelPatches}
         '';
-
-      _kernelPatches = kernelPatches;
 
       # used to (ostensibly) keep compatibility for those running stable versions of nixos
       rustOlder = version: withRust && (lib.versionOlder rustPlatform.rust.rustc.version version);
@@ -56,15 +54,15 @@ let
     (linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "6.2.0-asahi";
+      version = "6.3.0-asahi";
       modDirVersion = version;
 
       src = fetchFromGitHub {
         # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.2-11";
-        hash = "sha256-5ns8ilv+Kee2BHhpWm7CnNHf3+mcXCywkLhx4oh9rZk=";
+        rev = "asahi-6.3-6";
+        hash = "sha256-fxTnIJ8b1C1x38eV1LcHbjQH+DaWXSsqrB64hs0SnKI=";
       };
 
       kernelPatches = [

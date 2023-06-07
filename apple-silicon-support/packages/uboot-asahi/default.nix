@@ -10,10 +10,10 @@
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2023.01-3";
-    hash = "sha256-UJEQ+BJ2AhgE6MvBRrG/vI6c4F7+Qt1GUejCa5SoeQo=";
+    rev = "asahi-v2023.04-1";
+    hash = "sha256-vGuZrT+siynhXWnvvR3b3v2f/imF5qapyO0EgMc+4ZQ=";
   };
-  version = "2023.01.asahi3-1";
+  version = "2023.04.asahi2-1";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
@@ -50,5 +50,9 @@
     # compress so that m1n1 knows U-Boot's size and can find things after it
     gzip -n u-boot-nodtb.bin
     cat ${m1n1}/build/m1n1.bin arch/arm/dts/t[68]*.dtb u-boot-nodtb.bin.gz > m1n1-u-boot.bin
+  '';
+
+  buildPhase = ''
+    make
   '';
 })
