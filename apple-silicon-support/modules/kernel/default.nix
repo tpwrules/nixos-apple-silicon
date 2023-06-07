@@ -78,7 +78,6 @@
 
     # GRUB has to be installed as removable if the user chooses to use it
     boot.loader.grub = lib.mkDefault {
-      version = 2;
       efiSupport = true;
       efiInstallAsRemovable = true;
       device = "nodev";
