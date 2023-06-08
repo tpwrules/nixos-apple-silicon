@@ -2,6 +2,23 @@
 
 This file contains important information for each release.
 
+## 2023-06-07
+
+This release updates nixpkgs and all Asahi package versions, including the
+kernel, m1n1, U-Boot, and Mesa.
+
+Updating nixpkgs brings us past the 23.05 release and on the path to 23.11.
+
+Updating m1n1 fixes some issues with virtualization.
+
+Updating U-Boot fixes issues with certain USB devices causing U-Boot to crash
+and allows use of all USB ports on all Macs (IIUC).
+
+Due to a quirk in the new version of U-Boot, a revised command is required to
+boot off a flash drive when a system is already installed on the internal disk.
+This command is as follows: `env set boot_efi_bootmgr ; run bootcmd_usb0`.
+Hopefully this quirk will be addressed in a future release.
+
 ## 2023-05-06
 
 This release updates nixpkgs. There have been no changes to Asahi's stable
