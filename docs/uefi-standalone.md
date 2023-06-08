@@ -1,11 +1,11 @@
-# UEFI Boot Standalone NixOS (2023-05-06)
+# UEFI Boot Standalone NixOS (2023-06-07)
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel version 6.2.0-asahi11
-* Asahi Linux's Mesa version 23.1.0_pre20230311-1
-* m1n1 version v1.2.6
-* Asahi Linux's U-Boot version 2023.01.asahi3-1
-* Nixpkgs, as of 2023-05-05
+* Asahi Linux kernel version 6.3.0-asahi7
+* Asahi Linux's Mesa version 23.2.0_asahi-20230606-1
+* m1n1 version v1.2.9
+* Asahi Linux's U-Boot version 2023.04.asahi2-1
+* Nixpkgs, as of 2023-06-05
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-apple-silicon/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
@@ -27,7 +27,7 @@ While you will end up with a reasonably usable computer, the exact hardware feat
 The following items are required to get started:
 * Apple Silicon Mac [supported by Asahi Linux](https://github.com/AsahiLinux/docs/wiki/Feature-Support#table-of-contents) with macOS 12.3 or later and an admin account
 * For Mac mini users: tested and working HDMI monitor. Many do not work properly; if it shows the Asahi Linux logo and console when m1n1 is running, it's fine.
-* USB flash drive which is at least 512MB and can be fully erased, and USB A to C adapter if the flash drive is not USB-C
+* USB flash drive which is at least 512MB and can be fully erased
 * Familiarity with the command line and installers without GUIs
 * Optional: an x86_64 or aarch64 Linux PC or VM (any distro is fine)
 
@@ -131,9 +131,9 @@ If everything went well, you will restart into U-Boot with the Asahi Linux and U
 
 #### Booting the Installer
 
-Shut down the machine fully. Connect the flash drive with the installer ISO to a USB-C port. (If the flash drive is not USB-C, you will need to use a USB A to C adapter.) If on a Mac mini, you must use the USB-C ports as U-Boot does not support the USB-A ports at this time. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
+Shut down the machine fully. Connect the flash drive with the installer ISO to a USB port. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
-Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `run bootcmd_usb0`. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
+Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `env set boot_efi_bootmgr ; run bootcmd_usb0`. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
 
 <details>
   <summary>If "mounting `/dev/root` on `/mnt-root/iso` failed: No such file or directory" during boot…</summary>
@@ -163,12 +163,6 @@ nixos# sgdisk /dev/nvme0n1 -n 0:0 -s
 [...]
 The operation has completed successfully.
 ```
-
-<details>
-  <summary>If the `/dev/nvme0n1` device does not exist…</summary>
-
-  There is an issue with outdated boot files which may cause the NVMe device to not be detected on some machine types from a fresh setup using the Asahi Linux installer. This issue cannot be fixed until the Asahi Linux folks update the installer images. However, a workaround is available [here](https://github.com/tpwrules/nixos-apple-silicon/issues/61#issuecomment-1537286595).
-</details>
 
 Identify the number of the new root partition (type code 8300, typically second to last):
 ```
@@ -343,7 +337,7 @@ Downloading the kernel over USB using m1n1 is not supported.
 
 If something goes wrong and NixOS doesn't boot or is otherwise unusable, you can first try rolling back to a previous generation. Instead of selecting the default bootloader option, choose another configuration that worked previously.
 
-If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `run bootcmd_usb0`.
+If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `env set boot_efi_bootmgr ; run bootcmd_usb0`.
 
 Once in the installer, you can re-mount your root partition and EFI system partition without reformatting them. Depending on what exactly went wrong, you might need to edit your configuration, copy over the latest Apple Silicon support module, or update U-Boot using the latest installer.
 
