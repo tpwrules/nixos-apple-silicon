@@ -2,6 +2,17 @@
 
 This file contains important information for each release.
 
+## 2023-06-15
+
+This release updates nixpkgs, the Asahi kernel, and Mesa.
+
+Updating nixpkgs fixes an issue uncovered by the last release which would cause
+`nixos-generate-config` to generate a hardware configuration which would build
+for the wrong system type.
+
+Updating the Asahi packages fixes some graphics issues using the experimental
+GPU driver.
+
 ## 2023-06-07
 
 This release updates nixpkgs and all Asahi package versions, including the
