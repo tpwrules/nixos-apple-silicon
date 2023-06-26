@@ -2,6 +2,17 @@
 
 This file contains important information for each release.
 
+## 2023-06-25
+
+This release updates nixpkgs. There have been no changes to Asahi's stable
+package versions since the last release.
+
+This release corrects problems building the Linux kernel Rust graphics driver
+using recent nixpkgs releases. Thanks to yu-re-ka and the Asahi team for
+patches.
+
+This release also finally eliminates IFD when building the kernel.
+
 ## 2023-06-15
 
 This release updates nixpkgs, the Asahi kernel, and Mesa.
