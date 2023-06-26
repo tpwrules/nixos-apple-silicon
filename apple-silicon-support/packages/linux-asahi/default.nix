@@ -11,37 +11,51 @@
 }:
 
 let
-  parseExtraConfig = cfg: let
-    lines = builtins.filter (s: s != "") (lib.strings.splitString "\n" cfg);
-    perLine = line: let
-      kv = lib.strings.splitString " " line;
-    in assert (builtins.length kv == 2);
-       "CONFIG_${builtins.elemAt kv 0}=${builtins.elemAt kv 1}";
-    in lib.strings.concatMapStringsSep "\n" perLine lines;
+  # parse <OPT> (y|m|n) style configuration as found in a patch's extraConfig
+  # into a list of k, v tuples
+  parseExtraConfig = config:
+    let
+      lines =
+        builtins.filter (s: s != "") (lib.strings.splitString "\n" config);
+      parseLine = line:
+        let t = lib.strings.splitString " " line;
+        in assert (builtins.length t == 2); t;
+    in map parseLine lines;
 
+  # parse CONFIG_<OPT>=(y|m|n) style configuration as found in a config file
+  # into a list of k, v tuples
   parseConfig = config:
     let
       parseLine = builtins.match "(CONFIG_[[:upper:][:digit:]_]+)=(y|m|n)";
       lines = lib.strings.splitString "\n" config;
-      pairs = builtins.filter (x: x != null) (map parseLine lines);
-    in
-    builtins.listToAttrs (map
-      (pair: lib.nameValuePair
-        (builtins.elemAt pair 0)
-        (builtins.elemAt pair 1))
-      pairs);
-  readConfig = configfile: parseConfig (builtins.readFile configfile);
+    in builtins.filter (t: t != null) (map parseLine lines);
+
+  origConfigfile = ./config;
 
   linux-asahi-pkg = { stdenv, lib, fetchFromGitHub, fetchpatch, linuxKernel,
       rustPlatform, rustc, rustfmt, rust-bindgen, ... } @ args:
     let
-      configfile = if _kernelPatches == [ ] then ./config else
+      origConfigText = builtins.readFile origConfigfile;
+
+      # extraConfig from all patches in order
+      extraConfig = lib.fold (patch: ex: ex ++
+        (parseExtraConfig (patch.extraConfig or ""))) [] _kernelPatches;
+      # config file text for above
+      extraConfigText = (map (t: "CONFIG_${builtins.elemAt t 0}=${builtins.elemAt t 1}") extraConfig);
+
+      # final config as a text file path
+      configfile = if extraConfig == [] then origConfigfile else
         writeText "config" ''
-          ${builtins.readFile ./config}
+          ${origConfigText}
 
           # Patches
-          ${lib.strings.concatMapStringsSep "\n" ({extraConfig ? "", ...}: parseExtraConfig extraConfig) _kernelPatches}
+          ${lib.strings.concatStringsSep "\n" extraConfigText}
         '';
+      # final config as an attrset
+      config = let
+        makePair = t: lib.nameValuePair (builtins.elemAt t 0) (builtins.elemAt t 1);
+        configList = (parseConfig origConfigText) ++ extraConfig;
+      in builtins.listToAttrs (map makePair configList);
 
       # used to (ostensibly) keep compatibility for those running stable versions of nixos
       rustOlder = version: withRust && (lib.versionOlder rustc.version version);
@@ -112,8 +126,7 @@ let
         }
       ] ++ _kernelPatches;
 
-      inherit configfile;
-      config = readConfig configfile;
+      inherit configfile config;
 
       extraMeta.branch = "6.2";
     } // (args.argsOverride or {})).overrideAttrs (old: if withRust then {
