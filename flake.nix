@@ -2,6 +2,8 @@
   description = "Apple Silicon support for NixOS";
 
   inputs = {
+    flake-compat.url = "github:nix-community/flake-compat";
+
     nixpkgs = {
       # https://hydra.nixos.org/jobset/mobile-nixos/unstable/evals
       # these evals have a cross-compiled stdenv available
