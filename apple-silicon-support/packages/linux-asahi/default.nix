@@ -75,8 +75,8 @@ let
         # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.3-8";
-        hash = "sha256-/5dD5QidvQo9bwqDnkVtxF9Kj3WMS0uqqIcn8MPyao8=";
+        rev = "asahi-6.3-10";
+        hash = "sha256-ClZnsvROqL3HTNCsZBPDFOfErOHS29A69S0iNdwtsFo=";
       };
 
       kernelPatches = [
@@ -115,14 +115,6 @@ let
         { name = "rust-1.67.0";
           patch = ./rust_1_67_0.patch;
           reverse = true;
-        }
-      ] ++ lib.optionals (rustAtLeast "1.70.0") [
-        { name = "rust-1.70.0";
-          patch = pkgs.fetchpatch {
-            name = "rust-1.70.patch";
-            url = "https://github.com/AsahiLinux/linux/commit/496a1b061691f01602aa63d2a8027cf3020d4bb8.diff";
-            hash = "sha256-RxOzCE22+yfZ3r/1sjbP8Cp+rRa56SJjHjwjTJxfIUI=";
-          };
         }
       ] ++ _kernelPatches;
 
