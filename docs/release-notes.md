@@ -2,6 +2,14 @@
 
 This file contains important information for each release.
 
+## 2023-07-11
+
+This release updates nixpkgs, the Asahi kernel, and Mesa.
+
+This release adds the ability to build the installer and packages when not using
+flakes through the inclusion of flake-compat. Thanks to flokli for this
+contribution.
+
 ## 2023-06-25
 
 This release updates nixpkgs. There have been no changes to Asahi's stable
