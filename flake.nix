@@ -2,18 +2,18 @@
   description = "Apple Silicon support for NixOS";
 
   inputs = {
-    flake-compat.url = "github:nix-community/flake-compat";
-
     nixpkgs = {
       # https://hydra.nixos.org/jobset/mobile-nixos/unstable/evals
       # these evals have a cross-compiled stdenv available
-      url = "github:nixos/nixpkgs/3ae20aa58a6c0d1ca95c9b11f59a2d12eebc511f";
+      url = "github:nixos/nixpkgs/4a729ce4b1fe5ec4fffc71c67c96aa5184ebb462";
     };
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       flake = false;
     };
+
+    flake-compat.url = "github:nix-community/flake-compat";
   };
 
   outputs = { self, ... }@inputs:
