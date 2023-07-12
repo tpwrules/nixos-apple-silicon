@@ -116,15 +116,6 @@ let
           patch = ./rust_1_67_0.patch;
           reverse = true;
         }
-      ] ++ lib.optionals (rustOlder "1.70.0") [
-        { name = "rust-1.70.0";
-          patch = pkgs.fetchpatch {
-            name = "rust-1.70.patch";
-            url = "https://github.com/AsahiLinux/linux/commit/496a1b061691f01602aa63d2a8027cf3020d4bb8.diff";
-            hash = "sha256-RxOzCE22+yfZ3r/1sjbP8Cp+rRa56SJjHjwjTJxfIUI=";
-          };
-          reverse = true;
-        }
       ] ++ _kernelPatches;
 
       inherit configfile config;
