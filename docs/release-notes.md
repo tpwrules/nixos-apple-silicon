@@ -2,6 +2,18 @@
 
 This file contains important information for each release.
 
+## 2023-07-12
+
+This release does not update any software.
+
+This release corrects an issue where the kernel would not build with Rust
+support when using the latest stable nixpkgs release due to a patch that was
+applied when it should not have been. Thanks to natsukagami for noticing and
+correcting the issue.
+
+Support for stable nixpkgs releases is neither tested nor guaranteed, but
+patches to address specific issues are welcome.
+
 ## 2023-07-11
 
 This release updates nixpkgs, the Asahi kernel, and Mesa.
