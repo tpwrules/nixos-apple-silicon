@@ -9,14 +9,14 @@
 }).overrideAttrs (oldAttrs: {
   # version must be the same length (i.e. no unstable or date)
   # so that system.replaceRuntimeDependencies can work
-  version = "23.2.0";
+  version = "23.3.0";
   src = fetchFromGitLab {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/mesa-asahi-edge/PKGBUILD
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20230706";
-    hash = "sha256-tpnU09aN9v4Oxz0PAgeUIW2Dkxmq1EGIYVheu5jli/Y=";
+    rev = "asahi-20230725";
+    hash = "sha256-5xg6iB2kSq5qxQWzqcYat8y9L4NBXGjuo20kFn8HnMM=";
   };
 
   mesonFlags =

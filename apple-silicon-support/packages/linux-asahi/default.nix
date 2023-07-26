@@ -75,8 +75,8 @@ let
         # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.3-10";
-        hash = "sha256-ClZnsvROqL3HTNCsZBPDFOfErOHS29A69S0iNdwtsFo=";
+        rev = "asahi-6.3-13";
+        hash = "sha256-70ZK1UYTv4kO8ARM895ee+xenetgdP0T1KRJaB+VnnY=";
       };
 
       kernelPatches = [
