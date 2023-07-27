@@ -2,6 +2,10 @@
 
 This file contains important information for each release.
 
+## 2023-07-26
+
+This release updates nixpkgs, the Asahi kernel, and Mesa.
+
 ## 2023-07-12
 
 This release does not update any software.
