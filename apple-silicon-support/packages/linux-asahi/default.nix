@@ -116,6 +116,10 @@ let
           patch = ./rust_1_67_0.patch;
           reverse = true;
         }
+      ] ++ lib.optionals (rustAtLeast "1.71.0") [
+        { name = "rust-1.71.0";
+          patch = ./rust_1_71_0.patch;
+        }
       ] ++ _kernelPatches;
 
       inherit configfile config;
