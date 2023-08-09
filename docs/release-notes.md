@@ -2,6 +2,14 @@
 
 This file contains important information for each release.
 
+## 2023-08-08
+
+This release does not update any software.
+
+This release includes a patch to allow building with Rust 1.71.0 in the
+latest nixpkgs releases. Nixpkgs itself is not yet updated due to a
+regression in cross-compilation.
+
 ## 2023-07-26
 
 This release updates nixpkgs, the Asahi kernel, and Mesa.
