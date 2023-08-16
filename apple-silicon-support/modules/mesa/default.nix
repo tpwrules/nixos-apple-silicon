@@ -7,7 +7,7 @@
     (lib.mkIf config.hardware.asahi.useExperimentalGPUDriver {
 
       # install the drivers
-      hardware.opengl.package = pkgs.mesa-asahi-edge.drivers;
+      hardware.opengl.package = config.hardware.asahi.pkgs.mesa-asahi-edge.drivers;
 
       # required for GPU kernel driver
       hardware.asahi.addEdgeKernelConfig = true;
@@ -17,7 +17,7 @@
       # without rebuilding them to avoid rebuilding the world.
       system.replaceRuntimeDependencies = [
         { original = pkgs.mesa;
-          replacement = pkgs.mesa-asahi-edge;
+          replacement = config.hardware.asahi.pkgs.mesa-asahi-edge;
         }
       ];
     })
