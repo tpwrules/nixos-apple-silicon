@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2023-08-19
+
+This release updates nixpkgs and Mesa.
+
+In particular, nixpkgs is updated to fix a regression in cross-compilation
+and a non-deterministic build failure of GRUB.
+
 ## 2023-08-08
 
 This release does not update any software.
