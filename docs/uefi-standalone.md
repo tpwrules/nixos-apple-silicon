@@ -18,7 +18,8 @@ Perusing this guide might also be useful to users of other distros. Most of the 
 
 #### Warning
 
-Damage to the macOS recovery partitions or the partition table could result in the Mac becoming unbootable and loss of all data on the internal NVMe drive. In this circumstance, a suitable USB cable and another computer which can run [idevicerestore](https://github.com/libimobiledevice/idevicerestore) will be required to perform a DFU upgrade and restore normal operation. Backups are always wise.
+Damage to the macOS recovery partitions or the partition table could result in the Mac becoming unbootable and loss of all data on the internal NVMe drive. In this circumstance, a suitable USB cable and another Mac which can run [Apple Configurator 2](https://apps.apple.com/app/apple-configurator-2/id1037126344) will be required to perform a DFU upgrade and restore normal operation. An official guide to enter DFU mode and restore apple silicon Macs using apple configurator 2 is available on [Apple Support Doumentation](https://support.apple.com/guide/apple-configurator-mac/revive-or-restore-a-mac-with-apple-silicon-apdd5f3c75ad/mac)
+Backups are always wise.
 
 While you will end up with a reasonably usable computer, the exact hardware features you want [may not be ready yet](https://github.com/AsahiLinux/docs/wiki/%22When-will-Asahi-Linux-be-done%3F%22). Please consult the [Asahi Linux Feature Support page](https://github.com/AsahiLinux/docs/wiki/Feature-Support) for information. Any features marked with a kernel version or `linux-asahi` should be supported by NixOS too.
 
