@@ -10,14 +10,7 @@
         # derived from
         # https://github.com/AsahiLinux/PKGBUILDs/blob/stable/linux-asahi/config.edge
         extraConfig = ''
-          DRM_SIMPLEDRM_BACKLIGHT n
-          BACKLIGHT_GPIO n
           DRM_APPLE m
-          APPLE_SMC m
-          APPLE_SMC_RTKIT m
-          APPLE_RTKIT m
-          APPLE_MBOX m
-          GPIO_MACSMC m
           DRM_VGEM n
           DRM_SCHED y
           DRM_GEM_SHMEM_HELPER y
