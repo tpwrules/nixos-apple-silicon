@@ -4,5 +4,6 @@ final: prev: {
   uboot-asahi = final.callPackage ./uboot-asahi { };
   asahi-fwextract = final.callPackage ./asahi-fwextract { };
   mesa-asahi-edge = final.callPackage ./mesa-asahi-edge { inherit (prev) mesa; };
+  asahi-battery-threshold = final.callPackage ./asahi-battery-threshold { };
   # TODO: package alsa-ucm-conf-asahi for headphone jack support
 }
