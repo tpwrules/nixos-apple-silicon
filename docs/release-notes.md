@@ -2,6 +2,12 @@
 
 This file contains important information for each release.
 
+## 2023-08-25
+
+This release updates nixpkgs, m1n1, the kernel, and Mesa.
+
+Thanks to yu-re-ka, Lucus16, and Enzime for help with these updates.
+
 ## 2023-08-19
 
 This release updates nixpkgs and Mesa.
