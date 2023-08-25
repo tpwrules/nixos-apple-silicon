@@ -133,8 +133,11 @@ let
         removeReferencesTo
       ];
       # HACK: references shouldn't have been there in the first place
+      # TODO: remove once 23.05 is obsolete
       postFixup = (old.postFixup or "") + ''
-        remove-references-to -t $out $dev/lib/modules/${old.version}/build/vmlinux
+        if [ -f $dev/lib/modules/${old.version}/build/vmlinux ]; then
+          remove-references-to -t $out $dev/lib/modules/${old.version}/build/vmlinux
+        fi
         remove-references-to -t $dev $out/Image
       '';
       RUST_LIB_SRC = rustPlatform.rustLibSrc;
