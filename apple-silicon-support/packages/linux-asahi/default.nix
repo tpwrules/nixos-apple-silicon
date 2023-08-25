@@ -68,15 +68,15 @@ let
     (linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "6.3.0-asahi";
+      version = "6.4.0-asahi";
       modDirVersion = version;
 
       src = fetchFromGitHub {
         # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.3-13";
-        hash = "sha256-70ZK1UYTv4kO8ARM895ee+xenetgdP0T1KRJaB+VnnY=";
+        rev = "asahi-6.4-8";
+        hash = "sha256-SHLaV3wfnDC5SNG3mbOYJrwgIQbQDR+uKKsftS+491c=";
       };
 
       kernelPatches = [
@@ -116,15 +116,16 @@ let
           patch = ./rust_1_67_0.patch;
           reverse = true;
         }
-      ] ++ lib.optionals (rustAtLeast "1.71.0") [
+      ] ++ lib.optionals (rustOlder "1.71.0") [
         { name = "rust-1.71.0";
           patch = ./rust_1_71_0.patch;
+          reverse = true;
         }
       ] ++ _kernelPatches;
 
       inherit configfile config;
 
-      extraMeta.branch = "6.2";
+      extraMeta.branch = "6.4";
     } // (args.argsOverride or {})).overrideAttrs (old: if withRust then {
       nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
         rust-bindgen
