@@ -2,6 +2,14 @@
 
 This file contains important information for each release.
 
+## 2023-08-26
+
+This release updates nixpkgs.
+
+This release also removes obsolete Rust patches that were no longer needed and
+prevented building in the latest stable nixpkgs release. Thanks to autrimpo for
+noticing this issue and testing the fix.
+
 ## 2023-08-25
 
 This release updates nixpkgs, m1n1, the kernel, and Mesa.
