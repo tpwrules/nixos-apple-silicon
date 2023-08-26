@@ -98,11 +98,6 @@ let
         { name = "default-pagesize-16k";
           patch = ./default-pagesize-16k.patch;
         }
-      ] ++ lib.optionals (rustOlder "1.66.0") [
-        { name = "rust-1.66.0";
-          patch = ./rust_1_66_0.patch;
-          reverse = true;
-        }
       ] ++ lib.optionals (bindgenAtLeast "0.63.0") [
         { name = "rust-bindgen";
           patch = ./rust-bindgen-0.63-fix.patch;
@@ -110,16 +105,6 @@ let
       ] ++ lib.optionals (bindgenAtLeast "0.65.0") [
         { name = "rust-bindgen";
           patch = ./rust-bindgen-0.65-fix.patch;
-        }
-      ] ++ lib.optionals (rustOlder "1.67.0") [
-        { name = "rust-1.67.0";
-          patch = ./rust_1_67_0.patch;
-          reverse = true;
-        }
-      ] ++ lib.optionals (rustOlder "1.71.0") [
-        { name = "rust-1.71.0";
-          patch = ./rust_1_71_0.patch;
-          reverse = true;
         }
       ] ++ _kernelPatches;
 
