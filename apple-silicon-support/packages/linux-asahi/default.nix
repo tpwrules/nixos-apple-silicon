@@ -106,6 +106,10 @@ let
         { name = "rust-bindgen";
           patch = ./rust-bindgen-0.65-fix.patch;
         }
+      ] ++ lib.optionals (rustAtLeast "1.72.0") [
+        { name = "rustc-1.72.0";
+          patch = ./rustc-1.72.0-fix.patch;
+        }
       ] ++ _kernelPatches;
 
       inherit configfile config;
