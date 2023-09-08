@@ -1,0 +1,55 @@
+diff --git a/rust/alloc/alloc.rs b/rust/alloc/alloc.rs
+index 74bf72412ad9..fe48094ac1f6 100644
+--- a/rust/alloc/alloc.rs
++++ b/rust/alloc/alloc.rs
+@@ -329,14 +329,15 @@ unsafe fn exchange_malloc(size: usize, align: usize) -> *mut u8 {
+     }
+ }
+ 
+-#[cfg_attr(not(test), lang = "box_free")]
++#[cfg(all(bootstrap, not(test)))]
++#[lang = "box_free"]
+ #[inline]
+ // This signature has to be the same as `Box`, otherwise an ICE will happen.
+ // When an additional parameter to `Box` is added (like `A: Allocator`), this has to be added here as
+ // well.
+ // For example if `Box` is changed to  `struct Box<T: ?Sized, A: Allocator>(Unique<T>, A)`,
+ // this function has to be changed to `fn box_free<T: ?Sized, A: Allocator>(Unique<T>, A)` as well.
+-pub(crate) unsafe fn box_free<T: ?Sized, A: Allocator>(
++unsafe fn box_free<T: ?Sized, A: Allocator>(
+     ptr: Unique<T>,
+     alloc: A,
+ ) {
+diff --git a/rust/alloc/boxed.rs b/rust/alloc/boxed.rs
+index 0c043c59c1a4..64da5bd482d1 100644
+--- a/rust/alloc/boxed.rs
++++ b/rust/alloc/boxed.rs
+@@ -1218,7 +1218,14 @@ pub fn into_pin(boxed: Self) -> Pin<Self>
+ #[stable(feature = "rust1", since = "1.0.0")]
+ unsafe impl<#[may_dangle] T: ?Sized, A: Allocator> Drop for Box<T, A> {
+     fn drop(&mut self) {
+-        // FIXME: Do nothing, drop is currently performed by compiler.
++        // the T in the Box is dropped by the compiler before the destructor is run
++
++        let ptr = self.0;
++
++        unsafe {
++            let layout = Layout::for_value_raw(ptr.as_ptr());
++            self.1.deallocate(From::from(ptr.cast()), layout)
++        }
+     }
+ }
+ 
+diff --git a/rust/kernel/sync/arc.rs b/rust/kernel/sync/arc.rs
+index 3bb73b614fd1..a7521cec9e16 100644
+--- a/rust/kernel/sync/arc.rs
++++ b/rust/kernel/sync/arc.rs
+@@ -350,7 +350,7 @@ fn drop(&mut self) {
+ 
+             // SAFETY: The pointer was initialised from the result of `Box::leak`, and
+             // a ManuallyDrop<T> is compatible. We already dropped the contents above.
+-            unsafe { Box::from_raw(self.ptr.as_ptr() as *mut ManuallyDrop<ArcInner<T>>) };
++            unsafe { drop(Box::from_raw(self.ptr.as_ptr() as *mut ManuallyDrop<ArcInner<T>>)) };
+         }
+     }
+ }
