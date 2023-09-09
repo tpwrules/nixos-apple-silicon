@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2023-09-08
+
+This release updates nixpkgs, m1n1, the kernel, and Mesa.
+
+This release also adds patches to the kernel to support compilation with Rust
+1.72.0. Thanks again to yu-re-ka for this contribution.
+
 ## 2023-08-26
 
 This release updates nixpkgs.
