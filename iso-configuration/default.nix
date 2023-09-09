@@ -17,6 +17,7 @@
   # copy the apple-silicon-support and installer configs into the iso
   boot.postBootCommands = lib.optionalString config.installer.cloneConfig ''
     if ! [ -e /etc/nixos/apple-silicon-support ]; then
+      mkdir -p /etc/nixos
       cp ${./installer-configuration.nix} /etc/nixos/installer-configuration.nix
       cp -r ${../apple-silicon-support} /etc/nixos/apple-silicon-support
     fi
