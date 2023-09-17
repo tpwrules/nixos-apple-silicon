@@ -120,6 +120,12 @@
   # bootspec generation is currently broken under cross-compilation
   boot.bootspec.enable = false;
 
+  # get rid of warning about non-ideal mdam config file
+  # (we want to keep it enabled in case someone needs to use it)
+  boot.swraid.mdadmConf = ''
+    PROGRAM ${pkgs.coreutils}/bin/true
+  '';
+
   # get rid of warning that stateVersion is unset
   system.stateVersion = lib.mkDefault lib.trivial.release;
 }
