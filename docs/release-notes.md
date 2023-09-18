@@ -2,6 +2,12 @@
 
 This file contains important information for each release.
 
+## 2023-08-26
+
+This release updates nixpkgs.
+
+In particular, nixpkgs is updated to fix regressions in cross-compilation.
+
 ## 2023-09-08
 
 This release updates nixpkgs, m1n1, the kernel, and Mesa.
