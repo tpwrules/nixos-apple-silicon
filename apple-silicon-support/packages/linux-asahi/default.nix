@@ -68,15 +68,15 @@ let
     (linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "6.4.0-asahi";
+      version = "6.5.0-asahi";
       modDirVersion = version;
 
       src = fetchFromGitHub {
         # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.4-10";
-        hash = "sha256-PUuQcqcQy7digMb0VwO5AVpAC8cA2WsTR6xDhGtL/pY=";
+        rev = "asahi-6.5-15";
+        hash = "sha256-Rruk/Nrw425XerZjgDJ4PJ3c63CCycch1qz7vFxHPCE=";
       };
 
       kernelPatches = [
@@ -97,18 +97,6 @@ let
         # system architecture
         { name = "default-pagesize-16k";
           patch = ./default-pagesize-16k.patch;
-        }
-      ] ++ lib.optionals (bindgenAtLeast "0.63.0") [
-        { name = "rust-bindgen";
-          patch = ./rust-bindgen-0.63-fix.patch;
-        }
-      ] ++ lib.optionals (bindgenAtLeast "0.65.0") [
-        { name = "rust-bindgen";
-          patch = ./rust-bindgen-0.65-fix.patch;
-        }
-      ] ++ lib.optionals (rustAtLeast "1.72.0") [
-        { name = "rustc-1.72.0";
-          patch = ./rustc-1.72.0-fix.patch;
         }
       ] ++ _kernelPatches;
 
