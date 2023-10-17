@@ -10,8 +10,8 @@
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2023.04-1";
-    hash = "sha256-vGuZrT+siynhXWnvvR3b3v2f/imF5qapyO0EgMc+4ZQ=";
+    rev = "asahi-v2023.07.02-3";
+    hash = "sha256-a7iNawyq7K6jhiVzu5x8mllF3olTP+jQRXGGSsoKINI=";
   };
   version = "2023.04.asahi2-1";
 
