@@ -8,14 +8,14 @@
 
 python3.pkgs.buildPythonApplication rec {
   pname = "asahi-fwextract";
-  version = "0.5.4";
+  version = "0.6.8";
 
   # tracking version: https://github.com/AsahiLinux/PKGBUILDs/blob/main/asahi-fwextract/PKGBUILD
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "asahi-installer";
     rev = "v${version}";
-    hash = "sha256-jUEVuferUrJ+0T+rWUemE1dIUTo9puUDCmp/p5vIFtM=";
+    hash = "sha256-6POFMEmvbzyTzmLSA7xC9hzj5hjrm9fepsHaexafDlk=";
   };
 
   postPatch = ''
