@@ -93,9 +93,6 @@
     (final: prev: {
       # disabling pcsclite avoids the need to cross-compile gobject
       # introspection stuff which works now but is slow and unnecessary
-      iwd = prev.iwd.override {
-        withPcsclite = false;
-      };
       libfido2 = prev.libfido2.override {
         withPcsclite = false;
       };
