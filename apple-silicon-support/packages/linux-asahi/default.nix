@@ -22,6 +22,15 @@ let
         in assert (builtins.length t == 2); t;
     in map parseLine lines;
 
+  # parse <OPT>=lib.kernel.(yes|module|no) style configuration as found in
+  # a patch's extraStructuredConfig into a list of k, v tuples
+  parseExtraStructuredConfig = config:
+    lib.attrsets.mapAttrsToList (k: v: [ k v.tristate] ) config;
+
+  parsePatchConfig = { extraConfig ? "", extraStructuredConfig ? {}, ... }:
+    (parseExtraConfig extraConfig) ++
+    (parseExtraStructuredConfig extraStructuredConfig);
+
   # parse CONFIG_<OPT>=(y|m|n) style configuration as found in a config file
   # into a list of k, v tuples
   parseConfig = config:
@@ -38,8 +47,8 @@ let
       origConfigText = builtins.readFile origConfigfile;
 
       # extraConfig from all patches in order
-      extraConfig = lib.fold (patch: ex: ex ++
-        (parseExtraConfig (patch.extraConfig or ""))) [] _kernelPatches;
+      extraConfig =
+        lib.fold (patch: ex: ex ++ (parsePatchConfig patch)) [] _kernelPatches;
       # config file text for above
       extraConfigText = (map (t: "CONFIG_${builtins.elemAt t 0}=${builtins.elemAt t 1}") extraConfig);
 
