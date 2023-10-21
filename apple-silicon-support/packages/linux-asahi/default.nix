@@ -19,13 +19,14 @@ let
         builtins.filter (s: s != "") (lib.strings.splitString "\n" config);
       parseLine = line:
         let t = lib.strings.splitString " " line;
-        in assert (builtins.length t == 2); t;
+        in assert (builtins.length t == 2);
+          [ "CONFIG_${builtins.elemAt t 0}" (builtins.elemAt t 1) ];
     in map parseLine lines;
 
   # parse <OPT>=lib.kernel.(yes|module|no) style configuration as found in
   # a patch's extraStructuredConfig into a list of k, v tuples
   parseExtraStructuredConfig = config:
-    lib.attrsets.mapAttrsToList (k: v: [ k v.tristate] ) config;
+    lib.attrsets.mapAttrsToList (k: v: [ "CONFIG_${k}" v.tristate] ) config;
 
   parsePatchConfig = { extraConfig ? "", extraStructuredConfig ? {}, ... }:
     (parseExtraConfig extraConfig) ++
@@ -50,7 +51,7 @@ let
       extraConfig =
         lib.fold (patch: ex: ex ++ (parsePatchConfig patch)) [] _kernelPatches;
       # config file text for above
-      extraConfigText = (map (t: "CONFIG_${builtins.elemAt t 0}=${builtins.elemAt t 1}") extraConfig);
+      extraConfigText = (map (t: "${builtins.elemAt t 0}=${builtins.elemAt t 1}") extraConfig);
 
       # final config as a text file path
       configfile = if extraConfig == [] then origConfigfile else
