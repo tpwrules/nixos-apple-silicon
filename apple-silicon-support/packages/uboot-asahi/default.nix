@@ -1,6 +1,5 @@
 { lib
 , fetchFromGitHub
-, fetchpatch
 , buildUBoot
 , m1n1
 }:
@@ -10,10 +9,10 @@
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/uboot-asahi/PKGBUILD
     owner = "AsahiLinux";
     repo = "u-boot";
-    rev = "asahi-v2023.04-1";
-    hash = "sha256-vGuZrT+siynhXWnvvR3b3v2f/imF5qapyO0EgMc+4ZQ=";
+    rev = "asahi-v2023.07.02-3";
+    hash = "sha256-a7iNawyq7K6jhiVzu5x8mllF3olTP+jQRXGGSsoKINI=";
   };
-  version = "2023.04.asahi2-1";
+  version = "2023.07.02.asahi3-1";
 
   defconfig = "apple_m1_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
@@ -26,24 +25,11 @@
     CONFIG_VIDEO_FONT_4X6=n
     CONFIG_VIDEO_FONT_8X16=n
     CONFIG_VIDEO_FONT_SUN12X22=n
-    CONFIG_VIDEO_FONT_TER12X24=n
-    CONFIG_VIDEO_FONT_TER16X32=y
+    CONFIG_VIDEO_FONT_16X32=y
   '';
 }).overrideAttrs (o: {
   # nixos's downstream patches are not applicable
-  # however, we add in bigger u-boot fonts because the mac laptop screens are high-res
   patches = [ 
-    (fetchpatch {
-      url = "https://git.alpinelinux.org/aports/plain/testing/u-boot-asahi/apritzel-first5-video.patch?id=990110f35b50b74bdb4e902d94fa15b07a8eac9e";
-      sha256 = "sha256-QPvJYxIcQBHbwsj7l96qGUZSipk1sB3ZyniD1Io18dY=";
-      revert = false;
-    })
-
-    (fetchpatch {
-      url = "https://git.alpinelinux.org/aports/plain/testing/u-boot-asahi/mps-u-boot-ter12x24.patch?id=990110f35b50b74bdb4e902d94fa15b07a8eac9e";
-      sha256 = "sha256-wrQpIYiuNRi/p2p290KCGPmuRxFEOPlbICoFvd+E8p0=";
-      revert = false;
-    })
   ];
 
   # flag somehow breaks DTC compilation so we remove it
