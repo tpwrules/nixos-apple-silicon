@@ -75,7 +75,7 @@ let
       config = let
         makePair = t: lib.nameValuePair (i t 0) (i t 1);
         configList = (parseConfig origConfigText) ++ extraConfig;
-      in builtins.listToAttrs (map makePair configList);
+      in builtins.listToAttrs (map makePair (lib.lists.reverseList configList));
 
       # used to (ostensibly) keep compatibility for those running stable versions of nixos
       rustOlder = version: withRust && (lib.versionOlder rustc.version version);
