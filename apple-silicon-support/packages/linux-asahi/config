@@ -7810,3 +7810,8 @@ CONFIG_RUST_OVERFLOW_CHECKS=y
 # NixOS-specific config options
 # needed by systemd
 CONFIG_AUTOFS4_FS=y
+# needed for systemd initrd and TPM features
+CONFIG_ACPI=y
+CONFIG_TCG_TPM=y
+CONFIG_TCG_TIS=m
+CONFIG_TCG_CRB=m
