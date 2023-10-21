@@ -2,7 +2,7 @@
 
 This file contains important information for each release.
 
-## 2023-08-26
+## 2023-09-17
 
 This release updates nixpkgs.
 
