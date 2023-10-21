@@ -25,14 +25,14 @@ let
   });
 in stdenv.mkDerivation rec {
   pname = "m1n1";
-  version = "1.3.6";
+  version = "1.4.2";
 
   src = fetchFromGitHub {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/m1n1/PKGBUILD
     owner = "AsahiLinux";
     repo = "m1n1";
     rev = "v${version}";
-    hash = "sha256-OlNI7SKWiG7+I5TJhdQuPjCigkYr5C70U/7Go3aEAxc=";
+    hash = "sha256-zPHLlhXUIX6MV2pnDkuSg4Pz8gB4YOZiaa8MuLasgPY=";
     fetchSubmodules = true;
   };
 
@@ -62,6 +62,7 @@ in stdenv.mkDerivation rec {
 
     rm bootlogo_128.png
     convert bootlogo_256.png -resize 128x128 bootlogo_128.png
+    patchShebangs --build ./makelogo.sh
     ./makelogo.sh
     popd &>/dev/null
   '';
