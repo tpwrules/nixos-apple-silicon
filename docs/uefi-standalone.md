@@ -246,12 +246,17 @@ Currently, the only supported way to update the peripheral firmware files is to 
   # hardware.asahi.extractPeripheralFirmware = false;
 ```
 
+<details>
+  <summary>If you have apps incompatible with 16K page sizes and you need 4K page size instead...</summary>
+
+**Note:** The 4K patches are currently not updated to latest kernel version. See [this issue](https://github.com/tpwrules/nixos-apple-silicon/issues/43).
 You can choose to build the Asahi kernel with a 4K page size by enabling the appropriate option. This results in a reduction in raw compilation speed of 10-25%, but improves software compatibility in some cases (such as with Chromium/Electron and x86 emulation).
 ```
   # Build the kernel with 4K pages to improve software compatibility at
   # the cost of performance in some cases.
   hardware.asahi.use4KPages = true;
 ```
+</details>
 
 If you want to install a desktop environment, you will have to uncomment the option to enable X11 and NetworkManager, then add an option to include your favorite desktop environment. You may also wish to include graphical packages such as `firefox` in `environment.systemPackages`. For example, to install Xfce:
 ```
