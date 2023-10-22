@@ -273,6 +273,14 @@ Some keyboard layouts are not detected correctly. On some devices, the \` key is
  '';
  ```
 
+`iwd` is recommended for WiFi on most systems:
+```
+networking.wireless.iwd = {
+  enable = true;
+  settings.General.EnableNetworkConfiguration = true;
+};
+```
+
 #### NixOS Installation
 
 Once you are happy with your initial configuration, you may install the system. This will have to download a large amount of data.
