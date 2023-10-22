@@ -2,6 +2,31 @@
 
 This file contains important information for each release.
 
+## 2023-10-21
+
+This release updates nixpkgs, m1n1, U-Boot, and the kernel.
+
+Some exciting new features are now available:
+* ALSA configuration module to enable the headphone jack on supported devices
+  * You will need at least `sound.enable = true;` and
+    `hardware.pulseaudio.enable = true;` in your configuration.nix to enable
+    sound for the system.
+  * Speakers will still not be enabled.
+  * Thanks to IonAgorria and yusefnapora for this contribution.
+* Built-in webcam support for supported devices
+  * The webcam should work without additional configuration in applications like
+    Firefox or desktop camera viewers.
+  * To avoid an overly-dark image and other image quality issues, the ISP
+    firmware needs to be added to `all_firmware.tar.gz` within the peripheral
+    firmware directory. This can be done by inserting
+    `/usr/sbin/appleh13camerad` from macOS into the archive's root. Stub
+    partitions created with the Asahi installer after this release should
+    already have the file but older installations must be upgraded manually.
+    This will hopefully be done automatically in a future release.
+* Official support for M2-series devices
+  * Please leave feedback if issues are encountered. I don't have any way to
+    test this support with NixOS.
+
 ## 2023-09-17
 
 This release updates nixpkgs.
