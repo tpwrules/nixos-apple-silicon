@@ -104,6 +104,10 @@ let
         { name = "rust-bindgen-version";
           patch = ./rust-bindgen-version.patch;
         }
+      ] ++ lib.optionals (rustAtLeast "1.73.0") [
+        { name = "rustc-1.73.0";
+          patch = ./rustc-1.73.0-fix.patch;
+        }
       ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
