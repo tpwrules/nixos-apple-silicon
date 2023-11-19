@@ -2,6 +2,18 @@
 
 This file contains important information for each release.
 
+## 2023-11-19
+
+This release updates nixpkgs.
+
+In particular, nixpkgs is updated to fix issues with compilation of wolfssl,
+and some regressions in systemd-boot.
+
+This release also adds patches to the kernel to support compilation with Rust
+1.73.0. Thanks again to yu-re-ka for this contribution.
+
+Speaker support will be added in an upcoming release.
+
 ## 2023-10-21
 
 This release updates nixpkgs, m1n1, U-Boot, and the kernel.
