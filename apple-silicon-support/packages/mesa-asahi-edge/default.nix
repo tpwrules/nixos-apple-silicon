@@ -1,22 +1,24 @@
 { lib
 , fetchFromGitLab
-, mesa }:
+, mesa
+}:
 
 (mesa.override {
   galliumDrivers = [ "swrast" "asahi" ];
   vulkanDrivers = [ "swrast" ];
   enableGalliumNine = false;
+  enableOpenCL = true;
 }).overrideAttrs (oldAttrs: {
   # version must be the same length (i.e. no unstable or date)
   # so that system.replaceRuntimeDependencies can work
-  version = "23.3.0";
+  version = "24.0.0";
   src = fetchFromGitLab {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/mesa-asahi-edge/PKGBUILD
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20230904";
-    hash = "sha256-hBfXzV8U9fm3cR4KMIl64ypioEeofH3BDl/jZQPLKQg=";
+    rev = "asahi-20231126";
+    hash = "sha256-ph0zpYd5q2ezh3a1Ed7nTmUcca2+VFz7dz85GxteTpQ=";
   };
 
   mesonFlags =
@@ -35,7 +37,8 @@
     ];
 
   # replace disk cache path patch with one tweaked slightly to apply to this version
-  patches = lib.forEach oldAttrs.patches
-    (p: if lib.hasSuffix "disk_cache-include-dri-driver-path-in-cache-key.patch" p
-      then ./disk_cache-include-dri-driver-path-in-cache-key.patch else p);
+  patches = [
+    ./disk_cache-include-dri-driver-path-in-cache-key.patch
+    ./opencl.patch
+  ];
 })
