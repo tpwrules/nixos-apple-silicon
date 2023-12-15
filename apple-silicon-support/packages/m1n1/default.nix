@@ -25,14 +25,14 @@ let
   });
 in stdenv.mkDerivation rec {
   pname = "m1n1";
-  version = "1.4.7";
+  version = "1.4.8";
 
   src = fetchFromGitHub {
     # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/m1n1/PKGBUILD
     owner = "AsahiLinux";
     repo = "m1n1";
     rev = "v${version}";
-    hash = "sha256-b1ipaDwJdkjDnTvG1pf5Ok9NWTi6+hF88h2ydgku+Jg=";
+    hash = "sha256-z8crL9PYmrku4oPAjCbtqqi2ftXh1bH/owZ0lN885Es=";
     fetchSubmodules = true;
   };
 
