@@ -88,26 +88,19 @@ let
     (linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "6.5.0-asahi";
+      version = "6.6.0-asahi";
       modDirVersion = version;
-      extraMeta.branch = "6.5";
+      extraMeta.branch = "6.6";
 
       src = fetchFromGitHub {
         # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/PKGBUILD
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.5-29";
-        hash = "sha256-IkNgQlezdA+kWg5qdGQeOBgWDvR10eUJ8p6zpYCXtyE=";
+        rev = "asahi-6.6-12";
+        hash = "sha256-98wbiX6Aii0uObVRDdQBZTWH45KPnMUegJcfe3jLuEo=";
       };
 
       kernelPatches = [
-        { name = "rust-bindgen-version";
-          patch = ./rust-bindgen-version.patch;
-        }
-      ] ++ lib.optionals (rustAtLeast "1.73.0") [
-        { name = "rustc-1.73.0";
-          patch = ./rustc-1.73.0-fix.patch;
-        }
       ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
