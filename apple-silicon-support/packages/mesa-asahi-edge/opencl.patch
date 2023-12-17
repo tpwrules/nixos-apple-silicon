@@ -1,0 +1,84 @@
+From bbd0f154183e4d26a14bb005f6afc636629c201e Mon Sep 17 00:00:00 2001
+From: Thomas Watson <twatson52@icloud.com>
+Date: Sat, 16 Dec 2023 20:46:51 -0600
+Subject: [PATCH] opencl.patch from nixpkgs
+ f416128e90ac75bec060e8b9435fe9c38423c036
+
+---
+ meson.build                             | 2 +-
+ meson_options.txt                       | 6 ++++++
+ src/gallium/targets/opencl/meson.build  | 6 +++---
+ src/gallium/targets/rusticl/meson.build | 3 +--
+ 4 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 552ff196aa8..9e10156b875 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1829,7 +1829,7 @@ endif
+ 
+ dep_clang = null_dep
+ if with_clc
+-  llvm_libdir = dep_llvm.get_variable(cmake : 'LLVM_LIBRARY_DIR', configtool: 'libdir')
++  llvm_libdir = get_option('clang-libdir')
+ 
+   dep_clang = cpp.find_library('clang-cpp', dirs : llvm_libdir, required : false)
+ 
+diff --git a/meson_options.txt b/meson_options.txt
+index c76fa6d3382..d2021f55634 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -1,6 +1,12 @@
+ # Copyright © 2017-2019 Intel Corporation
+ # SPDX-License-Identifier: MIT
+ 
++option(
++  'clang-libdir',
++  type : 'string',
++  value : '',
++  description : 'Locations to search for clang libraries.'
++)
+ option(
+   'platforms',
+   type : 'array',
+diff --git a/src/gallium/targets/opencl/meson.build b/src/gallium/targets/opencl/meson.build
+index 7c14135898e..cbcd67cc443 100644
+--- a/src/gallium/targets/opencl/meson.build
++++ b/src/gallium/targets/opencl/meson.build
+@@ -39,7 +39,8 @@ if dep_llvm.version().version_compare('>=10.0.0')
+   polly_isl_dep = cpp.find_library('PollyISL', dirs : llvm_libdir, required : false)
+ endif
+ 
+-dep_clang = cpp.find_library('clang-cpp', dirs : llvm_libdir, required : false)
++clang_libdir = get_option('clang-libdir')
++dep_clang = cpp.find_library('clang-cpp', dirs : clang_libdir, required : false)
+ 
+ # meson will return clang-cpp from system dirs if it's not found in llvm_libdir
+ linker_rpath_arg = '-Wl,--rpath=@0@'.format(llvm_libdir)
+@@ -123,8 +124,7 @@ if with_opencl_icd
+     configuration : _config,
+     input : 'mesa.icd.in',
+     output : 'mesa.icd',
+-    install : true,
+-    install_tag : 'runtime',
++    install : false,
+     install_dir : join_paths(get_option('sysconfdir'), 'OpenCL', 'vendors'),
+   )
+ 
+diff --git a/src/gallium/targets/rusticl/meson.build b/src/gallium/targets/rusticl/meson.build
+index b2963fe6dfa..2f784bdccd4 100644
+--- a/src/gallium/targets/rusticl/meson.build
++++ b/src/gallium/targets/rusticl/meson.build
+@@ -76,8 +76,7 @@ configure_file(
+   configuration : _config,
+   input : 'rusticl.icd.in',
+   output : 'rusticl.icd',
+-  install : true,
+-  install_tag : 'runtime',
++  install : false,
+   install_dir : join_paths(get_option('sysconfdir'), 'OpenCL', 'vendors'),
+ )
+ 
+-- 
+2.40.1
+

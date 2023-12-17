@@ -1,22 +1,26 @@
 { lib
 , fetchFromGitLab
-, mesa }:
+, mesa
+, llvmPackages
+}:
 
 (mesa.override {
   galliumDrivers = [ "swrast" "asahi" ];
   vulkanDrivers = [ "swrast" ];
   enableGalliumNine = false;
+  # libclc and other OpenCL components are needed for geometry shader support on Apple Silicon
+  enableOpenCL = true;
 }).overrideAttrs (oldAttrs: {
   # version must be the same length (i.e. no unstable or date)
   # so that system.replaceRuntimeDependencies can work
-  version = "23.3.0";
+  version = "24.0.0";
   src = fetchFromGitLab {
-    # tracking: https://github.com/AsahiLinux/PKGBUILDs/blob/main/mesa-asahi-edge/PKGBUILD
+    # tracking: https://pagure.io/fedora-asahi/mesa/commits/asahi
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20230904";
-    hash = "sha256-hBfXzV8U9fm3cR4KMIl64ypioEeofH3BDl/jZQPLKQg=";
+    rev = "asahi-20231213";
+    hash = "sha256-hl0JtwWEXaCkhCMQJ393mzfw/eEx6m9DYNS+spQ3Vhs=";
   };
 
   mesonFlags =
@@ -34,8 +38,10 @@
       "-Dlmsensors=disabled"
     ];
 
-  # replace disk cache path patch with one tweaked slightly to apply to this version
+  # replace patches with ones tweaked slightly to apply to this version
   patches = lib.forEach oldAttrs.patches
     (p: if lib.hasSuffix "disk_cache-include-dri-driver-path-in-cache-key.patch" p
-      then ./disk_cache-include-dri-driver-path-in-cache-key.patch else p);
+      then ./disk_cache-include-dri-driver-path-in-cache-key.patch else
+      (if lib.hasSuffix "opencl.patch" p
+      then ./opencl.patch else p));
 })
