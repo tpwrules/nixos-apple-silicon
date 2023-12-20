@@ -2,6 +2,23 @@
 
 This file contains important information for each release.
 
+## 2023-12-19
+
+This release updates nixpkgs, m1n1, U-Boot, the kernel, and Mesa.
+
+With the official announcement of the Fedora Asahi Remix, nixos-apple-silicon is
+now tracking package versions and capabilities as they appear in Fedora, in
+order to offer the upstream intended user experience.
+
+Updating nixpkgs brings us past the 23.11 release and on the path to 24.05.
+Other updates bring HDMI support for supported machines and firmware versions.
+Don't expect this to work if you installed before August 2023; workarounds will
+be made available shortly, and a long-term solution will hopefully be
+implemented by Asahi and incorporated here as well.
+
+Speaker support will be added in the next release once safe implementation and
+testing is completed. Thanks for the patience and understanding.
+
 ## 2023-11-19
 
 This release updates nixpkgs.
