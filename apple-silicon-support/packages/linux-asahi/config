@@ -6707,6 +6707,7 @@ CONFIG_MULTIPLEXER=m
 #
 # CONFIG_MUX_ADG792A is not set
 # CONFIG_MUX_ADGS1408 is not set
+CONFIG_MUX_APPLE_DPXBAR=m
 # CONFIG_MUX_GPIO is not set
 # CONFIG_MUX_MMIO is not set
 # end of Multiplexer drivers
