@@ -46,7 +46,7 @@
             };
           in {
             inherit (pkgs) m1n1 uboot-asahi linux-asahi asahi-fwextract mesa-asahi-edge;
-            inherit (pkgs) speakersafetyd;
+            inherit (pkgs) speakersafetyd bankstown-lv2;
 
             installer-bootstrap =
               let
