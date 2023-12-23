@@ -101,6 +101,20 @@ let
       };
 
       kernelPatches = [
+        # speaker enablement; we assert on the relevant lsp-plugins patch
+        # before installing speakersafetyd to let the speakers work
+        { name = "speakers-1";
+          patch = fetchpatch {
+            url = "https://github.com/AsahiLinux/linux/commit/385ea7b5023486aba7919cec8b6b3f6a843a1013.patch";
+            hash = "sha256-u7IzhJbUgBPfhJXAcpHw1I6OPzPHc1UKYjH91Ep3QHQ=";
+          };
+        }
+        { name = "speakers-2";
+          patch = fetchpatch {
+            url = "https://github.com/AsahiLinux/linux/commit/6a24102c06c95951ab992e2d41336cc6d4bfdf23.patch";
+            hash = "sha256-wn5x2hN42/kCp/XHBvLWeNLfwlOBB+T6UeeMt2tSg3o=";
+          };
+        }
       ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
