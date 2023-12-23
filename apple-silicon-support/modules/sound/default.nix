@@ -32,6 +32,8 @@
     # TODO: version check once a patched version comes out
     lsp-plugins-is-safe = lsp-plugins-is-patched;
   in lib.mkIf config.hardware.asahi.setupAsahiSound {
+    # enable pipewire to run real-time and avoid audible glitches
+    security.rtkit.enable = true;
     # set up pipewire with the supported capabilities (instead of pulseaudio)
     services.pipewire = {
       enable = true;
