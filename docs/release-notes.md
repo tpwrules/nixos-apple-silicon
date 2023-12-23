@@ -2,6 +2,25 @@
 
 This file contains important information for each release.
 
+## 2023-12-22
+
+This release updates nixpkgs and includes the necessary components for full
+sound support, namely speakersafetyd, bankstown-lv2, and asahi-audio.
+
+New features and fixes:
+* Full speaker and headphone support is finally here! (on supported machines and
+  nixpkgs versions)
+  * You will need at least `sound.enable = true;` in your configuration.
+  * Sound support relies on PipeWire, which is automatically enabled by the
+    apple-silicon-support module. You must remove any
+    `hardware.pulseaudio.enable = true;` from your configuration, or building
+    it will fail. PipeWire's PulseAudio compatibility module is enabled by
+    default.
+  * Thanks to yu-re-ka and diamondburned for helping with this support.
+* Kernel config is now synced with and will track Fedora Asahi Remix's Apple
+  Silicon-specific changes
+  * This fixes a missing option which broke GPU acceleration on M2 hardware.
+
 ## 2023-12-19
 
 This release updates nixpkgs, m1n1, U-Boot, the kernel, and Mesa.
