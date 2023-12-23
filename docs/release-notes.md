@@ -2,6 +2,18 @@
 
 This file contains important information for each release.
 
+## 2023-12-23
+
+This release does not update any packages.
+
+This release corrects an oversight in the sound support which resulted in the
+Asahi configurations not being loaded properly into PipeWire and WirePlumber.
+This is now fixed, and audio quality and behavior should be at the
+upstream-intended standard. Thanks to ivabus for reporting this oversight.
+
+Additionally, rtkit is enabled by default to allow the audio components to run
+at real-time priority and so reduce glitches.
+
 ## 2023-12-22
 
 This release updates nixpkgs and includes the necessary components for full
