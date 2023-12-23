@@ -59,6 +59,8 @@
   # (and is automatically extracted at boot above)
   hardware.asahi.extractPeripheralFirmware = false;
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
   environment.systemPackages = with pkgs; [
