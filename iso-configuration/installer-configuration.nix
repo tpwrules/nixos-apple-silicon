@@ -107,14 +107,6 @@
       util-linux = prev.util-linux.override {
         translateManpages = false;
       };
-
-      # documentation cross-compilation is currently broken
-      # https://github.com/NixOS/nixpkgs/pull/275078
-      btrfs-progs = prev.btrfs-progs.overrideAttrs (old: {
-        configureFlags = (old.configureFlags or []) ++ [
-          "--disable-documentation"
-        ];
-      });
     })
   ];
 
