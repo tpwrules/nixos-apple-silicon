@@ -70,6 +70,8 @@
     wormhole-william
   ];
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   # save space and compilation time. might revise?
   hardware.enableAllFirmware = lib.mkForce false;
   hardware.enableRedistributableFirmware = lib.mkForce false;

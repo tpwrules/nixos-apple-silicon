@@ -1,35 +1,34 @@
 { config, pkgs, lib, ... }:
 {
-  config = {
-    assertions = lib.mkIf config.hardware.asahi.extractPeripheralFirmware [
-      { assertion = config.hardware.asahi.peripheralFirmwareDirectory != null;
-        message = ''
-          Asahi peripheral firmware extraction is enabled but the firmware
-          location appears incorrect.
-        '';
-      }
-    ];
+  config = lib.mkIf config.hardware.asahi.extractPeripheralFirmware {
+    # Use sytemd-initrd as bootloader, because it is convenient to order stuff and will become default bootloader in the future
+    boot.initrd.systemd.enable = true;
+    boot.loader.systemd-boot.enable = true;
+    # boot.loader.systemd-boot.configurationLimit = 5;
+    # boot.loader.timeout = 3;
 
-    hardware.firmware = let
-      pkgs' = config.hardware.asahi.pkgs;
-    in
-      lib.mkIf ((config.hardware.asahi.peripheralFirmwareDirectory != null)
-          && config.hardware.asahi.extractPeripheralFirmware) [
-        (pkgs.stdenv.mkDerivation {
-          name = "asahi-peripheral-firmware";
+    # https://www.freedesktop.org/software/systemd/man/latest/bootup.html#Bootup%20in%20the%20initrd
+    # when initrd-fs.target reached, ROOT is mounted to /sysroot and ESP to /sysroot/boot
+    fileSystems."/boot".neededForBoot = true;
 
-          nativeBuildInputs = [ pkgs'.asahi-fwextract pkgs.cpio ];
+    boot.initrd.systemd.extraBin = {
+      cpio = "${pkgs.cpio}/bin/cpio";
+    };
 
-          buildCommand = ''
-            mkdir extracted
-            asahi-fwextract ${config.hardware.asahi.peripheralFirmwareDirectory} extracted
-
-            mkdir -p $out/lib/firmware
-            cat extracted/firmware.cpio | cpio -id --quiet --no-absolute-filenames
-            mv vendorfw/* $out/lib/firmware
-          '';
-        })
-      ];
+    boot.initrd.systemd.services.asahi-vendor-firmware = {
+      after = [ "initrd-fs.target" ];
+      before = [ "initrd.target" ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        [ -e /sysroot/lib/firmware ] && rm -rf /sysroot/lib/firmware
+        mkdir -p /sysroot/lib/firmware  /tmp/.fwsetup/
+        cd /tmp/.fwsetup/
+        cat /sysroot/boot/vendorfw/firmware.cpio | cpio -id --quiet --no-absolute-filenames
+        mv vendorfw/*  /sysroot/lib/firmware
+        rm -rf /tmp/.fwsetup
+      '';
+      requiredBy = [ "initrd-fs.target" ];
+    };
   };
 
   options.hardware.asahi = {
@@ -39,30 +38,6 @@
       description = ''
         Automatically extract the non-free non-redistributable peripheral
         firmware necessary for features like Wi-Fi.
-      '';
-    };
-
-    peripheralFirmwareDirectory = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-
-      default = lib.findFirst (path: builtins.pathExists (path + "/all_firmware.tar.gz")) null
-        [
-          # path when the system is operating normally
-          /boot/asahi
-          # path when the system is mounted in the installer
-          /mnt/boot/asahi
-        ];
-
-      description = ''
-        Path to the directory containing the non-free non-redistributable
-        peripheral firmware necessary for features like Wi-Fi. Ordinarily, this
-        will automatically point to the appropriate location on the ESP. Flake
-        users and those interested in maximum purity will want to copy those
-        files elsewhere and specify this manually.
-
-        Currently, this consists of the files `all-firmware.tar.gz` and
-        `kernelcache*`. The official Asahi Linux installer places these files
-        in the `asahi` directory of the EFI system partition when creating it.
       '';
     };
   };
