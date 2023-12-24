@@ -29,8 +29,7 @@
       };
     })).lsp-plugins-is-patched;
 
-    # TODO: version check once a patched version comes out
-    lsp-plugins-is-safe = lsp-plugins-is-patched;
+    lsp-plugins-is-safe = (pkgs.lib.versionAtLeast lsp-plugins.version "1.2.14") || lsp-plugins-is-patched;
   in lib.mkIf config.hardware.asahi.setupAsahiSound {
     # enable pipewire to run real-time and avoid audible glitches
     security.rtkit.enable = true;
