@@ -2,6 +2,15 @@
 
 This file contains important information for each release.
 
+## 2023-12-24
+
+This release updates nixpkgs.
+
+This release changes how the Asahi configurations are loaded into PipeWire and
+WirePlumber, thus making it possible for users to install other configurations
+in parallel for e.g. Bluetooth (or override the Asahi configurations, though
+this is likely a bad idea). Thanks to cid-chan for reporting this problem.
+
 ## 2023-12-23
 
 This release does not update any packages.
