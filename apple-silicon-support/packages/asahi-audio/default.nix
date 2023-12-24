@@ -27,6 +27,11 @@ stdenv.mkDerivation rec {
 
     substituteInPlace "''${configs[@]}" --replace \
           "/usr/share/asahi-audio" \
-          "$out/share/asahi-audio"
+          "$out/asahi-audio"
+  '';
+
+  postInstall = ''
+    # no need to link the asahi-audio dir globally
+    mv $out/share/asahi-audio $out
   '';
 }
