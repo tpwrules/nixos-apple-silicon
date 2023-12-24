@@ -51,11 +51,11 @@
 
     # set up enivronment so that asahi-audio and UCM configs are used
     environment.etc.asahi-audio-pipewire = {
-      source = "${pkgs.asahi-audio}/share/pipewire";
+      source = "${pkgs.asahi-audio}/share/pipewire/*";
       target = "pipewire";
     };
     environment.etc.asahi-audio-wireplumber = {
-      source = "${pkgs.asahi-audio}/share/wireplumber";
+      source = "${pkgs.asahi-audio}/share/wireplumber/*";
       target = "wireplumber";
     };
     environment.variables.ALSA_CONFIG_UCM2 = "${pkgs.alsa-ucm-conf-asahi}/share/alsa/ucm2";
