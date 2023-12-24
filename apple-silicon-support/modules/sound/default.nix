@@ -20,6 +20,8 @@
   };
 
   config = let
+    asahi-audio = pkgs.asahi-audio; # the asahi-audio we use
+
     lsp-plugins = pkgs.lsp-plugins; # the lsp-plugins we use
 
     lsp-plugins-is-patched = (lsp-plugins.overrideAttrs (old: {
@@ -49,14 +51,9 @@
     services.udev.packages = [ pkgs.speakersafetyd ];
 
     # set up enivronment so that asahi-audio and UCM configs are used
-    environment.etc.asahi-audio-pipewire = {
-      source = "${pkgs.asahi-audio}/share/pipewire";
-      target = "pipewire";
-    };
-    environment.etc.asahi-audio-wireplumber = {
-      source = "${pkgs.asahi-audio}/share/wireplumber";
-      target = "wireplumber";
-    };
+    environment.etc = builtins.listToAttrs (builtins.map
+      (f: { name = f; value = { source = "${asahi-audio}/share/${f}"; }; })
+      asahi-audio.providedConfigFiles);
     environment.variables.ALSA_CONFIG_UCM2 = "${pkgs.alsa-ucm-conf-asahi}/share/alsa/ucm2";
 
     # set up pipewire and wireplumber to use asahi-audio configs and plugins
