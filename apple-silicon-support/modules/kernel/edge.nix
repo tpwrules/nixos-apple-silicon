@@ -36,7 +36,7 @@
 
   options.hardware.asahi.addEdgeKernelConfig = lib.mkOption {
     type = lib.types.bool;
-    default = false;
+    default = true;
     description = ''
       Build the Asahi Linux kernel with additional experimental "edge"
       configuration options.
