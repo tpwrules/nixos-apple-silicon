@@ -14,7 +14,7 @@
           DRM_VGEM n
           DRM_SCHED y
           DRM_GEM_SHMEM_HELPER y
-          DRM_ASAHI m
+          DRM_ASAHI y
           SUSPEND y
         '';
       }
