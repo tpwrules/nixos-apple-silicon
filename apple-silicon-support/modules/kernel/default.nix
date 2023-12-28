@@ -60,6 +60,7 @@
       "console=ttySAC0,115200n8"
       "console=tty0"
       "boot.shell_on_fail"
+      "elevator=noop"
       # Apple's SSDs are slow (~dozens of ms) at processing flush requests which
       # slows down programs that make a lot of fsync calls. This parameter sets
       # a delay in ms before actually flushing so that such requests can be
