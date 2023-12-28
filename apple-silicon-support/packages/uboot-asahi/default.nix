@@ -22,6 +22,8 @@
   ];
   extraConfig = ''
     CONFIG_IDENT_STRING=" ${version}"
+    CONFIG_CMD_NFS=n
+    CONFIG_VIDEO_LOGO=n
     CONFIG_VIDEO_FONT_4X6=n
     CONFIG_VIDEO_FONT_8X16=n
     CONFIG_VIDEO_FONT_SUN12X22=n
