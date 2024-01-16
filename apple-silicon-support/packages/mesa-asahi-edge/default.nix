@@ -39,9 +39,8 @@
     ];
 
   # replace patches with ones tweaked slightly to apply to this version
-  patches = lib.forEach oldAttrs.patches
-    (p: if lib.hasSuffix "disk_cache-include-dri-driver-path-in-cache-key.patch" p
-      then ./disk_cache-include-dri-driver-path-in-cache-key.patch else
-      (if lib.hasSuffix "opencl.patch" p
-      then ./opencl.patch else p));
+  patches = [
+    ./disk_cache-include-dri-driver-path-in-cache-key.patch
+    ./opencl.patch
+  ];
 })
