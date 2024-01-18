@@ -115,6 +115,10 @@ let
             hash = "sha256-wn5x2hN42/kCp/XHBvLWeNLfwlOBB+T6UeeMt2tSg3o=";
           };
         }
+      ] ++ lib.optionals (rustAtLeast "1.75.0") [
+        { name = "rustc-1.75.0";
+          patch = ./0001-check-in-new-alloc-for-1.75.0.patch;
+        }
       ] ++ lib.optionals _4KBuild [
         # thanks to Sven Peter
         # https://lore.kernel.org/linux-iommu/20211019163737.46269-1-sven@svenpeter.dev/
