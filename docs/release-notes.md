@@ -2,6 +2,14 @@
 
 This file contains important information for each release.
 
+## 2024-01-17
+
+This release updates nixpkgs.
+
+This release includes patches and fixes to correct building of the kernel with
+Rust 1.75.0 and adjustments to accommodate Mesa changes in the latest nixpkgs.
+Thanks once again to yu-re-ka.
+
 ## 2023-12-24
 
 This release updates nixpkgs.
