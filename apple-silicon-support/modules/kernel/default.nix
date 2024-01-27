@@ -17,6 +17,13 @@
     # source: https://www.kernel.org/doc/html/latest/scheduler/sched-energy.html
     powerManagement.cpuFreqGovernor = lib.mkOverride 800 "schedutil";
 
+    # using an IO scheduler is pretty pointless on NVME devices as fast as Apple's
+    # it's a waste of CPU cycles, so disable the IO scheduler on NVME
+    # source: https://wiki.ubuntu.com/Kernel/Reference/IOSchedulers
+    services.udev.extraRules = ''
+      ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="none"
+    '';
+
     boot.initrd.includeDefaultModules = false;
     boot.initrd.availableKernelModules = [
       # list of initrd modules stolen from
