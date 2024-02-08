@@ -1,0 +1,20 @@
+From e1c1bf91dc8b4f6c8aad61735c43e0cbdb448773 Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Sat, 13 Jan 2024 18:48:34 +0100
+Subject: [PATCH] video: console: Enable cursor
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ drivers/video/vidconsole-uclass.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/vidconsole-uclass.c b/drivers/video/vidconsole-uclass.c
+index e36f823d74..47443d30d1 100644
+--- a/drivers/video/vidconsole-uclass.c
++++ b/drivers/video/vidconsole-uclass.c
+@@ -796,4 +796,5 @@ void vidconsole_position_cursor(struct udevice *dev, unsigned col, unsigned row)
+ 	x = min_t(short, col * priv->x_charsize, vid_priv->xsize - 1);
+ 	y = min_t(short, row * priv->y_charsize, vid_priv->ysize - 1);
+ 	vidconsole_set_cursor_pos(dev, x, y);
++	vidconsole_set_cursor_visible(dev, true, x, y, 0);
+ }

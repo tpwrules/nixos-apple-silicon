@@ -1,0 +1,29 @@
+From 01c76f1a64ba8cb3da9b26be481e289ee16960f0 Mon Sep 17 00:00:00 2001
+From: Bin Meng <bmeng@tinylab.org>
+Date: Thu, 3 Aug 2023 17:32:41 +0800
+Subject: [PATCH] video: vidconsole: Fix null dereference of ops->measure
+
+At present vidconsole_measure() tests ops->select_font before calling
+ops->measure, which would result in a null dereference when the console
+driver provides no ops for measure.
+
+Fixes: b828ed7d7929 ("console: Allow measuring the bounding box of text")
+Signed-off-by: Bin Meng <bmeng@tinylab.org>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/video/vidconsole-uclass.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/vidconsole-uclass.c b/drivers/video/vidconsole-uclass.c
+index 05f930478096..b5b3b6625902 100644
+--- a/drivers/video/vidconsole-uclass.c
++++ b/drivers/video/vidconsole-uclass.c
+@@ -603,7 +603,7 @@ int vidconsole_measure(struct udevice *dev, const char *name, uint size,
+ 	struct vidconsole_ops *ops = vidconsole_get_ops(dev);
+ 	int ret;
+ 
+-	if (ops->select_font) {
++	if (ops->measure) {
+ 		ret = ops->measure(dev, name, size, text, bbox);
+ 		if (ret != -ENOSYS)
+ 			return ret;

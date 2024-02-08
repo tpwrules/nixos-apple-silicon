@@ -1,0 +1,74 @@
+From 7c00b80d48cbb28e5f6dfc232c344526e28f7176 Mon Sep 17 00:00:00 2001
+From: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+Date: Fri, 14 Jul 2023 13:24:51 +0200
+Subject: [PATCH] lib/charset: fix u16_strlcat() return value
+
+strlcat returns min(strlen(dest), count)+strlen(src). Make u16_strlcat's
+behaviour the same for consistency.
+
+Fixes: eca08ce94ceb ("lib/charset: add u16_strlcat() function")
+Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+---
+ lib/charset.c     | 8 ++++----
+ test/unicode_ut.c | 8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/lib/charset.c b/lib/charset.c
+index b1842755eb1b..5e4c4f948a4a 100644
+--- a/lib/charset.c
++++ b/lib/charset.c
+@@ -444,14 +444,14 @@ u16 *u16_strdup(const void *src)
+ 
+ size_t u16_strlcat(u16 *dest, const u16 *src, size_t count)
+ {
+-	size_t destlen = u16_strlen(dest);
++	size_t destlen = u16_strnlen(dest, count);
+ 	size_t srclen = u16_strlen(src);
+-	size_t ret = destlen + srclen + 1;
++	size_t ret = destlen + srclen;
+ 
+ 	if (destlen >= count)
+ 		return ret;
+-	if (ret > count)
+-		srclen -= ret - count;
++	if (ret >= count)
++		srclen -= (ret - count + 1);
+ 	memcpy(&dest[destlen], src, 2 * srclen);
+ 	dest[destlen + srclen] = 0x0000;
+ 
+diff --git a/test/unicode_ut.c b/test/unicode_ut.c
+index b27d7116b9ee..a9356e2b60db 100644
+--- a/test/unicode_ut.c
++++ b/test/unicode_ut.c
+@@ -808,12 +808,12 @@ static int unicode_test_u16_strlcat(struct unit_test_state *uts)
+ 	/* dest and src are empty string */
+ 	memset(buf, 0, sizeof(buf));
+ 	ret = u16_strlcat(buf, &null_src, sizeof(buf));
+-	ut_asserteq(1, ret);
++	ut_asserteq(0, ret);
+ 
+ 	/* dest is empty string */
+ 	memset(buf, 0, sizeof(buf));
+ 	ret = u16_strlcat(buf, src, sizeof(buf));
+-	ut_asserteq(5, ret);
++	ut_asserteq(4, ret);
+ 	ut_assert(!unicode_test_u16_strcmp(buf, src, 40));
+ 
+ 	/* src is empty string */
+@@ -821,14 +821,14 @@ static int unicode_test_u16_strlcat(struct unit_test_state *uts)
+ 	buf[39] = 0;
+ 	memcpy(buf, dest, sizeof(dest));
+ 	ret = u16_strlcat(buf, &null_src, sizeof(buf));
+-	ut_asserteq(6, ret);
++	ut_asserteq(5, ret);
+ 	ut_assert(!unicode_test_u16_strcmp(buf, dest, 40));
+ 
+ 	for (i = 0; i <= 40; i++) {
+ 		memset(buf, 0xCD, (sizeof(buf) - sizeof(u16)));
+ 		buf[39] = 0;
+ 		memcpy(buf, dest, sizeof(dest));
+-		expected = 10;
++		expected = min(5, i) + 4;
+ 		ret = u16_strlcat(buf, src, i);
+ 		ut_asserteq(expected, ret);
+ 		if (i <= 6) {

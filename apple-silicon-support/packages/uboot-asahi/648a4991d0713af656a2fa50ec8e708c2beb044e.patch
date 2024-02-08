@@ -1,0 +1,93 @@
+From 648a4991d0713af656a2fa50ec8e708c2beb044e Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Thu, 1 Jun 2023 10:22:45 -0600
+Subject: [PATCH] video: Allow temporary colour changes
+
+It is sometimes necessary to highlight some text in a different colour.
+Add an easy way to do this and then restore the original console colours.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/video/vidconsole-uclass.c | 20 ++++++++++++++++++++
+ include/video_console.h           | 30 ++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
+
+diff --git a/drivers/video/vidconsole-uclass.c b/drivers/video/vidconsole-uclass.c
+index a21fde0e1d46..3f89537c47b7 100644
+--- a/drivers/video/vidconsole-uclass.c
++++ b/drivers/video/vidconsole-uclass.c
+@@ -596,6 +596,26 @@ int vidconsole_select_font(struct udevice *dev, const char *name, uint size)
+ 	return ops->select_font(dev, name, size);
+ }
+ 
++void vidconsole_push_colour(struct udevice *dev, enum colour_idx fg,
++			    enum colour_idx bg, struct vidconsole_colour *old)
++{
++	struct video_priv *vid_priv = dev_get_uclass_priv(dev->parent);
++
++	old->colour_fg = vid_priv->colour_fg;
++	old->colour_bg = vid_priv->colour_bg;
++
++	vid_priv->colour_fg = video_index_to_colour(vid_priv, fg);
++	vid_priv->colour_bg = video_index_to_colour(vid_priv, bg);
++}
++
++void vidconsole_pop_colour(struct udevice *dev, struct vidconsole_colour *old)
++{
++	struct video_priv *vid_priv = dev_get_uclass_priv(dev->parent);
++
++	vid_priv->colour_fg = old->colour_fg;
++	vid_priv->colour_bg = old->colour_bg;
++}
++
+ /* Set up the number of rows and colours (rotated drivers override this) */
+ static int vidconsole_pre_probe(struct udevice *dev)
+ {
+diff --git a/include/video_console.h b/include/video_console.h
+index 3db9a7e1fb95..81d4c4d874df 100644
+--- a/include/video_console.h
++++ b/include/video_console.h
+@@ -71,6 +71,17 @@ struct vidfont_info {
+ 	const char *name;
+ };
+ 
++/**
++ * struct vidconsole_colour - Holds colour information
++ *
++ * @colour_fg:	Foreground colour (pixel value)
++ * @colour_bg:	Background colour (pixel value)
++ */
++struct vidconsole_colour {
++	u32 colour_fg;
++	u32 colour_bg;
++};
++
+ /**
+  * struct vidconsole_ops - Video console operations
+  *
+@@ -204,6 +215,25 @@ int vidconsole_get_font(struct udevice *dev, int seq,
+  */
+ int vidconsole_select_font(struct udevice *dev, const char *name, uint size);
+ 
++/**
++ * vidconsole_push_colour() - Temporarily change the font colour
++ *
++ * @dev:	Device to adjust
++ * @fg:		Foreground colour to select
++ * @bg:		Background colour to select
++ * @old:	Place to store the current colour, so it can be restored
++ */
++void vidconsole_push_colour(struct udevice *dev, enum colour_idx fg,
++			    enum colour_idx bg, struct vidconsole_colour *old);
++
++/**
++ * vidconsole_pop_colour() - Restore the original colour
++ *
++ * @dev:	Device to adjust
++ * @old:	Old colour to be restored
++ */
++void vidconsole_pop_colour(struct udevice *dev, struct vidconsole_colour *old);
++
+ /**
+  * vidconsole_putc_xy() - write a single character to a position
+  *

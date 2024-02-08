@@ -1,0 +1,79 @@
+From 9661d323264927941b1cd858b4bab349ee024c50 Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Thu, 4 Jan 2024 08:10:37 -0700
+Subject: [PATCH] video: Correct setting of cursor position
+
+The ANSI codes are not correctly handled at present, in that the
+requested X position is added to the current one.
+
+Correct this and also call vidconsole_entry_start() to start a new text
+line.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/video/vidconsole-uclass.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/vidconsole-uclass.c b/drivers/video/vidconsole-uclass.c
+index 577ca5f66e2..e36f823d744 100644
+--- a/drivers/video/vidconsole-uclass.c
++++ b/drivers/video/vidconsole-uclass.c
+@@ -126,6 +126,7 @@ void vidconsole_set_cursor_pos(struct udevice *dev, int x, int y)
+ 	priv->xcur_frac = VID_TO_POS(x);
+ 	priv->xstart_frac = priv->xcur_frac;
+ 	priv->ycur = y;
++	vidconsole_entry_start(dev);
+ }
+ 
+ /**
+@@ -135,8 +136,10 @@ void vidconsole_set_cursor_pos(struct udevice *dev, int x, int y)
+  * @row:	new row
+  * @col:	new column
+  */
+-static void set_cursor_position(struct vidconsole_priv *priv, int row, int col)
++static void set_cursor_position(struct udevice *dev, int row, int col)
+ {
++	struct vidconsole_priv *priv = dev_get_uclass_priv(dev);
++
+ 	/*
+ 	 * Ensure we stay in the bounds of the screen.
+ 	 */
+@@ -145,9 +148,7 @@ static void set_cursor_position(struct vidconsole_priv *priv, int row, int col)
+ 	if (col >= priv->cols)
+ 		col = priv->cols - 1;
+ 
+-	priv->ycur = row * priv->y_charsize;
+-	priv->xcur_frac = priv->xstart_frac +
+-			  VID_TO_POS(col * priv->x_charsize);
++	vidconsole_position_cursor(dev, col, row);
+ }
+ 
+ /**
+@@ -194,7 +195,7 @@ static void vidconsole_escape_char(struct udevice *dev, char ch)
+ 			int row = priv->row_saved;
+ 			int col = priv->col_saved;
+ 
+-			set_cursor_position(priv, row, col);
++			set_cursor_position(dev, row, col);
+ 			priv->escape = 0;
+ 			return;
+ 		}
+@@ -256,7 +257,7 @@ static void vidconsole_escape_char(struct udevice *dev, char ch)
+ 		if (row < 0)
+ 			row = 0;
+ 		/* Right and bottom overflows are handled in the callee. */
+-		set_cursor_position(priv, row, col);
++		set_cursor_position(dev, row, col);
+ 		break;
+ 	}
+ 	case 'H':
+@@ -280,7 +281,7 @@ static void vidconsole_escape_char(struct udevice *dev, char ch)
+ 		if (col)
+ 			--col;
+ 
+-		set_cursor_position(priv, row, col);
++		set_cursor_position(dev, row, col);
+ 
+ 		break;
+ 	}

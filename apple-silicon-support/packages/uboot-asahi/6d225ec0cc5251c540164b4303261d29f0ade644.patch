@@ -1,0 +1,27 @@
+From 6d225ec0cc5251c540164b4303261d29f0ade644 Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Sun, 1 Oct 2023 19:13:35 -0600
+Subject: [PATCH] video: Mark truetype_measure() static
+
+This function is not used outside this file, so mark it static.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/video/console_truetype.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/console_truetype.c b/drivers/video/console_truetype.c
+index 242b8b71342d..14fb81e9563c 100644
+--- a/drivers/video/console_truetype.c
++++ b/drivers/video/console_truetype.c
+@@ -718,8 +718,8 @@ static int truetype_select_font(struct udevice *dev, const char *name,
+ 	return 0;
+ }
+ 
+-int truetype_measure(struct udevice *dev, const char *name, uint size,
+-		     const char *text, struct vidconsole_bbox *bbox)
++static int truetype_measure(struct udevice *dev, const char *name, uint size,
++			    const char *text, struct vidconsole_bbox *bbox)
+ {
+ 	struct console_tt_metrics *met;
+ 	stbtt_fontinfo *font;

@@ -1,0 +1,32 @@
+From 7a2fee8d29a92eadac3fc656d2686ccd20c24a08 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megi@xff.cz>
+Date: Thu, 25 May 2023 14:17:15 +0200
+Subject: [PATCH] video: console: Fix default font selection
+
+Some callers expect to call this with NULL font name to select the
+default font (eg. boot/scene.c). Without handling the NULL condition
+U-Boot crashes instead of displaying a bootflow GUI menu.
+
+Signed-off-by: Ondrej Jirman <megi@xff.cz>
+Cc: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/video/console_core.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/video/console_core.c b/drivers/video/console_core.c
+index 1f93b1b85fa5..b5d0e3dceca3 100644
+--- a/drivers/video/console_core.c
++++ b/drivers/video/console_core.c
+@@ -201,6 +201,12 @@ int console_simple_select_font(struct udevice *dev, const char *name, uint size)
+ {
+ 	struct video_fontdata *font;
+ 
++	if (!name) {
++		if (fonts->name)
++			console_set_font(dev, fonts);
++		return 0;
++	}
++
+ 	for (font = fonts; font->name; font++) {
+ 		if (!strcmp(name, font->name)) {
+ 			console_set_font(dev, font);

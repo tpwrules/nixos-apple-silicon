@@ -1,0 +1,30 @@
+From f9d39fa1479550fb766a7720a7ca933ad2854cf7 Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Thu, 11 Jan 2024 00:50:43 +0100
+Subject: [PATCH] video: console: Select default font based on
+ video_priv.font_size
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ drivers/video/console_core.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/video/console_core.c b/drivers/video/console_core.c
+index f137333f73..acd526830c 100644
+--- a/drivers/video/console_core.c
++++ b/drivers/video/console_core.c
+@@ -304,6 +304,14 @@ int draw_cursor_vertically(void **line, struct video_priv *vid_priv,
+ 
+ int console_probe(struct udevice *dev)
+ {
++	struct video_fontdata *font;
++	struct video_priv *vid_priv = dev_get_uclass_priv(dev->parent);
++
++	for (font = fonts; font->name; font++) {
++		if (font->height == vid_priv->font_size)
++			return console_set_font(dev, font);
++	}
++
+ 	return console_set_font(dev, fonts);
+ }
+ 

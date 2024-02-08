@@ -1,0 +1,28 @@
+From 8c9b59982d60847f7514d3367aa8cd0f9e178727 Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Sat, 9 Dec 2023 13:15:48 +0100
+Subject: [PATCH] arm: apple: rtkit: wait up to 30 seconds for IOP power ack
+
+Fixes NVMe initialization on 8TB SSD devices. Tested on a 8TB M2 Ultra
+Mac Studio.
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ arch/arm/mach-apple/rtkit.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-apple/rtkit.c b/arch/arm/mach-apple/rtkit.c
+index 20152fe8ce2..6567a558cc6 100644
+--- a/arch/arm/mach-apple/rtkit.c
++++ b/arch/arm/mach-apple/rtkit.c
+@@ -409,7 +409,9 @@ int apple_rtkit_boot(struct apple_rtkit *rtk)
+ 	rtk->ap_pwr = APPLE_RTKIT_PWR_STATE_QUIESCED;
+ 
+ 	while (rtk->iop_pwr != APPLE_RTKIT_PWR_STATE_ON) {
+-		ret = apple_rtkit_poll(rtk, TIMEOUT_1SEC_US);
++		ret = apple_rtkit_poll(rtk, 30 * TIMEOUT_1SEC_US);
++		if (ret == -ETIMEDOUT)
++			printf("%s: timed out whiole waiting on IOP_POWER state ack\n", __func__);
+ 		if (ret < 0)
+ 			return ret;
+ 	}

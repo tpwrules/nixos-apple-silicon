@@ -1,0 +1,35 @@
+From 477c92689a374f13e5792a0216509b6696798c29 Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Thu, 11 Jan 2024 00:48:12 +0100
+Subject: [PATCH] video: simplefb: HACK: Set video font size
+
+Request the 16x32 font for display resolutions strictly larger than
+FullHD.
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ drivers/video/simplefb.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+index 235ec761f70..502b7e7a0ce 100644
+--- a/drivers/video/simplefb.c
++++ b/drivers/video/simplefb.c
+@@ -71,6 +71,17 @@ static int simple_video_probe(struct udevice *dev)
+ 		return -EINVAL;
+ 	}
+ 
++	/* Apple silicon specific hack, should calculate DPI from "panel"
++	 * phandle reference.
++	 */
++	if (uc_priv->xsize > 1920 && uc_priv->ysize > 1080)
++		uc_priv->font_size = 32;
++	/*
++	panel_node = fdtdec_lookup_phandle(blob_, node, "panel");
++	if (panel_node > 0) {
++		uint dpi = fdtdec_get_uint(blob, node, "width-mm");
++	}
++	*/
+ 	return 0;
+ }
+ 

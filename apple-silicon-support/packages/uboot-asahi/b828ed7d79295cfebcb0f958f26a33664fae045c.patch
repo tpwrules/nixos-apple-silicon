@@ -1,0 +1,219 @@
+From b828ed7d79295cfebcb0f958f26a33664fae045c Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Thu, 1 Jun 2023 10:22:46 -0600
+Subject: [PATCH] console: Allow measuring the bounding box of text
+
+For laying out text accurately it is necessary to know the width and
+height of the text. Add a measure() method to the console API, so this
+can be supported.
+
+Add an implementation for truetype and a base implementation for the
+normal console.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/video/console_truetype.c  | 64 ++++++++++++++++++++++++++++++-
+ drivers/video/vidconsole-uclass.c | 22 +++++++++++
+ include/video_console.h           | 48 +++++++++++++++++++++++
+ 3 files changed, 132 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/console_truetype.c b/drivers/video/console_truetype.c
+index 6f3fc82f9b05..288123a2e065 100644
+--- a/drivers/video/console_truetype.c
++++ b/drivers/video/console_truetype.c
+@@ -614,8 +614,8 @@ static void select_metrics(struct udevice *dev, struct console_tt_metrics *met)
+ 	vc_priv->tab_width_frac = VID_TO_POS(met->font_size) * 8 / 2;
+ }
+ 
+-static int truetype_select_font(struct udevice *dev, const char *name,
+-				uint size)
++static int get_metrics(struct udevice *dev, const char *name, uint size,
++		       struct console_tt_metrics **metp)
+ {
+ 	struct console_tt_priv *priv = dev_get_priv(dev);
+ 	struct console_tt_metrics *met;
+@@ -653,11 +653,70 @@ static int truetype_select_font(struct udevice *dev, const char *name,
+ 		met = priv->metrics;
+ 	}
+ 
++	*metp = met;
++
++	return 0;
++}
++
++static int truetype_select_font(struct udevice *dev, const char *name,
++				uint size)
++{
++	struct console_tt_metrics *met;
++	int ret;
++
++	ret = get_metrics(dev, name, size, &met);
++	if (ret)
++		return log_msg_ret("sel", ret);
++
+ 	select_metrics(dev, met);
+ 
+ 	return 0;
+ }
+ 
++int truetype_measure(struct udevice *dev, const char *name, uint size,
++		     const char *text, struct vidconsole_bbox *bbox)
++{
++	struct console_tt_metrics *met;
++	stbtt_fontinfo *font;
++	int lsb, advance;
++	const char *s;
++	int width;
++	int last;
++	int ret;
++
++	ret = get_metrics(dev, name, size, &met);
++	if (ret)
++		return log_msg_ret("sel", ret);
++
++	bbox->valid = false;
++	if (!*text)
++		return 0;
++
++	font = &met->font;
++	width = 0;
++	for (last = 0, s = text; *s; s++) {
++		int ch = *s;
++
++		/* Used kerning to fine-tune the position of this character */
++		if (last)
++			width += stbtt_GetCodepointKernAdvance(font, last, ch);
++
++		/* First get some basic metrics about this character */
++		stbtt_GetCodepointHMetrics(font, ch, &advance, &lsb);
++
++		width += advance;
++		last = ch;
++	}
++
++	bbox->valid = true;
++	bbox->x0 = 0;
++	bbox->y0 = 0;
++	bbox->x1 = tt_ceil((double)width * met->scale);
++	bbox->y1 = met->font_size;
++
++	return 0;
++}
++
+ const char *console_truetype_get_font_size(struct udevice *dev, uint *sizep)
+ {
+ 	struct console_tt_priv *priv = dev_get_priv(dev);
+@@ -709,6 +768,7 @@ struct vidconsole_ops console_truetype_ops = {
+ 	.get_font	= console_truetype_get_font,
+ 	.get_font_size	= console_truetype_get_font_size,
+ 	.select_font	= truetype_select_font,
++	.measure	= truetype_measure,
+ };
+ 
+ U_BOOT_DRIVER(vidconsole_truetype) = {
+diff --git a/drivers/video/vidconsole-uclass.c b/drivers/video/vidconsole-uclass.c
+index 3f89537c47b7..05f930478096 100644
+--- a/drivers/video/vidconsole-uclass.c
++++ b/drivers/video/vidconsole-uclass.c
+@@ -596,6 +596,28 @@ int vidconsole_select_font(struct udevice *dev, const char *name, uint size)
+ 	return ops->select_font(dev, name, size);
+ }
+ 
++int vidconsole_measure(struct udevice *dev, const char *name, uint size,
++		       const char *text, struct vidconsole_bbox *bbox)
++{
++	struct vidconsole_priv *priv = dev_get_uclass_priv(dev);
++	struct vidconsole_ops *ops = vidconsole_get_ops(dev);
++	int ret;
++
++	if (ops->select_font) {
++		ret = ops->measure(dev, name, size, text, bbox);
++		if (ret != -ENOSYS)
++			return ret;
++	}
++
++	bbox->valid = true;
++	bbox->x0 = 0;
++	bbox->y0 = 0;
++	bbox->x1 = priv->x_charsize * strlen(text);
++	bbox->y1 = priv->y_charsize;
++
++	return 0;
++}
++
+ void vidconsole_push_colour(struct udevice *dev, enum colour_idx fg,
+ 			    enum colour_idx bg, struct vidconsole_colour *old)
+ {
+diff --git a/include/video_console.h b/include/video_console.h
+index 81d4c4d874df..2694e44f6ecf 100644
+--- a/include/video_console.h
++++ b/include/video_console.h
+@@ -82,6 +82,27 @@ struct vidconsole_colour {
+ 	u32 colour_bg;
+ };
+ 
++/**
++ * struct vidconsole_bbox - Bounding box of text
++ *
++ * This describes the bounding box of something, measured in pixels. The x0/y0
++ * pair is inclusive; the x1/y2 pair is exclusive, meaning that it is one pixel
++ * beyond the extent of the object
++ *
++ * @valid: Values are valid (bounding box is known)
++ * @x0: left x position, in pixels from left side
++ * @y0: top y position, in pixels from top
++ * @x1: right x position + 1
++ * @y1: botton y position + 1
++ */
++struct vidconsole_bbox {
++	bool valid;
++	int x0;
++	int y0;
++	int x1;
++	int y1;
++};
++
+ /**
+  * struct vidconsole_ops - Video console operations
+  *
+@@ -189,6 +210,20 @@ struct vidconsole_ops {
+ 	 * Returns: 0 on success, -ENOENT if no such font
+ 	 */
+ 	int (*select_font)(struct udevice *dev, const char *name, uint size);
++
++	/**
++	 * measure() - Measure the bounds of some text
++	 *
++	 * @dev:	Device to adjust
++	 * @name:	Font name to use (NULL to use default)
++	 * @size:	Font size to use (0 to use default)
++	 * @text:	Text to measure
++	 * @bbox:	Returns bounding box of text, assuming it is positioned
++	 *		at 0,0
++	 * Returns: 0 on success, -ENOENT if no such font
++	 */
++	int (*measure)(struct udevice *dev, const char *name, uint size,
++		       const char *text, struct vidconsole_bbox *bbox);
+ };
+ 
+ /* Get a pointer to the driver operations for a video console device */
+@@ -215,6 +250,19 @@ int vidconsole_get_font(struct udevice *dev, int seq,
+  */
+ int vidconsole_select_font(struct udevice *dev, const char *name, uint size);
+ 
++/*
++ * vidconsole_measure() - Measuring the bounding box of some text
++ *
++ * @dev: Console device to use
++ * @name: Font name, NULL for default
++ * @size: Font size, ignored if @name is NULL
++ * @text: Text to measure
++ * @bbox: Returns nounding box of text
++ * Returns: 0 if OK, -ve on error
++ */
++int vidconsole_measure(struct udevice *dev, const char *name, uint size,
++		       const char *text, struct vidconsole_bbox *bbox);
++
+ /**
+  * vidconsole_push_colour() - Temporarily change the font colour
+  *

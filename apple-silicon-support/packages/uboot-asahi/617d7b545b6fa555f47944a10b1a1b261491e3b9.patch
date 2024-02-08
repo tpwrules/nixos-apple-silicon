@@ -1,0 +1,50 @@
+From 617d7b545b6fa555f47944a10b1a1b261491e3b9 Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Sun, 1 Oct 2023 19:13:20 -0600
+Subject: [PATCH] video: Export vidconsole_entry_start()
+
+At present this is called only when a newline is detected, since this
+indicates the start of a line of text being entered.
+
+Export this function so it can be used by expo, which may start a new
+text line itself, without first writing out a newline.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/video/vidconsole-uclass.c | 2 +-
+ include/video_console.h           | 9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/vidconsole-uclass.c b/drivers/video/vidconsole-uclass.c
+index 07427ba346b0..2f3f685a55c9 100644
+--- a/drivers/video/vidconsole-uclass.c
++++ b/drivers/video/vidconsole-uclass.c
+@@ -48,7 +48,7 @@ int vidconsole_set_row(struct udevice *dev, uint row, int clr)
+ 	return ops->set_row(dev, row, clr);
+ }
+ 
+-static int vidconsole_entry_start(struct udevice *dev)
++int vidconsole_entry_start(struct udevice *dev)
+ {
+ 	struct vidconsole_ops *ops = vidconsole_get_ops(dev);
+ 
+diff --git a/include/video_console.h b/include/video_console.h
+index 28d65451889a..87f9a588575d 100644
+--- a/include/video_console.h
++++ b/include/video_console.h
+@@ -399,6 +399,15 @@ int vidconsole_move_rows(struct udevice *dev, uint rowdst, uint rowsrc,
+  */
+ int vidconsole_set_row(struct udevice *dev, uint row, int clr);
+ 
++/**
++ * vidconsole_entry_start() - Set the start position of a vidconsole line
++ *
++ * Marks the current cursor position as the start of a line
++ *
++ * @dev:	Device to adjust
++ */
++int vidconsole_entry_start(struct udevice *dev);
++
+ /**
+  * vidconsole_put_char() - Output a character to the current console position
+  *

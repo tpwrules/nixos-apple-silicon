@@ -1,0 +1,27 @@
+From ccca7c676023de6607f9ce91204b076045c8b6d1 Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Thu, 11 Jan 2024 20:28:59 +0100
+Subject: [PATCH] lib: charset: Fix utf8_to_utf32_stream() return value doc
+ string
+
+The comment appears to be copied from utf8_to_cp437_stream() but was not
+updated.
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ include/charset.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/charset.h b/include/charset.h
+index 44034c71d3d..714382e1c19 100644
+--- a/include/charset.h
++++ b/include/charset.h
+@@ -328,7 +328,7 @@ int utf8_to_cp437_stream(u8 c, char *buffer);
+  *
+  * @c:		next UTF-8 character to convert
+  * @buffer:	buffer, at least 5 characters
+- * Return:	next codepage 437 character or 0
++ * Return:	next Unicode code point or 0
+  */
+ int utf8_to_utf32_stream(u8 c, char *buffer);
+ 

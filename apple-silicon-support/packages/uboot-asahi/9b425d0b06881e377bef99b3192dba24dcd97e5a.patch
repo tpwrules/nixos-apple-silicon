@@ -1,0 +1,217 @@
+From 9b425d0b06881e377bef99b3192dba24dcd97e5a Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Sat, 13 Jan 2024 18:46:45 +0100
+Subject: [PATCH] video: console: Save and restore fb data under cursor
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ drivers/video/console_core.c        | 95 +++++++++++++++++++++++++++++
+ drivers/video/console_normal.c      |  8 +++
+ drivers/video/vidconsole_internal.h | 41 +++++++++++++
+ 3 files changed, 144 insertions(+)
+
+diff --git a/drivers/video/console_core.c b/drivers/video/console_core.c
+index 939363653f6..f137333f732 100644
+--- a/drivers/video/console_core.c
++++ b/drivers/video/console_core.c
+@@ -9,6 +9,7 @@
+ #include <video.h>
+ #include <video_console.h>
+ #include <dm.h>
++#include <malloc.h>
+ #include <video_font.h>
+ #include "vidconsole_internal.h"
+ 
+@@ -41,6 +42,11 @@ static int console_set_font(struct udevice *dev, struct video_fontdata *fontdata
+ 		vc_priv->rows = vid_priv->ysize / fontdata->height;
+ 	}
+ 
++	if (priv->cursor_data)
++		free(priv->cursor_data);
++	priv->cursor_data = calloc(fontdata->height * VIDCONSOLE_CURSOR_WIDTH,
++				   sizeof(*priv->cursor_data));
++
+ 	return 0;
+ }
+ 
+@@ -75,6 +81,25 @@ inline void fill_pixel_and_goto_next(void **dstp, u32 value, int pbytes, int ste
+ 	*dstp = dst_byte + step;
+ }
+ 
++inline void copy_pixel_and_goto_next(void **srcp, u32 *value, int pbytes, int step)
++{
++	u8 *src_byte = *srcp;
++
++	if (pbytes == 4) {
++		u32 *src = *srcp;
++		*value = *src;
++	}
++	if (pbytes == 2) {
++		u16 *src = *srcp;
++		*value = *src;
++	}
++	if (pbytes == 1) {
++		u8 *src = *srcp;
++		*value = *src;
++	}
++	*srcp = src_byte + step;
++}
++
+ int fill_char_vertically(uchar *pfont, void **line, struct video_priv *vid_priv,
+ 			 struct video_fontdata *fontdata, bool direction)
+ {
+@@ -176,6 +201,76 @@ int fill_char_horizontally(uchar *pfont, void **line, struct video_priv *vid_pri
+ 	return ret;
+ }
+ 
++int cursor_save_fb(struct udevice *dev, void *line, struct video_priv *vid_priv,
++			   uint height, bool direction)
++{
++	struct console_simple_priv *priv = dev_get_priv(dev);
++	int step, line_step, pbytes, ret;
++	uint *value;
++	void *src;
++
++	if (!priv->cursor_data)
++		return 0;
++
++	ret = check_bpix_support(vid_priv->bpix);
++	if (ret)
++		return ret;
++
++	pbytes = VNBYTES(vid_priv->bpix);
++	if (direction) {
++		step = -pbytes;
++		line_step = -vid_priv->line_length;
++	} else {
++		step = pbytes;
++		line_step = vid_priv->line_length;
++	}
++
++	priv->cursor_line = line;
++	priv->cursor_stride = line_step;
++	priv->cursor_step = step;
++	priv->cursor_pbytes = pbytes;
++
++	for (int row = 0; row < height; row++) {
++		src = line;
++		for (int col = 0; col < VIDCONSOLE_CURSOR_WIDTH; col++) {
++			value = &priv->cursor_data[col + row * VIDCONSOLE_CURSOR_WIDTH];
++			copy_pixel_and_goto_next(&src, value, pbytes, step);
++		}
++		line += line_step;
++	}
++
++	priv->cursor_height = height;
++
++	return 0;
++}
++
++int cursor_restore_fb(struct udevice *dev)
++{
++	struct console_simple_priv *priv = dev_get_priv(dev);
++	void *line = priv->cursor_line;
++	int step = priv->cursor_step;
++	int line_step = priv->cursor_stride;
++	int pbytes = priv->cursor_pbytes;
++	uint value;
++
++	if (!priv->cursor_data || !priv->cursor_height || !line)
++		return 0;
++
++	for (int row = 0; row < priv->cursor_height; row++) {
++		void *dst = line;
++		for (int col = 0; col < VIDCONSOLE_CURSOR_WIDTH; col++) {
++			value = priv->cursor_data[col + row * VIDCONSOLE_CURSOR_WIDTH];
++			fill_pixel_and_goto_next(&dst, value, pbytes, step);
++		}
++		line += line_step;
++	}
++
++	priv->cursor_height = 0;
++	priv->cursor_line = NULL;
++
++	return 0;
++}
++
+ int draw_cursor_vertically(void **line, struct video_priv *vid_priv,
+ 			   uint height, bool direction)
+ {
+diff --git a/drivers/video/console_normal.c b/drivers/video/console_normal.c
+index a0231293f31..e3873fea389 100644
+--- a/drivers/video/console_normal.c
++++ b/drivers/video/console_normal.c
+@@ -119,6 +119,14 @@ static int console_set_cursor_visible(struct udevice *dev, bool visible,
+ 	x -= 1;
+ 
+ 	line = start;
++
++	cursor_restore_fb(dev);
++	if (!visible)
++		return 0;
++
++	cursor_save_fb(dev, line, vid_priv, vc_priv->y_charsize,
++		       NORMAL_DIRECTION);
++
+ 	draw_cursor_vertically(&line, vid_priv, vc_priv->y_charsize,
+ 			       NORMAL_DIRECTION);
+ 
+diff --git a/drivers/video/vidconsole_internal.h b/drivers/video/vidconsole_internal.h
+index 0ec581b2663..00b475aa729 100644
+--- a/drivers/video/vidconsole_internal.h
++++ b/drivers/video/vidconsole_internal.h
+@@ -16,6 +16,12 @@
+  */
+ struct console_simple_priv {
+ 	struct video_fontdata *fontdata;
++	u32 *cursor_data;
++	void *cursor_line;
++	int cursor_stride;
++	int cursor_step;
++	int cursor_pbytes;
++	u32 cursor_height;
+ };
+ 
+ /**
+@@ -92,6 +98,41 @@ int fill_char_vertically(uchar *pfont, void **line, struct video_priv *vid_priv,
+ int fill_char_horizontally(uchar *pfont, void **line, struct video_priv *vid_priv,
+ 			   struct video_fontdata *fontdata, bool direction);
+ 
++
++/**
++ * cursor_save_fb() - Save fb Draw a simple vertical cursor
++ *
++ * @param dev: a pointer to device.
++ * @line: pointer to framebuffer buffer: upper left cursor corner
++ * @vid_priv: driver private data
++ * @height: height of the cursor in pixels
++ * @param direction	controls cursor orientation. Can be normal or flipped.
++ * When normal:               When flipped:
++ *|-----------------------------------------------|
++ *|               *        |   line stepping      |
++ *|    ^  * * * * *        |   |                  |
++ *|    |    *     *        |   v   *     *        |
++ *|    |                   |       * * * * *      |
++ *|  line stepping         |       *              |
++ *|                        |                      |
++ *|  stepping ->           |        <<- stepping  |
++ *|---!!we're starting from upper left char corner|
++ *|-----------------------------------------------|
++ *
++ * Return: 0, if success, or else error code.
++ */
++int cursor_save_fb(struct udevice *dev, void *line, struct video_priv *vid_priv,
++		   uint height, bool direction);
++
++/**
++ * cursor_restore_fb() - Restore fb data under a previously rendered the cursor
++ *
++ * @param dev: a pointer to device.
++ *
++ * Return: 0, if success, or else error code.
++ */
++int cursor_restore_fb(struct udevice *dev);
++
+ /**
+  * draw_cursor_vertically() - Draw a simple vertical cursor
+  *

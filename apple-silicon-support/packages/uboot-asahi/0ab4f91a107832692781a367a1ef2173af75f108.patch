@@ -1,0 +1,198 @@
+From 0ab4f91a107832692781a367a1ef2173af75f108 Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Thu, 1 Jun 2023 10:22:33 -0600
+Subject: [PATCH] video: Provide a way to clear part of the console
+
+This is useful when the background colour must be written before text
+is updated, to avoid strange display artifacts.
+
+Add a function for this, using the existing code from the truetype
+console.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/video/console_truetype.c | 72 ++------------------------------
+ drivers/video/video-uclass.c     | 52 +++++++++++++++++++++++
+ include/video.h                  | 16 +++++++
+ 3 files changed, 71 insertions(+), 69 deletions(-)
+
+diff --git a/drivers/video/console_truetype.c b/drivers/video/console_truetype.c
+index 0ea8a9f6215e..63d7557c71a0 100644
+--- a/drivers/video/console_truetype.c
++++ b/drivers/video/console_truetype.c
+@@ -378,72 +378,6 @@ static int console_truetype_putc_xy(struct udevice *dev, uint x, uint y,
+ 	return width_frac;
+ }
+ 
+-/**
+- * console_truetype_erase() - Erase a character
+- *
+- * This is used for backspace. We erase a square of the display within the
+- * given bounds.
+- *
+- * @dev:	Device to update
+- * @xstart:	X start position in pixels from the left
+- * @ystart:	Y start position in pixels from the top
+- * @xend:	X end position in pixels from the left
+- * @yend:	Y end position  in pixels from the top
+- * @clr:	Value to write
+- * Return: 0 if OK, -ENOSYS if the display depth is not supported
+- */
+-static int console_truetype_erase(struct udevice *dev, int xstart, int ystart,
+-				  int xend, int yend, int clr)
+-{
+-	struct video_priv *vid_priv = dev_get_uclass_priv(dev->parent);
+-	void *start, *line;
+-	int pixels = xend - xstart;
+-	int row, i, ret;
+-
+-	start = vid_priv->fb + ystart * vid_priv->line_length;
+-	start += xstart * VNBYTES(vid_priv->bpix);
+-	line = start;
+-	for (row = ystart; row < yend; row++) {
+-		switch (vid_priv->bpix) {
+-		case VIDEO_BPP8: {
+-			uint8_t *dst = line;
+-
+-			if (IS_ENABLED(CONFIG_VIDEO_BPP8)) {
+-				for (i = 0; i < pixels; i++)
+-					*dst++ = clr;
+-			}
+-			break;
+-		}
+-		case VIDEO_BPP16: {
+-			uint16_t *dst = line;
+-
+-			if (IS_ENABLED(CONFIG_VIDEO_BPP16)) {
+-				for (i = 0; i < pixels; i++)
+-					*dst++ = clr;
+-			}
+-			break;
+-		}
+-		case VIDEO_BPP32: {
+-			uint32_t *dst = line;
+-
+-			if (IS_ENABLED(CONFIG_VIDEO_BPP32)) {
+-				for (i = 0; i < pixels; i++)
+-					*dst++ = clr;
+-			}
+-			break;
+-		}
+-		default:
+-			return -ENOSYS;
+-		}
+-		line += vid_priv->line_length;
+-	}
+-	ret = vidconsole_sync_copy(dev, start, line);
+-	if (ret)
+-		return ret;
+-
+-	return 0;
+-}
+-
+ /**
+  * console_truetype_backspace() - Handle a backspace operation
+  *
+@@ -482,9 +416,9 @@ static int console_truetype_backspace(struct udevice *dev)
+ 	else
+ 		xend = vid_priv->xsize;
+ 
+-	console_truetype_erase(dev, VID_TO_PIXEL(pos->xpos_frac), pos->ypos,
+-			       xend, pos->ypos + vc_priv->y_charsize,
+-			       vid_priv->colour_bg);
++	video_fill_part(vid_dev, VID_TO_PIXEL(pos->xpos_frac), pos->ypos,
++			xend, pos->ypos + vc_priv->y_charsize,
++			vid_priv->colour_bg);
+ 
+ 	/* Move the cursor back to where it was when we pushed this record */
+ 	vc_priv->xcur_frac = pos->xpos_frac;
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index 1b66a8061a74..d304e92c2441 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -142,6 +142,58 @@ int video_reserve(ulong *addrp)
+ 	return 0;
+ }
+ 
++int video_fill_part(struct udevice *dev, int xstart, int ystart, int xend,
++		    int yend, u32 colour)
++{
++	struct video_priv *priv = dev_get_uclass_priv(dev);
++	void *start, *line;
++	int pixels = xend - xstart;
++	int row, i, ret;
++
++	start = priv->fb + ystart * priv->line_length;
++	start += xstart * VNBYTES(priv->bpix);
++	line = start;
++	for (row = ystart; row < yend; row++) {
++		switch (priv->bpix) {
++		case VIDEO_BPP8: {
++			u8 *dst = line;
++
++			if (IS_ENABLED(CONFIG_VIDEO_BPP8)) {
++				for (i = 0; i < pixels; i++)
++					*dst++ = colour;
++			}
++			break;
++		}
++		case VIDEO_BPP16: {
++			u16 *dst = line;
++
++			if (IS_ENABLED(CONFIG_VIDEO_BPP16)) {
++				for (i = 0; i < pixels; i++)
++					*dst++ = colour;
++			}
++			break;
++		}
++		case VIDEO_BPP32: {
++			u32 *dst = line;
++
++			if (IS_ENABLED(CONFIG_VIDEO_BPP32)) {
++				for (i = 0; i < pixels; i++)
++					*dst++ = colour;
++			}
++			break;
++		}
++		default:
++			return -ENOSYS;
++		}
++		line += priv->line_length;
++	}
++	ret = video_sync_copy(dev, start, line);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
+ int video_fill(struct udevice *dev, u32 colour)
+ {
+ 	struct video_priv *priv = dev_get_uclass_priv(dev);
+diff --git a/include/video.h b/include/video.h
+index 03434a81234f..6dc42d464b0b 100644
+--- a/include/video.h
++++ b/include/video.h
+@@ -204,6 +204,22 @@ int video_clear(struct udevice *dev);
+  */
+ int video_fill(struct udevice *dev, u32 colour);
+ 
++/**
++ * video_fill_part() - Erase a region
++ *
++ * Erase a rectangle of the display within the given bounds.
++ *
++ * @dev:	Device to update
++ * @xstart:	X start position in pixels from the left
++ * @ystart:	Y start position in pixels from the top
++ * @xend:	X end position in pixels from the left
++ * @yend:	Y end position  in pixels from the top
++ * @colour:	Value to write
++ * Return: 0 if OK, -ENOSYS if the display depth is not supported
++ */
++int video_fill_part(struct udevice *dev, int xstart, int ystart, int xend,
++		    int yend, u32 colour);
++
+ /**
+  * video_sync() - Sync a device's frame buffer with its hardware
+  *

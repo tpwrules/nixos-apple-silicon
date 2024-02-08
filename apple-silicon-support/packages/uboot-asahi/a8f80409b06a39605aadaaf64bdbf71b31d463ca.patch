@@ -1,0 +1,65 @@
+From a8f80409b06a39605aadaaf64bdbf71b31d463ca Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Thu, 1 Jun 2023 10:22:36 -0600
+Subject: [PATCH] console: Correct truetype spacing error
+
+The putc_xy() method is supposed to return the amount of space used. The
+existing implementation erroneously adds the previous sub-pixel position
+to the returned value. This spaces out the characters very slightly more
+than it should. It is seldom noticeable but it does make accurate
+measurement of the text impossible.
+
+Fix this minor but long-standing bug.
+
+Fixes: a29b012037c ("video: Add a console driver that uses TrueType fonts")
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/video/console_truetype.c | 2 +-
+ test/dm/video.c                  | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/console_truetype.c b/drivers/video/console_truetype.c
+index 63d7557c71a0..6f3fc82f9b05 100644
+--- a/drivers/video/console_truetype.c
++++ b/drivers/video/console_truetype.c
+@@ -256,7 +256,7 @@ static int console_truetype_putc_xy(struct udevice *dev, uint x, uint y,
+ 	 */
+ 	x_shift = xpos - (double)tt_floor(xpos);
+ 	xpos += advance * met->scale;
+-	width_frac = (int)VID_TO_POS(xpos);
++	width_frac = (int)VID_TO_POS(advance * met->scale);
+ 	if (x + width_frac >= vc_priv->xsize_frac)
+ 		return -EAGAIN;
+ 
+diff --git a/test/dm/video.c b/test/dm/video.c
+index 30778157d940..6d9c55c14035 100644
+--- a/test/dm/video.c
++++ b/test/dm/video.c
+@@ -556,7 +556,7 @@ static int dm_test_video_truetype(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+-	ut_asserteq(12237, compress_frame_buffer(uts, dev));
++	ut_asserteq(12187, compress_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -577,7 +577,7 @@ static int dm_test_video_truetype_scroll(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+-	ut_asserteq(35030, compress_frame_buffer(uts, dev));
++	ut_asserteq(34481, compress_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }
+@@ -598,7 +598,7 @@ static int dm_test_video_truetype_bs(struct unit_test_state *uts)
+ 	ut_assertok(video_get_nologo(uts, &dev));
+ 	ut_assertok(uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &con));
+ 	vidconsole_put_string(con, test_string);
+-	ut_asserteq(29018, compress_frame_buffer(uts, dev));
++	ut_asserteq(29579, compress_frame_buffer(uts, dev));
+ 
+ 	return 0;
+ }

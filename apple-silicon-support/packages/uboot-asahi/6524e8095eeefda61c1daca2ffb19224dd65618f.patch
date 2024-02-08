@@ -1,0 +1,26 @@
+From 6524e8095eeefda61c1daca2ffb19224dd65618f Mon Sep 17 00:00:00 2001
+From: Janne Grunau <j@jannau.net>
+Date: Wed, 10 Jan 2024 22:59:19 +0100
+Subject: [PATCH] video: console: Fix buffer overflow in cmd 'font list'
+
+vidconsole_ops.get_font is documented to return -ENOENT after the last
+video_fontdata entry.
+
+Signed-off-by: Janne Grunau <j@jannau.net>
+---
+ drivers/video/console_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/console_core.c b/drivers/video/console_core.c
+index d17764d0b08..939363653f6 100644
+--- a/drivers/video/console_core.c
++++ b/drivers/video/console_core.c
+@@ -225,7 +225,7 @@ int console_simple_get_font(struct udevice *dev, int seq, struct vidfont_info *i
+ {
+ 	info->name = fonts[seq].name;
+ 
+-	return 0;
++	return info->name ? 0 : -ENOENT;
+ }
+ 
+ int console_simple_select_font(struct udevice *dev, const char *name, uint size)
