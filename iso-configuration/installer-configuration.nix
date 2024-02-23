@@ -112,7 +112,7 @@
 
   # avoids the need to cross-compile gobject introspection stuff which works
   # now but is slow and unnecessary
-  security.polkit.enable = false;
+  security.polkit.enable = lib.mkForce false;
 
   # bootspec generation is currently broken under cross-compilation
   boot.bootspec.enable = false;
