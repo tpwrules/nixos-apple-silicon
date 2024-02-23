@@ -72,7 +72,7 @@ let
           ${lib.strings.concatStringsSep "\n" extraConfigText}
         '';
       # final config as an attrset
-      config = let
+      configAttrs = let
         makePair = t: lib.nameValuePair (i t 0) (i t 1);
         configList = (parseConfig origConfigText) ++ extraConfig;
       in builtins.listToAttrs (map makePair (lib.lists.reverseList configList));
@@ -136,7 +136,10 @@ let
         }
       ] ++ _kernelPatches;
 
-      inherit configfile config;
+      inherit configfile;
+      # hide Rust support from the nixpkgs infra to avoid it re-adding the rust packages.
+      # we can't use it until it's in stable and until we've evaluated the cross-compilation impact.
+      config = configAttrs // { "CONFIG_RUST" = "n"; };
     } // (args.argsOverride or {})).overrideAttrs (old: if withRust then {
       nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
         rust-bindgen
