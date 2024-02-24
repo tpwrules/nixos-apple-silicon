@@ -84,7 +84,8 @@
   };
 
   imports = [
-    ./edge.nix
+    (lib.mkRemovedOptionModule [ "hardware" "asahi" "addEdgeKernelConfig" ]
+      "All edge kernel config options are now the default.")
   ];
 
   options.hardware.asahi.withRust = lib.mkOption {

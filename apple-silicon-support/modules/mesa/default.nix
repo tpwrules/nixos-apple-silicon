@@ -4,13 +4,23 @@
     isMode = mode: (config.hardware.asahi.useExperimentalGPUDriver
         && config.hardware.asahi.experimentalGPUInstallMode == mode);
   in lib.mkMerge [
+    {
+      # required for proper DRM setup even without GPU driver
+      services.xserver.config = ''
+        Section "OutputClass"
+            Identifier "appledrm"
+            MatchDriver "apple"
+            Driver "modesetting"
+            Option "PrimaryGPU" "true"
+        EndSection
+      '';
+    }
     (lib.mkIf config.hardware.asahi.useExperimentalGPUDriver {
-
       # install the drivers
       hardware.opengl.package = config.hardware.asahi.pkgs.mesa-asahi-edge.drivers;
 
-      # required for GPU kernel driver
-      hardware.asahi.addEdgeKernelConfig = true;
+      # required for in-kernel GPU driver
+      hardware.asahi.withRust = true;
     })
     (lib.mkIf (isMode "replace") {
       # replace the Mesa linked into system packages with the Asahi version
