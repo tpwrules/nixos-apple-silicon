@@ -10,11 +10,8 @@
         # derived from
         # https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/config.edge
         extraConfig = ''
-          DRM_APPLE m
           DRM_VGEM n
           DRM_SCHED y
-          DRM_GEM_SHMEM_HELPER y
-          DRM_ASAHI m
           SUSPEND y
         '';
       }
