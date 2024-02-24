@@ -13,14 +13,14 @@
 }).overrideAttrs (oldAttrs: {
   # version must be the same length (i.e. no unstable or date)
   # so that system.replaceRuntimeDependencies can work
-  version = "24.0.0";
+  version = "24.1.0";
   src = fetchFromGitLab {
     # tracking: https://pagure.io/fedora-asahi/mesa/commits/asahi
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20231213";
-    hash = "sha256-hl0JtwWEXaCkhCMQJ393mzfw/eEx6m9DYNS+spQ3Vhs=";
+    rev = "asahi-20240218";
+    hash = "sha256-IMR6x7xYUOp/IBycL8RKs4lbInEh2Xfu6Kjom4S+D/s=";
   };
 
   mesonFlags =
