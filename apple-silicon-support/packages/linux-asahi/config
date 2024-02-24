@@ -7793,6 +7793,7 @@ CONFIG_UCLAMP_BUCKETS_COUNT=5
 # git diff --name-only fedora-6.6 fedora-asahi-6.6 redhat/configs/ | xargs cat >> config
 # in a checkout of https://gitlab.com/fedora-asahi/kernel-asahi/-/tree/fedora-asahi-6.6
 
+CONFIG_SUSPEND=y
 # CONFIG_APPLE_PLATFORMS is not set
 # CONFIG_DRM_SIMPLEDRM_BACKLIGHT is not set
 CONFIG_RUST=y

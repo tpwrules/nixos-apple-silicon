@@ -10,7 +10,6 @@
         # derived from
         # https://github.com/AsahiLinux/PKGBUILDs/blob/main/linux-asahi/config.edge
         extraConfig = ''
-          SUSPEND y
         '';
       }
     ];
