@@ -8,7 +8,6 @@
     in
       pkgs'.linux-asahi.override {
         _kernelPatches = config.boot.kernelPatches;
-        _4KBuild = config.hardware.asahi.use4KPages;
         withRust = config.hardware.asahi.withRust;
       };
 
@@ -87,15 +86,6 @@
   imports = [
     ./edge.nix
   ];
-
-  options.hardware.asahi.use4KPages = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = ''
-      Build the Asahi Linux kernel with 4K pages to improve compatibility in
-      some cases at the cost of performance in others.
-    '';
-  };
 
   options.hardware.asahi.withRust = lib.mkOption {
     type = lib.types.bool;
