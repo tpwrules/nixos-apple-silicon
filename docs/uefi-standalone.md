@@ -228,12 +228,6 @@ Add the `./apple-silicon-support` directory to the imports list and switch off t
   boot.loader.efi.canTouchEfiVariables = false;
 ```
 
-If you used the cross-compiled installer image, i.e. you downloaded the ISO from GitHub or built it on an `x86_64-linux` machine, you may add the following line to re-use the cross-compiled Asahi packages. If you don't, they will be rebuilt in the installer, which wastes time. When you update the system and they need to be rebuilt on the Mac itself, remove this line or you will get an error that an `x86_64-linux` builder is required.
-```
-  # Remove if you get an error that an x86_64-linux builder is required.
-  hardware.asahi.pkgsSystem = "x86_64-linux";
-```
-
 The configuration above is the minimum required to produce a bootable system, but you can further edit the file as desired to perform additional configuration. Uncomment the relevant options and change their values as explained in the file. Note that some advertised features may not work properly at this time. Refer to the [NixOS installation manual](https://nixos.org/manual/nixos/stable/index.html#ch-configuration) for further guidance.
 
 Various non-free non-redistributable peripheral firmware files are required to use system hardware like Wi-Fi. The Asahi Linux installer grabs these from macOS and stores them on the EFI system partition when it is created. The NixOS installer loads them from there while booting so that all hardware is available during installation. By default, the Apple Silicon support module will automatically reference the files in the EFI system partition and incorporate them into your configuration to be managed by the normal NixOS mechanisms.
