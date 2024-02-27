@@ -2,6 +2,25 @@
 
 This file contains important information for each release.
 
+## 2024-02-26
+
+This release updates nixpkgs, the kernel, and Mesa. Thanks to oliverbestmann for
+the updates.
+
+This release also includes a patch to fix random boot hangs with recent versions
+of nixpkgs.
+
+The kernel and Mesa are now upgraded to OpenGL 4.6 compatibility. Restructurings
+and upgrades have been made in the sound support as well (in particular an
+upgrade to the `bankstown-lv2` bass enhancer), and quality should be improved.
+
+The GPU acceleration and sound upgrades require packages and features present
+only in the latest nixpkgs unstable releases. If you are using NixOS 23.11,
+please remain on an older release. This may be addressed in the future;
+contributions are welcome.
+
+Upgrading nixpkgs brings GCC 13.2 as the default system compiler.
+
 ## 2024-01-17
 
 This release updates nixpkgs.
