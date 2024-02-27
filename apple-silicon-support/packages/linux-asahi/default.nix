@@ -100,6 +100,9 @@ let
       };
 
       kernelPatches = [
+        { name = "coreutils-fix";
+          patch = ./0001-fs-fcntl-accept-more-values-as-F_DUPFD_CLOEXEC-args.patch;
+        }
         # speaker enablement; we assert on the relevant lsp-plugins patch
         # before installing speakersafetyd to let the speakers work
         { name = "speakers-1";
