@@ -81,6 +81,15 @@
       efiInstallAsRemovable = true;
       device = "nodev";
     };
+
+    # autosuspend was enabled as safe for the PCI SD card reader
+    # "Genesys Logic, Inc GL9755 SD Host Controller [17a0:9755] (rev 01)"
+    # by recent systemd versions, but this has a "negative interaction"
+    # with our kernel/SoC and causes random boot hangs. disable it!
+    services.udev.extraHwdb = ''
+      pci:v000017A0d00009755*
+        ID_AUTOSUSPEND=0
+    '';
   };
 
   imports = [
