@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, options, pkgs, lib, ... }:
 
 {
   imports = [
@@ -32,34 +32,57 @@
     })).lsp-plugins-is-patched;
 
     lsp-plugins-is-safe = (pkgs.lib.versionAtLeast lsp-plugins.version "1.2.14") || lsp-plugins-is-patched;
-  in lib.mkIf config.hardware.asahi.setupAsahiSound {
-    # enable pipewire to run real-time and avoid audible glitches
-    security.rtkit.enable = true;
-    # set up pipewire with the supported capabilities (instead of pulseaudio)
-    # and asahi-audio configs and plugins
-    services.pipewire = {
-      enable = true;
-      configPackages = [ asahi-audio ];
-      extraLv2Packages = [ lsp-plugins pkgs.bankstown-lv2 ];
 
-      alsa.enable = true;
-      pulse.enable = true;
-      wireplumber = {
+    # https://github.com/NixOS/nixpkgs/pull/282377
+    # options is the set of all module option declarations, rather than their
+    # values, to prevent infinite recursion
+    newHotness = builtins.hasAttr "configPackages" options.services.pipewire;
+
+    lv2Path = lib.makeSearchPath "lib/lv2" [ lsp-plugins pkgs.bankstown-lv2 ];
+  in lib.mkIf config.hardware.asahi.setupAsahiSound (lib.mkMerge [
+    {
+      # enable pipewire to run real-time and avoid audible glitches
+      security.rtkit.enable = true;
+      # set up pipewire with the supported capabilities (instead of pulseaudio)
+      # and asahi-audio configs and plugins
+      services.pipewire = {
         enable = true;
+
+        alsa.enable = true;
+        pulse.enable = true;
+        wireplumber.enable = true;
+      };
+
+      # set up enivronment so that UCM configs are used as well
+      environment.variables.ALSA_CONFIG_UCM2 = "${pkgs.alsa-ucm-conf-asahi}/share/alsa/ucm2";
+      systemd.user.services.pipewire.environment.ALSA_CONFIG_UCM2 = config.environment.variables.ALSA_CONFIG_UCM2;
+      systemd.user.services.wireplumber.environment.ALSA_CONFIG_UCM2 = config.environment.variables.ALSA_CONFIG_UCM2;
+
+      # enable speakersafetyd to protect speakers
+      systemd.packages = lib.mkAssert lsp-plugins-is-safe
+        "lsp-plugins is unpatched/outdated and speakers cannot be safely enabled"
+        [ pkgs.speakersafetyd ];
+      services.udev.packages = [ pkgs.speakersafetyd ];
+    }
+    (lib.optionalAttrs newHotness {
+      # use configPackages and friends to install asahi-audio and plugins
+      services.pipewire = {
         configPackages = [ asahi-audio ];
         extraLv2Packages = [ lsp-plugins pkgs.bankstown-lv2 ];
+        wireplumber = {
+          configPackages = [ asahi-audio ];
+          extraLv2Packages = [ lsp-plugins pkgs.bankstown-lv2 ];
+        };
       };
-    };
+    })
+    (lib.optionalAttrs (!newHotness) {
+      # use environment.etc and environment variables to install asahi-audio and plugins
+      environment.etc = builtins.listToAttrs (builtins.map
+        (f: { name = f; value = { source = "${asahi-audio}/share/${f}"; }; })
+        asahi-audio.providedConfigFiles);
 
-    # set up enivronment so that UCM configs are used as well
-    environment.variables.ALSA_CONFIG_UCM2 = "${pkgs.alsa-ucm-conf-asahi}/share/alsa/ucm2";
-    systemd.user.services.pipewire.environment.ALSA_CONFIG_UCM2 = config.environment.variables.ALSA_CONFIG_UCM2;
-    systemd.user.services.wireplumber.environment.ALSA_CONFIG_UCM2 = config.environment.variables.ALSA_CONFIG_UCM2;
-
-    # enable speakersafetyd to protect speakers
-    systemd.packages = lib.mkAssert lsp-plugins-is-safe
-      "lsp-plugins is unpatched/outdated and speakers cannot be safely enabled"
-      [ pkgs.speakersafetyd ];
-    services.udev.packages = [ pkgs.speakersafetyd ];
-  };
+      systemd.user.services.pipewire.environment.LV2_PATH = lv2Path;
+      systemd.user.services.wireplumber.environment.LV2_PATH = lv2Path;
+    })
+  ]);
 }
