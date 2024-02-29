@@ -123,6 +123,9 @@
     PROGRAM ${pkgs.coreutils}/bin/true
   '';
 
+  # bogus warning when referring to <nixpkgs>
+  nix.settings.experimental-features = [ "flakes" ];
+
   # get rid of warning that stateVersion is unset
   system.stateVersion = lib.mkDefault lib.trivial.release;
 }
