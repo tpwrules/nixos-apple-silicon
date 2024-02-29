@@ -2,6 +2,16 @@
 
 This file contains important information for each release.
 
+## 2024-02-29
+
+This release updates nixpkgs.
+
+This release corrects a few minor issues:
+* Resolves an error that flakes were not enabled when running `nixos-install`
+* Updates to avoid using a nixpkgs version that was not from the nixos-unstable
+  channel
+* Restored compatibility for the sound module with older versions of nixpkgs.
+
 ## 2024-02-26
 
 This release updates nixpkgs, the kernel, and Mesa. Thanks to oliverbestmann for
