@@ -123,8 +123,9 @@
     PROGRAM ${pkgs.coreutils}/bin/true
   '';
 
-  # bogus warning when referring to <nixpkgs>
-  nix.settings.experimental-features = [ "flakes" ];
+  # avoid error that flakes must be enabled when nixos-install uses <nixpkgs>
+  nixpkgs.flake.setNixPath = false;
+  nixpkgs.flake.setFlakeRegistry = false;
 
   # get rid of warning that stateVersion is unset
   system.stateVersion = lib.mkDefault lib.trivial.release;
