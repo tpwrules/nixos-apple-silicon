@@ -1,6 +1,7 @@
 { lib
 , fetchFromGitLab
 , mesa
+, meson
 , llvmPackages
 }:
 
@@ -36,7 +37,9 @@
       # do not want to add the dependencies
       "-Dlibunwind=disabled"
       "-Dlmsensors=disabled"
-    ];
+    ] ++ ( # does not compile on nixpkgs stable, doesn't seem mandatory
+      lib.optional (lib.versionOlder meson.version "1.3.1")
+        "-Dgallium-rusticl=false");
 
   # replace patches with ones tweaked slightly to apply to this version
   patches = [
