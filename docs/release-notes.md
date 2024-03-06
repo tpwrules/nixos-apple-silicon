@@ -2,6 +2,16 @@
 
 This file contains important information for each release.
 
+## 2024-03-05
+
+This release updates nixpkgs and Mesa.
+
+This release also includes a patch so that Mesa can build again on NixOS 23.11
+and older nixpkgs versions.
+
+Support for stable NixOS releases is neither tested nor guaranteed, but patches
+to address specific issues are welcome.
+
 ## 2024-02-29
 
 This release updates nixpkgs.
