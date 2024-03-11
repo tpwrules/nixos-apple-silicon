@@ -121,6 +121,10 @@ let
         { name = "rustc-1.75.0";
           patch = ./0001-check-in-new-alloc-for-1.75.0.patch;
         }
+      ] ++ lib.optionals (rustAtLeast "1.76.0") [
+        { name = "rustc-1.76.0";
+          patch = ./rust_1_76_0.patch;
+        }
       ] ++ _kernelPatches;
 
       inherit configfile;

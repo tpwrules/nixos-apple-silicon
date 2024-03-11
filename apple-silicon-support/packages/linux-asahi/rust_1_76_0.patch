@@ -1,0 +1,426 @@
+diff --git a/rust/alloc/alloc.rs b/rust/alloc/alloc.rs
+index 08eafb3de807..7cf4edb8b786 100644
+--- a/rust/alloc/alloc.rs
++++ b/rust/alloc/alloc.rs
+@@ -426,12 +426,14 @@ pub unsafe fn __rdl_oom(size: usize, _align: usize) -> ! {
+     }
+ }
+ 
++#[cfg(not(no_global_oom_handling))]
+ /// Specialize clones into pre-allocated, uninitialized memory.
+ /// Used by `Box::clone` and `Rc`/`Arc::make_mut`.
+ pub(crate) trait WriteCloneIntoRaw: Sized {
+     unsafe fn write_clone_into_raw(&self, target: *mut Self);
+ }
+ 
++#[cfg(not(no_global_oom_handling))]
+ impl<T: Clone> WriteCloneIntoRaw for T {
+     #[inline]
+     default unsafe fn write_clone_into_raw(&self, target: *mut Self) {
+@@ -441,6 +443,7 @@ impl<T: Clone> WriteCloneIntoRaw for T {
+     }
+ }
+ 
++#[cfg(not(no_global_oom_handling))]
+ impl<T: Copy> WriteCloneIntoRaw for T {
+     #[inline]
+     unsafe fn write_clone_into_raw(&self, target: *mut Self) {
+diff --git a/rust/alloc/boxed.rs b/rust/alloc/boxed.rs
+index ed7e2f666178..359b8bcdb7a2 100644
+--- a/rust/alloc/boxed.rs
++++ b/rust/alloc/boxed.rs
+@@ -1030,10 +1030,18 @@ impl<T: ?Sized, A: Allocator> Box<T, A> {
+     /// use std::ptr;
+     ///
+     /// let x = Box::new(String::from("Hello"));
+-    /// let p = Box::into_raw(x);
++    /// let ptr = Box::into_raw(x);
++    /// unsafe {
++    ///     ptr::drop_in_place(ptr);
++    ///     dealloc(ptr as *mut u8, Layout::new::<String>());
++    /// }
++    /// ```
++    /// Note: This is equivalent to the following:
++    /// ```
++    /// let x = Box::new(String::from("Hello"));
++    /// let ptr = Box::into_raw(x);
+     /// unsafe {
+-    ///     ptr::drop_in_place(p);
+-    ///     dealloc(p as *mut u8, Layout::new::<String>());
++    ///     drop(Box::from_raw(ptr));
+     /// }
+     /// ```
+     ///
+diff --git a/rust/alloc/collections/mod.rs b/rust/alloc/collections/mod.rs
+index 2506065d158a..00ffb3b97365 100644
+--- a/rust/alloc/collections/mod.rs
++++ b/rust/alloc/collections/mod.rs
+@@ -150,6 +150,7 @@ fn fmt(
+ 
+ /// An intermediate trait for specialization of `Extend`.
+ #[doc(hidden)]
++#[cfg(not(no_global_oom_handling))]
+ trait SpecExtend<I: IntoIterator> {
+     /// Extends `self` with the contents of the given iterator.
+     fn spec_extend(&mut self, iter: I);
+diff --git a/rust/alloc/lib.rs b/rust/alloc/lib.rs
+index 65b7a02d0956..6cddaf298118 100644
+--- a/rust/alloc/lib.rs
++++ b/rust/alloc/lib.rs
+@@ -157,6 +157,7 @@
+ #![feature(std_internals)]
+ #![feature(str_internals)]
+ #![feature(strict_provenance)]
++#![feature(trusted_fused)]
+ #![feature(trusted_len)]
+ #![feature(trusted_random_access)]
+ #![feature(try_trait_v2)]
+@@ -276,7 +277,7 @@ pub(crate) mod test_helpers {
+     /// seed not being the same for every RNG invocation too.
+     pub(crate) fn test_rng() -> rand_xorshift::XorShiftRng {
+         use std::hash::{BuildHasher, Hash, Hasher};
+-        let mut hasher = std::collections::hash_map::RandomState::new().build_hasher();
++        let mut hasher = std::hash::RandomState::new().build_hasher();
+         std::panic::Location::caller().hash(&mut hasher);
+         let hc64 = hasher.finish();
+         let seed_vec =
+diff --git a/rust/alloc/raw_vec.rs b/rust/alloc/raw_vec.rs
+index 65d5ce15828e..3fb1ee104cff 100644
+--- a/rust/alloc/raw_vec.rs
++++ b/rust/alloc/raw_vec.rs
+@@ -27,6 +27,16 @@ enum AllocInit {
+     Zeroed,
+ }
+ 
++#[repr(transparent)]
++#[cfg_attr(target_pointer_width = "16", rustc_layout_scalar_valid_range_end(0x7fff))]
++#[cfg_attr(target_pointer_width = "32", rustc_layout_scalar_valid_range_end(0x7fff_ffff))]
++#[cfg_attr(target_pointer_width = "64", rustc_layout_scalar_valid_range_end(0x7fff_ffff_ffff_ffff))]
++struct Cap(usize);
++
++impl Cap {
++    const ZERO: Cap = unsafe { Cap(0) };
++}
++
+ /// A low-level utility for more ergonomically allocating, reallocating, and deallocating
+ /// a buffer of memory on the heap without having to worry about all the corner cases
+ /// involved. This type is excellent for building your own data structures like Vec and VecDeque.
+@@ -52,7 +62,12 @@ enum AllocInit {
+ #[allow(missing_debug_implementations)]
+ pub(crate) struct RawVec<T, A: Allocator = Global> {
+     ptr: Unique<T>,
+-    cap: usize,
++    /// Never used for ZSTs; it's `capacity()`'s responsibility to return usize::MAX in that case.
++    ///
++    /// # Safety
++    ///
++    /// `cap` must be in the `0..=isize::MAX` range.
++    cap: Cap,
+     alloc: A,
+ }
+ 
+@@ -121,7 +136,7 @@ impl<T, A: Allocator> RawVec<T, A> {
+     /// the returned `RawVec`.
+     pub const fn new_in(alloc: A) -> Self {
+         // `cap: 0` means "unallocated". zero-sized types are ignored.
+-        Self { ptr: Unique::dangling(), cap: 0, alloc }
++        Self { ptr: Unique::dangling(), cap: Cap::ZERO, alloc }
+     }
+ 
+     /// Like `with_capacity`, but parameterized over the choice of
+@@ -203,7 +218,7 @@ fn allocate_in(capacity: usize, init: AllocInit, alloc: A) -> Self {
+             // here should change to `ptr.len() / mem::size_of::<T>()`.
+             Self {
+                 ptr: unsafe { Unique::new_unchecked(ptr.cast().as_ptr()) },
+-                cap: capacity,
++                cap: unsafe { Cap(capacity) },
+                 alloc,
+             }
+         }
+@@ -228,7 +243,7 @@ fn try_allocate_in(capacity: usize, init: AllocInit, alloc: A) -> Result<Self, T
+         // here should change to `ptr.len() / mem::size_of::<T>()`.
+         Ok(Self {
+             ptr: unsafe { Unique::new_unchecked(ptr.cast().as_ptr()) },
+-            cap: capacity,
++            cap: unsafe { Cap(capacity) },
+             alloc,
+         })
+     }
+@@ -240,12 +255,13 @@ fn try_allocate_in(capacity: usize, init: AllocInit, alloc: A) -> Result<Self, T
+     /// The `ptr` must be allocated (via the given allocator `alloc`), and with the given
+     /// `capacity`.
+     /// The `capacity` cannot exceed `isize::MAX` for sized types. (only a concern on 32-bit
+-    /// systems). ZST vectors may have a capacity up to `usize::MAX`.
++    /// systems). For ZSTs capacity is ignored.
+     /// If the `ptr` and `capacity` come from a `RawVec` created via `alloc`, then this is
+     /// guaranteed.
+     #[inline]
+     pub unsafe fn from_raw_parts_in(ptr: *mut T, capacity: usize, alloc: A) -> Self {
+-        Self { ptr: unsafe { Unique::new_unchecked(ptr) }, cap: capacity, alloc }
++        let cap = if T::IS_ZST { Cap::ZERO } else { unsafe { Cap(capacity) } };
++        Self { ptr: unsafe { Unique::new_unchecked(ptr) }, cap, alloc }
+     }
+ 
+     /// Gets a raw pointer to the start of the allocation. Note that this is
+@@ -261,7 +277,7 @@ pub fn ptr(&self) -> *mut T {
+     /// This will always be `usize::MAX` if `T` is zero-sized.
+     #[inline(always)]
+     pub fn capacity(&self) -> usize {
+-        if T::IS_ZST { usize::MAX } else { self.cap }
++        if T::IS_ZST { usize::MAX } else { self.cap.0 }
+     }
+ 
+     /// Returns a shared reference to the allocator backing this `RawVec`.
+@@ -270,7 +286,7 @@ pub fn allocator(&self) -> &A {
+     }
+ 
+     fn current_memory(&self) -> Option<(NonNull<u8>, Layout)> {
+-        if T::IS_ZST || self.cap == 0 {
++        if T::IS_ZST || self.cap.0 == 0 {
+             None
+         } else {
+             // We could use Layout::array here which ensures the absence of isize and usize overflows
+@@ -280,7 +296,7 @@ fn current_memory(&self) -> Option<(NonNull<u8>, Layout)> {
+             let _: () = const { assert!(mem::size_of::<T>() % mem::align_of::<T>() == 0) };
+             unsafe {
+                 let align = mem::align_of::<T>();
+-                let size = mem::size_of::<T>().unchecked_mul(self.cap);
++                let size = mem::size_of::<T>().unchecked_mul(self.cap.0);
+                 let layout = Layout::from_size_align_unchecked(size, align);
+                 Some((self.ptr.cast().into(), layout))
+             }
+@@ -404,12 +420,15 @@ fn needs_to_grow(&self, len: usize, additional: usize) -> bool {
+         additional > self.capacity().wrapping_sub(len)
+     }
+ 
+-    fn set_ptr_and_cap(&mut self, ptr: NonNull<[u8]>, cap: usize) {
++    /// # Safety:
++    ///
++    /// `cap` must not exceed `isize::MAX`.
++    unsafe fn set_ptr_and_cap(&mut self, ptr: NonNull<[u8]>, cap: usize) {
+         // Allocators currently return a `NonNull<[u8]>` whose length matches
+         // the size requested. If that ever changes, the capacity here should
+         // change to `ptr.len() / mem::size_of::<T>()`.
+         self.ptr = unsafe { Unique::new_unchecked(ptr.cast().as_ptr()) };
+-        self.cap = cap;
++        self.cap = unsafe { Cap(cap) };
+     }
+ 
+     // This method is usually instantiated many times. So we want it to be as
+@@ -434,14 +453,15 @@ fn grow_amortized(&mut self, len: usize, additional: usize) -> Result<(), TryRes
+ 
+         // This guarantees exponential growth. The doubling cannot overflow
+         // because `cap <= isize::MAX` and the type of `cap` is `usize`.
+-        let cap = cmp::max(self.cap * 2, required_cap);
++        let cap = cmp::max(self.cap.0 * 2, required_cap);
+         let cap = cmp::max(Self::MIN_NON_ZERO_CAP, cap);
+ 
+         let new_layout = Layout::array::<T>(cap);
+ 
+         // `finish_grow` is non-generic over `T`.
+         let ptr = finish_grow(new_layout, self.current_memory(), &mut self.alloc)?;
+-        self.set_ptr_and_cap(ptr, cap);
++        // SAFETY: finish_grow would have resulted in a capacity overflow if we tried to allocate more than isize::MAX items
++        unsafe { self.set_ptr_and_cap(ptr, cap) };
+         Ok(())
+     }
+ 
+@@ -460,7 +480,10 @@ fn grow_exact(&mut self, len: usize, additional: usize) -> Result<(), TryReserve
+ 
+         // `finish_grow` is non-generic over `T`.
+         let ptr = finish_grow(new_layout, self.current_memory(), &mut self.alloc)?;
+-        self.set_ptr_and_cap(ptr, cap);
++        // SAFETY: finish_grow would have resulted in a capacity overflow if we tried to allocate more than isize::MAX items
++        unsafe {
++            self.set_ptr_and_cap(ptr, cap);
++        }
+         Ok(())
+     }
+ 
+diff --git a/rust/alloc/vec/into_iter.rs b/rust/alloc/vec/into_iter.rs
+index aac0ec16aef1..136bfe94af6c 100644
+--- a/rust/alloc/vec/into_iter.rs
++++ b/rust/alloc/vec/into_iter.rs
+@@ -9,7 +9,8 @@
+ use core::array;
+ use core::fmt;
+ use core::iter::{
+-    FusedIterator, InPlaceIterable, SourceIter, TrustedLen, TrustedRandomAccessNoCoerce,
++    FusedIterator, InPlaceIterable, SourceIter, TrustedFused, TrustedLen,
++    TrustedRandomAccessNoCoerce,
+ };
+ use core::marker::PhantomData;
+ use core::mem::{self, ManuallyDrop, MaybeUninit, SizedTypeProperties};
+@@ -287,9 +288,7 @@ unsafe fn __iterator_get_unchecked(&mut self, i: usize) -> Self::Item
+         // Also note the implementation of `Self: TrustedRandomAccess` requires
+         // that `T: Copy` so reading elements from the buffer doesn't invalidate
+         // them for `Drop`.
+-        unsafe {
+-            if T::IS_ZST { mem::zeroed() } else { ptr::read(self.ptr.add(i)) }
+-        }
++        unsafe { if T::IS_ZST { mem::zeroed() } else { ptr::read(self.ptr.add(i)) } }
+     }
+ }
+ 
+@@ -341,6 +340,10 @@ fn is_empty(&self) -> bool {
+ #[stable(feature = "fused", since = "1.26.0")]
+ impl<T, A: Allocator> FusedIterator for IntoIter<T, A> {}
+ 
++#[doc(hidden)]
++#[unstable(issue = "none", feature = "trusted_fused")]
++unsafe impl<T, A: Allocator> TrustedFused for IntoIter<T, A> {}
++
+ #[unstable(feature = "trusted_len", issue = "37572")]
+ unsafe impl<T, A: Allocator> TrustedLen for IntoIter<T, A> {}
+ 
+@@ -425,7 +428,10 @@ fn drop(&mut self) {
+ // also refer to the vec::in_place_collect module documentation to get an overview
+ #[unstable(issue = "none", feature = "inplace_iteration")]
+ #[doc(hidden)]
+-unsafe impl<T, A: Allocator> InPlaceIterable for IntoIter<T, A> {}
++unsafe impl<T, A: Allocator> InPlaceIterable for IntoIter<T, A> {
++    const EXPAND_BY: Option<NonZeroUsize> = NonZeroUsize::new(1);
++    const MERGE_BY: Option<NonZeroUsize> = NonZeroUsize::new(1);
++}
+ 
+ #[unstable(issue = "none", feature = "inplace_iteration")]
+ #[doc(hidden)]
+diff --git a/rust/alloc/vec/mod.rs b/rust/alloc/vec/mod.rs
+index 05c70de0227e..2534ec65500e 100644
+--- a/rust/alloc/vec/mod.rs
++++ b/rust/alloc/vec/mod.rs
+@@ -105,6 +105,7 @@
+ #[cfg(not(no_global_oom_handling))]
+ use self::is_zero::IsZero;
+ 
++#[cfg(not(no_global_oom_handling))]
+ mod is_zero;
+ 
+ #[cfg(not(no_global_oom_handling))]
+@@ -123,7 +124,7 @@
+ mod set_len_on_drop;
+ 
+ #[cfg(not(no_global_oom_handling))]
+-use self::in_place_drop::{InPlaceDrop, InPlaceDstBufDrop};
++use self::in_place_drop::{InPlaceDrop, InPlaceDstDataSrcBufDrop};
+ 
+ #[cfg(not(no_global_oom_handling))]
+ mod in_place_drop;
+@@ -1837,7 +1838,32 @@ pub fn dedup_by<F>(&mut self, mut same_bucket: F)
+             return;
+         }
+ 
+-        /* INVARIANT: vec.len() > read >= write > write-1 >= 0 */
++        // Check if we ever want to remove anything.
++        // This allows to use copy_non_overlapping in next cycle.
++        // And avoids any memory writes if we don't need to remove anything.
++        let mut first_duplicate_idx: usize = 1;
++        let start = self.as_mut_ptr();
++        while first_duplicate_idx != len {
++            let found_duplicate = unsafe {
++                // SAFETY: first_duplicate always in range [1..len)
++                // Note that we start iteration from 1 so we never overflow.
++                let prev = start.add(first_duplicate_idx.wrapping_sub(1));
++                let current = start.add(first_duplicate_idx);
++                // We explicitly say in docs that references are reversed.
++                same_bucket(&mut *current, &mut *prev)
++            };
++            if found_duplicate {
++                break;
++            }
++            first_duplicate_idx += 1;
++        }
++        // Don't need to remove anything.
++        // We cannot get bigger than len.
++        if first_duplicate_idx == len {
++            return;
++        }
++
++        /* INVARIANT: vec.len() > read > write > write-1 >= 0 */
+         struct FillGapOnDrop<'a, T, A: core::alloc::Allocator> {
+             /* Offset of the element we want to check if it is duplicate */
+             read: usize,
+@@ -1883,31 +1909,39 @@ fn drop(&mut self) {
+             }
+         }
+ 
+-        let mut gap = FillGapOnDrop { read: 1, write: 1, vec: self };
+-        let ptr = gap.vec.as_mut_ptr();
+-
+         /* Drop items while going through Vec, it should be more efficient than
+          * doing slice partition_dedup + truncate */
+ 
++        // Construct gap first and then drop item to avoid memory corruption if `T::drop` panics.
++        let mut gap =
++            FillGapOnDrop { read: first_duplicate_idx + 1, write: first_duplicate_idx, vec: self };
++        unsafe {
++            // SAFETY: we checked that first_duplicate_idx in bounds before.
++            // If drop panics, `gap` would remove this item without drop.
++            ptr::drop_in_place(start.add(first_duplicate_idx));
++        }
++
+         /* SAFETY: Because of the invariant, read_ptr, prev_ptr and write_ptr
+          * are always in-bounds and read_ptr never aliases prev_ptr */
+         unsafe {
+             while gap.read < len {
+-                let read_ptr = ptr.add(gap.read);
+-                let prev_ptr = ptr.add(gap.write.wrapping_sub(1));
++                let read_ptr = start.add(gap.read);
++                let prev_ptr = start.add(gap.write.wrapping_sub(1));
+ 
+-                if same_bucket(&mut *read_ptr, &mut *prev_ptr) {
++                // We explicitly say in docs that references are reversed.
++                let found_duplicate = same_bucket(&mut *read_ptr, &mut *prev_ptr);
++                if found_duplicate {
+                     // Increase `gap.read` now since the drop may panic.
+                     gap.read += 1;
+                     /* We have found duplicate, drop it in-place */
+                     ptr::drop_in_place(read_ptr);
+                 } else {
+-                    let write_ptr = ptr.add(gap.write);
++                    let write_ptr = start.add(gap.write);
+ 
+-                    /* Because `read_ptr` can be equal to `write_ptr`, we either
+-                     * have to use `copy` or conditional `copy_nonoverlapping`.
+-                     * Looks like the first option is faster. */
+-                    ptr::copy(read_ptr, write_ptr, 1);
++                    /* read_ptr cannot be equal to write_ptr because at this point
++                     * we guaranteed to skip at least one element (before loop starts).
++                     */
++                    ptr::copy_nonoverlapping(read_ptr, write_ptr, 1);
+ 
+                     /* We have filled that place, so go further */
+                     gap.write += 1;
+@@ -2802,6 +2836,7 @@ pub fn from_elem_in<T: Clone, A: Allocator>(elem: T, n: usize, alloc: A) -> Vec<
+     <T as SpecFromElem>::from_elem(elem, n, alloc)
+ }
+ 
++#[cfg(not(no_global_oom_handling))]
+ trait ExtendFromWithinSpec {
+     /// # Safety
+     ///
+@@ -2810,6 +2845,7 @@ trait ExtendFromWithinSpec {
+     unsafe fn spec_extend_from_within(&mut self, src: Range<usize>);
+ }
+ 
++#[cfg(not(no_global_oom_handling))]
+ impl<T: Clone, A: Allocator> ExtendFromWithinSpec for Vec<T, A> {
+     default unsafe fn spec_extend_from_within(&mut self, src: Range<usize>) {
+         // SAFETY:
+@@ -2829,6 +2865,7 @@ impl<T: Clone, A: Allocator> ExtendFromWithinSpec for Vec<T, A> {
+     }
+ }
+ 
++#[cfg(not(no_global_oom_handling))]
+ impl<T: Copy, A: Allocator> ExtendFromWithinSpec for Vec<T, A> {
+     unsafe fn spec_extend_from_within(&mut self, src: Range<usize>) {
+         let count = src.len();
+@@ -2909,7 +2946,7 @@ fn clone_from(&mut self, other: &Self) {
+ /// ```
+ /// use std::hash::BuildHasher;
+ ///
+-/// let b = std::collections::hash_map::RandomState::new();
++/// let b = std::hash::RandomState::new();
+ /// let v: Vec<u8> = vec![0xa8, 0x3c, 0x09];
+ /// let s: &[u8] = &[0xa8, 0x3c, 0x09];
+ /// assert_eq!(b.hash_one(v), b.hash_one(s));
