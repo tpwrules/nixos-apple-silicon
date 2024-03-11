@@ -5,7 +5,7 @@
     nixpkgs = {
       # https://hydra.nixos.org/jobset/mobile-nixos/unstable/evals
       # these evals have a cross-compiled stdenv available
-      url = "github:nixos/nixpkgs/b8697e57f10292a6165a20f03d2f42920dfaf973";
+      url = "github:nixos/nixpkgs/3030f185ba6a4bf4f18b87f345f104e6a6961f34";
     };
 
     rust-overlay = {
