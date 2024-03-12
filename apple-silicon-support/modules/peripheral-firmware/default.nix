@@ -1,6 +1,6 @@
 { config, pkgs, lib, ... }:
 {
-  config = {
+  config = lib.mkIf config.hardware.asahi.enable {
     assertions = lib.mkIf config.hardware.asahi.extractPeripheralFirmware [
       { assertion = config.hardware.asahi.peripheralFirmwareDirectory != null;
         message = ''

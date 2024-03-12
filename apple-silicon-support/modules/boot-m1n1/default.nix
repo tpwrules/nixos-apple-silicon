@@ -23,7 +23,7 @@ let
     '';
   };
 in {
-  config = {
+  config = lib.mkIf config.hardware.asahi.enable {
     # install m1n1 with the boot loader
     boot.loader.grub.extraFiles = bootFiles;
     boot.loader.systemd-boot.extraFiles = bootFiles;

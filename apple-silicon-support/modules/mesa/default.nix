@@ -3,7 +3,7 @@
   config = let
     isMode = mode: (config.hardware.asahi.useExperimentalGPUDriver
         && config.hardware.asahi.experimentalGPUInstallMode == mode);
-  in lib.mkMerge [
+  in lib.mkIf config.hardware.asahi.enable (lib.mkMerge [
     {
       # required for proper DRM setup even without GPU driver
       services.xserver.config = ''
@@ -41,7 +41,7 @@
         })
       ];
     })
-  ];
+  ]);
 
   options.hardware.asahi.useExperimentalGPUDriver = lib.mkOption {
     type = lib.types.bool;

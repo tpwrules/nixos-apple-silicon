@@ -2,7 +2,7 @@
 
 { config, pkgs, lib, ... }:
 {
-  config = {
+  config = lib.mkIf config.hardware.asahi.enable {
     boot.kernelPackages = let
       pkgs' = config.hardware.asahi.pkgs;
     in
