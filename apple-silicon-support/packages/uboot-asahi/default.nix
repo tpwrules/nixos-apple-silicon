@@ -32,8 +32,8 @@
   patches = [ 
   ];
 
-  # flag somehow breaks DTC compilation so we remove it
-  makeFlags = builtins.filter (s: (lib.strings.hasPrefix s "DTC")) o.makeFlags;
+  # DTC= flag somehow breaks DTC compilation so we remove it
+  makeFlags = builtins.filter (s: (!(lib.strings.hasPrefix "DTC=" s))) o.makeFlags;
 
   preInstall = ''
     # compress so that m1n1 knows U-Boot's size and can find things after it
