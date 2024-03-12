@@ -2,6 +2,19 @@
 
 This file contains important information for each release.
 
+## 2024-03-11
+
+This release updates nixpkgs.
+
+This release includes patches to correct building of the kernel with Rust 1.76.0
+and fixes for building U-Boot with the latest nixpkgs. Thanks to bkchr for
+these patches.
+
+This release also introduces a `hardware.asahi.enable` configuration option,
+which defaults to true. Setting this option to false disables all effects of
+the Apple Silicon support module (including ignoring all other options), which
+may be useful for multi-system configurations.
+
 ## 2024-03-05
 
 This release updates nixpkgs and Mesa.
