@@ -8,4 +8,5 @@ final: prev: {
   speakersafetyd = final.callPackage ./speakersafetyd { };
   bankstown-lv2 = final.callPackage ./bankstown-lv2 { };
   asahi-audio = final.callPackage ./asahi-audio { };
+  asahi-nvram = final.callPackage ./asahi-nvram { };
 }
