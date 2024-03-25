@@ -2,6 +2,20 @@
 
 This file contains important information for each release.
 
+## 2024-03-24
+
+This release updates nixpkgs and the kernel.
+
+The kernel update is understood to include a potential fix for some HDMI issues.
+
+The sound module now forces WirePlumber 0.5 and above (included in recent
+nixpkgs releases) to be downgraded to 0.4.17 as these newer versions are not
+compatible with the Asahi sound configs. This downgrade corrects the
+unexpectedly poor sound experience.
+
+A fix is also included for cross-compiling the installer with recent nixpkgs
+versions.
+
 ## 2024-03-11
 
 This release updates nixpkgs.
