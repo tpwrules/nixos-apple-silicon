@@ -60,6 +60,9 @@
       systemd.user.services.pipewire.environment.ALSA_CONFIG_UCM2 = config.environment.variables.ALSA_CONFIG_UCM2;
       systemd.user.services.wireplumber.environment.ALSA_CONFIG_UCM2 = config.environment.variables.ALSA_CONFIG_UCM2;
 
+      # wireplumber 0.5 looks for scripts in datadirs only
+      systemd.user.services.wireplumber.environment.XDG_DATA_DIRS = "${asahi-audio}/share";
+
       # enable speakersafetyd to protect speakers
       systemd.packages = lib.mkAssert lsp-plugins-is-safe
         "lsp-plugins is unpatched/outdated and speakers cannot be safely enabled"
