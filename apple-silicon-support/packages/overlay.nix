@@ -7,5 +7,4 @@ final: prev: {
   alsa-ucm-conf-asahi = final.callPackage ./alsa-ucm-conf-asahi { inherit (prev) alsa-ucm-conf; };
   speakersafetyd = final.callPackage ./speakersafetyd { };
   bankstown-lv2 = final.callPackage ./bankstown-lv2 { };
-  asahi-audio = final.callPackage ./asahi-audio { };
-}
+} // (import ./asahi-audio/packages.nix { inherit (final) lib callPackage fetchFromGitHub; })
