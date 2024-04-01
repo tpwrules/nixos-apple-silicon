@@ -66,19 +66,11 @@
         [ pkgs.speakersafetyd ];
       services.udev.packages = [ pkgs.speakersafetyd ];
 
-      # downgrade wireplumber to a version compatible with the asahi-audio configs
+      # select appropriate asahi-audio version using wireplumber
       nixpkgs.overlays = [(final: prev: {
-        wireplumber = prev.wireplumber.overrideAttrs (old:
-          lib.optionalAttrs (lib.versionAtLeast old.version "0.5.0") rec {
-            version = "0.4.17";
-            src = final.fetchFromGitLab {
-              domain = "gitlab.freedesktop.org";
-              owner = "pipewire";
-              repo = "wireplumber";
-              rev = version;
-              hash = "sha256-vhpQT67+849WV1SFthQdUeFnYe/okudTQJoL3y+wXwI=";
-            };
-          });
+        asahi-audio = if (lib.versionAtLeast prev.wireplumber.version "0.5.0")
+                      then prev.asahi-audio-2_x
+                      else prev.asahi-audio-1_x;
       })];
     }
     (lib.optionalAttrs newHotness {
