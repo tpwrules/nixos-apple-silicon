@@ -115,6 +115,10 @@
           "GPGRT_CONFIG=${final.lib.getDev final.libgpg-error}/bin/gpgrt-config"
         ];
       });
+
+      # fix for refind cross-compilation:
+      # https://github.com/NixOS/nixpkgs/pull/301598
+      refind = prev.refind.override { sbsigntool = null; };
     })
   ];
 
