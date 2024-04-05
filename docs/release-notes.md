@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2024-04-04
+
+This release updates nixpkgs.
+
+Another fix is also included for cross-compiling the installer with recent
+nixpkgs versions.
+
 ## 2024-03-24
 
 This release updates nixpkgs and the kernel.
