@@ -389,7 +389,7 @@ To make the Mac bootable again, you can use [idevicerestore](https://github.com/
 
 Please note that this procedure may require you to unrecoverably destroy all data on the Mac's internal drive. If erasing is necessary, you will be clearly warned and asked to confirm before it happens. The drive will end up zeroed and its encryption keys (probably) regenerated, so not even the NSA will be able to save you. If you haven't made backups, make peace with yourself now.
 
-You'll need to build `idevicerestore` from source to get a version capable of restoring Apple Silicon Macs. If Nix is already installed on your second computer, an appropriate version is already packaged in recent `nixpkgs-unstable`. Check out and build both `idevicerestore` and `usbmuxd` (if on Linux):
+You'll need to build `idevicerestore` from source to get a version capable of restoring Apple Silicon Macs. If Nix is already installed on your second computer, an appropriate version is already packaged. Check out and build both `idevicerestore` and `usbmuxd` (if on Linux):
 
 ```
 # git clone https://github.com/NixOS/nixpkgs/
