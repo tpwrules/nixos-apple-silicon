@@ -71,7 +71,7 @@
 
       # select appropriate asahi-audio version using wireplumber
       nixpkgs.overlays = [(final: prev: {
-        asahi-audio = if (lib.versionAtLeast prev.wireplumber.version "0.5.0")
+        asahi-audio = if (lib.versionAtLeast prev.wireplumber.version "0.5.2")
                       then prev.asahi-audio-2_x
                       else prev.asahi-audio-1_x;
       })];
