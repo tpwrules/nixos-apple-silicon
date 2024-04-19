@@ -31,9 +31,9 @@ in {
   };
 
   asahi-audio-2_x = callPackage' {
-    version = "2.0+git20240401";
-    rev = "6428f52c56c71a28cf3bf641cd559de17d610830";
-    hash = "sha256-OUDwdCcRrWRWOMhDCaEZ7Naw4m02O18MXgfDaRXU2sc=";
+    version = "2.0+git20240418";
+    rev = "29ec1056c18193ffa09a990b1b61ed273e97fee6";
+    hash = "sha256-OwzO1x3rUajB/XMUnBGhTKKD9D36izFmCRd7JALumHc=";
 
     providedConfigFiles = [
       "wireplumber/wireplumber.conf.d/99-asahi.conf"
