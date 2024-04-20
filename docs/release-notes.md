@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2024-04-20
+
+This release updates nixpkgs.
+
+This release includes patches to correct building of the kernel with Rust
+1.77.0.
+
 ## 2024-04-04
 
 This release updates nixpkgs.
