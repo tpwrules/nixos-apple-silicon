@@ -125,6 +125,10 @@ let
         { name = "rustc-1.76.0";
           patch = ./rust_1_76_0.patch;
         }
+      ] ++ lib.optionals (rustAtLeast "1.77.0") [
+        { name = "rustc-1.77.0";
+          patch = ./rust_1_77_0.patch;
+        }
       ] ++ _kernelPatches;
 
       inherit configfile;
