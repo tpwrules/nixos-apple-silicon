@@ -25,7 +25,7 @@
       "pinctrl-apple-gpio"
       "macsmc"
       "macsmc-rtkit"
-      "i2c-apple"
+      "i2c-pasemi-platform"
       "tps6598x"
       "apple-dart"
       "dwc3"

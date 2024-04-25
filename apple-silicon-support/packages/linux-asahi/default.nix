@@ -86,16 +86,16 @@ let
     (linuxKernel.manualConfig rec {
       inherit stdenv lib;
 
-      version = "6.6.0-asahi";
+      version = "6.8.6-asahi";
       modDirVersion = version;
-      extraMeta.branch = "6.6";
+      extraMeta.branch = "6.8";
 
       src = fetchFromGitHub {
         # tracking: https://github.com/AsahiLinux/linux/tree/asahi-wip (w/ fedora verification)
         owner = "AsahiLinux";
         repo = "linux";
-        rev = "asahi-6.6-16";
-        hash = "sha256-73ye5JE3YKRgrxGfdQN0+YMIVO1QAJeDuUjTcFhcwI0=";
+        rev = "asahi-6.8.6-3";
+        hash = "sha256-83AnK/th8nRokeRWen/dTcJdObbB3YwyTxFIH5KGD/A=";
       };
 
       kernelPatches = [
@@ -115,18 +115,6 @@ let
             url = "https://github.com/AsahiLinux/linux/commit/6a24102c06c95951ab992e2d41336cc6d4bfdf23.patch";
             hash = "sha256-wn5x2hN42/kCp/XHBvLWeNLfwlOBB+T6UeeMt2tSg3o=";
           };
-        }
-      ] ++ lib.optionals (rustAtLeast "1.75.0") [
-        { name = "rustc-1.75.0";
-          patch = ./0001-check-in-new-alloc-for-1.75.0.patch;
-        }
-      ] ++ lib.optionals (rustAtLeast "1.76.0") [
-        { name = "rustc-1.76.0";
-          patch = ./rust_1_76_0.patch;
-        }
-      ] ++ lib.optionals (rustAtLeast "1.77.0") [
-        { name = "rustc-1.77.0";
-          patch = ./rust_1_77_0.patch;
         }
       ] ++ _kernelPatches;
 
