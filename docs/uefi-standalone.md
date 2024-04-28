@@ -1,11 +1,11 @@
 # UEFI Boot Standalone NixOS (2024-04-20)
 
 This guide will build and was tested with the following software:
-* Asahi Linux kernel version 6.6.0-asahi16
+* Asahi Linux kernel version asahi-6.8.6-3
 * Asahi Linux's Mesa version 24.1.0_asahi-20240228-1
 * m1n1 version v1.4.11
-* Asahi Linux's U-Boot version 2023.07.02.asahi4-1
-* Nixpkgs, as of 2024-04-19
+* Asahi Linux's U-Boot version 2024.04-4-asahi
+* Nixpkgs, as of 2024-04-25
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-apple-silicon/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).
@@ -133,7 +133,7 @@ If everything went well, you will restart into U-Boot with the Asahi Linux and U
 
 Shut down the machine fully. Connect the flash drive with the installer ISO to a USB port. If not using Wi-Fi, connect the Ethernet cable to the network port or adapter as well.
 
-Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `env set boot_efi_bootmgr ; run bootcmd_usb0`. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
+Start the Mac, and U-Boot should start booting from the USB drive automatically. If you've already installed something to the internal NVMe drive, U-Boot will try to boot it first. To instead boot from USB, hit a key to stop autoboot when prompted, then run the command `bootmenu` and select the `usb 0` entry. If this command is not available, instead use `env set boot_efi_bootmgr ; run bootcmd_usb0`. GRUB will start, then the NixOS installer after a short delay (the default GRUB option is fine).
 
 <details>
   <summary>If "mounting `/dev/root` on `/mnt-root/iso` failed: No such file or directory" during boot…</summary>
@@ -332,7 +332,7 @@ Downloading the kernel over USB using m1n1 is not supported.
 
 If something goes wrong and NixOS doesn't boot or is otherwise unusable, you can first try rolling back to a previous generation. Instead of selecting the default bootloader option, choose another configuration that worked previously.
 
-If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `env set boot_efi_bootmgr ; run bootcmd_usb0`.
+If something is seriously wrong and the bootloader does not work (or you don't have any other generations), you will want to get back into the installer. To start the installer with a system installed on the internal disk, shut down the computer, re-insert the USB drive with the installer, start it up again, hit a key in U-Boot when prompted to stop autoboot, then run the command `bootmenu` and select the `usb 0` entry. If this command is not available, instead use `env set boot_efi_bootmgr ; run bootcmd_usb0`.
 
 Once in the installer, you can re-mount your root partition and EFI system partition without reformatting them. Depending on what exactly went wrong, you might need to edit your configuration, copy over the latest Apple Silicon support module, or update U-Boot using the latest installer.
 

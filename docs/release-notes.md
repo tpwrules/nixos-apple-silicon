@@ -2,6 +2,18 @@
 
 This file contains important information for each release.
 
+## 2024-04-27
+
+This release updates nixpkgs, the kernel, and U-Boot. Thanks to oliverbestmann
+for the kernel update.
+
+The new kernel is not compatible with nixpkgs stable's Rust compiler. Therefore,
+graphics support will be unavailable. Stable users are encouraged to remain on
+the previous release, or contribute patches.
+
+The new U-Boot uses a new command to boot from a USB drive. Run the `bootmenu`
+command then select the `usb 0` option.
+
 ## 2024-04-20
 
 This release updates nixpkgs.
