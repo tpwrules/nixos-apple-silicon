@@ -7,13 +7,13 @@ stdenv.mkDerivation rec {
   pname = "asahi-audio";
   # tracking: https://src.fedoraproject.org/rpms/asahi-audio
   # note: ensure that the providedConfigFiles list below is current!
-  version = "1.6";
+  version = "2.2";
 
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "asahi-audio";
     rev = "v${version}";
-    hash = "sha256-NxTQD742U2FUZNmw7RHuOruMuTRLtAh1HDlMV9EzQkg=";
+    hash = "sha256-5YBQibt/dfJb9/TzF6rczeQE3ySm0SeewhZrgublu2E=";
   };
 
   preBuild = ''
@@ -42,9 +42,7 @@ stdenv.mkDerivation rec {
   # are modified to point to them.
   passthru.providedConfigFiles = [
     "wireplumber/wireplumber.conf.d/99-asahi.conf"
-    "wireplumber/policy.lua.d/85-asahi-policy.lua"
-    "wireplumber/main.lua.d/85-asahi.lua"
-    "wireplumber/scripts/policy-asahi.lua"
+    "wireplumber/scripts/device/asahi-limit-volume.lua"
     "pipewire/pipewire.conf.d/99-asahi.conf"
     "pipewire/pipewire-pulse.conf.d/99-asahi.conf"
   ];
