@@ -2,6 +2,15 @@
 
 This file contains important information for each release.
 
+## 2024-05-14
+
+This release updates nixpkgs, the kernel, m1n1, and the Asahi sound packages.
+Thanks to LeSuisse for the kernel update and fx-chun for the sound update.
+
+The new sound packages are necessary for the latest nixpkgs, but are not
+compatible with nixpkgs stable's WirePlumber, nor older versions of nixpkgs
+unstable. Affected users are encouraged to remain on a previous release.
+
 ## 2024-04-27
 
 This release updates nixpkgs, the kernel, and U-Boot. Thanks to oliverbestmann
