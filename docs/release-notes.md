@@ -2,6 +2,29 @@
 
 This file contains important information for each release.
 
+## 2024-05-17
+
+This release updates nixpkgs and the kernel.
+
+**This release fixes a data corruption bug for dm-crypt users.**
+* The bug apparently only affects dm-crypt block devices and was introduced in
+  the 6.8 kernel update in release 2024-04-27. Users who don't use dm-crypt, or
+  who haven't upgraded to 2024-04-27 or 2024-05-14, are not at risk.
+* The Nix store can be checked for corruption using the command
+  `nix-store --verify --check-contents`; this will take a while and should
+  complete without any error messages.
+* If corruption is detected, whether in the store or elsewhere, a complete
+  backup, reformat, and reinstall of the affected filesystem is recommended.
+* Thanks to flokli for the initial report, mixi for identifying the issue, and
+  others for their help!
+* More info available [here](https://github.com/AsahiLinux/linux/commit/b58cc025c2014597fcb4649e3a9c77a31cf72591).
+
+**Users of M2 Mac Mini/Studio systems** are also recommended to upgrade m1n1
+using the instructions available
+[here](https://discussion.fedoraproject.org/t/important-psa-update-your-m1n1-before-updating-to-macos-sonoma-14-5/117192)
+to avoid loss of display after an update to macOS Sonoma 14.5. Other users
+should not upgrade at this time.
+
 ## 2024-05-14
 
 This release updates nixpkgs, the kernel, m1n1, and the Asahi sound packages.
