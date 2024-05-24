@@ -2,6 +2,19 @@
 
 This file contains important information for each release.
 
+## 2024-05-23
+
+This release updates nixpkgs, the kernel, and m1n1.
+
+**This release completely fixes a data corruption bug for dm-crypt users.** The
+fix in the previous release was incomplete. See the previous release notes
+for further info.
+
+**All users are recommended to upgrade m1n1 from macOS** using the instructions 
+available
+[here](https://discussion.fedoraproject.org/t/important-psa-update-your-m1n1-before-updating-to-macos-sonoma-14-5/117192).
+The referenced stage 2 work arounds are also included in this release.
+
 ## 2024-05-17
 
 This release updates nixpkgs and the kernel.
