@@ -389,24 +389,17 @@ To make the Mac bootable again, you can use [idevicerestore](https://github.com/
 
 Please note that this procedure may require you to unrecoverably destroy all data on the Mac's internal drive. If erasing is necessary, you will be clearly warned and asked to confirm before it happens. The drive will end up zeroed and its encryption keys (probably) regenerated, so not even the NSA will be able to save you. If you haven't made backups, make peace with yourself now.
 
-You'll need to build `idevicerestore` from source to get a version capable of restoring Apple Silicon Macs. If Nix is already installed on your second computer, an appropriate version is already packaged in recent `nixpkgs-unstable`. Check out and build both `idevicerestore` and `usbmuxd` (if on Linux):
-
-```
-# git clone https://github.com/NixOS/nixpkgs/
-# cd nixpkgs
-# nix-build -A pkgs.idevicerestore -o idevicerestore
-# nix-build -A pkgs.usbmuxd -o usbmuxd # if on Linux
-```
-
 To start the procedure, hook up the appropriate port on your unbootable Mac to the second computer and invoke DFU mode. This process is covered by Steps 1 and 2 of [Apple's documentation](https://support.apple.com/guide/apple-configurator-mac/revive-or-restore-a-mac-with-apple-silicon-apdd5f3c75ad/mac). We will first try what Apple calls a "revive" where the disk is not erased, although both we and `idevicerestore` still call it a "restore".
 
 If DFU mode was started correctly, the unbootable Mac will show up on your second computer as an `Apple, Inc. Mobile Device (DFU Mode)` in `lsusb` on Linux or System Information on macOS. If you see `Apple, Inc. Apple Mobile Device [Recovery Mode]` instead (or nothing), the procedure was not followed correctly and you need to try again.
 
-Open a terminal on your second computer and, if you are on Linux and didn't install the udev rules (which Nix did not), start `usbmuxd` in the background by running it without any arguments. Then, ask `idevicerestore` to restore the firmware by using the `--latest` flag. If you wish to erase the disk either because the revive didn't work or because you want to start with a clean slate, use the `--erase` flag also.
+
+Open a terminal on your second computer. You need `usbmuxd` (only if on Linux) and `idevicerestore`. nixpkgs (both unstable and stable) provide sufficiently updated package versions. If you're on NixOS, set `services.usbmuxd.enable = true;` to get udev rules, system services etc. configured. If you're on another Linux, you need to run `usbmuxd` as root in the background, without any arguments (or manually set up udev rules and system services).
+
+Then, ask `idevicerestore` to restore the firmware by using the `--latest` flag. If you wish to erase the disk either because the revive didn't work or because you want to start with a clean slate, use the `--erase` flag also.
 
 ```
-# sudo usbmuxd/bin/usbmuxd # Linux only
-# sudo idevicerestore/bin/idevicerestore --latest
+# sudo idevicerestore --latest
 idevicerestore 1.0.0-unstable-2022-05-22
 Found device in DFU mode
 Identified device as j274ap, Macmini9,1
