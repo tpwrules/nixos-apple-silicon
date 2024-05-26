@@ -37,7 +37,8 @@
       # (and in a way compatible with pure evaluation)
       nixpkgs.overlays = [
         (final: prev: {
-          mesa = final.mesa-asahi-edge;
+          # prevent cross-built Mesas that might be evaluated using this config (e.g. Steam emulation via box64) from using the special Asahi Mesa
+          mesa = if prev.targetPlatform.isAarch64 then final.mesa-asahi-edge else prev.mesa;
         })
       ];
     })
