@@ -20,8 +20,8 @@
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20240228";
-    hash = "sha256-wOFJyYfoN6yxE9HaHXLP/0MhjyRvmlb+jPPUke0sbbE=";
+    rev = "asahi-20240527";
+    hash = "sha256-urq1GQ6fad1NG3Y+7biiHZy3NnnGWOlQWLpEh8uKYqY=";
   };
 
   mesonFlags =
@@ -34,6 +34,7 @@
       "-Dgallium-xa=disabled"
       # does not make any sense
       "-Dandroid-libbacktrace=disabled"
+      "-Dintel-rt=disabled"
       # do not want to add the dependencies
       "-Dlibunwind=disabled"
       "-Dlmsensors=disabled"
