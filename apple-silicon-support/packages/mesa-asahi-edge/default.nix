@@ -14,14 +14,14 @@
 }).overrideAttrs (oldAttrs: {
   # version must be the same length (i.e. no unstable or date)
   # so that system.replaceRuntimeDependencies can work
-  version = "24.1.0";
+  version = "24.2.0";
   src = fetchFromGitLab {
     # tracking: https://pagure.io/fedora-asahi/mesa/commits/asahi
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20240228";
-    hash = "sha256-wOFJyYfoN6yxE9HaHXLP/0MhjyRvmlb+jPPUke0sbbE=";
+    rev = "asahi-20240527";
+    hash = "sha256-urq1GQ6fad1NG3Y+7biiHZy3NnnGWOlQWLpEh8uKYqY=";
   };
 
   mesonFlags =
@@ -34,12 +34,11 @@
       "-Dgallium-xa=disabled"
       # does not make any sense
       "-Dandroid-libbacktrace=disabled"
+      "-Dintel-rt=disabled"
       # do not want to add the dependencies
       "-Dlibunwind=disabled"
       "-Dlmsensors=disabled"
-    ] ++ ( # does not compile on nixpkgs stable, doesn't seem mandatory
-      lib.optional (lib.versionOlder meson.version "1.3.1")
-        "-Dgallium-rusticl=false");
+    ];
 
   # replace patches with ones tweaked slightly to apply to this version
   patches = [
