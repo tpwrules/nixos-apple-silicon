@@ -2,6 +2,20 @@
 
 This file contains important information for each release.
 
+## 2024-06-16
+
+This release updates nixpkgs, the kernel, and Mesa.
+
+Updating nixpkgs brings us past the 24.05 release and on the path to 24.11. The
+update also fixes some issues with cross-compilation, and corrects a problem
+which would randomly cause the Mesa build to produce corrupt binaries.
+
+Additionally, `speakersafetyd` and `bankstown-lv2` are now used from nixpkgs
+instead of being overlayed.
+
+Support for the current stable 24.05 release is functional, but as always this
+is on a best effort basis.
+
 ## 2024-05-23
 
 This release updates nixpkgs, the kernel, and m1n1.
