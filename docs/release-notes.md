@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2024-07-14
+
+This release updates nixpkgs and the kernel.
+
+Additionally, Mesa is restructured to fix build issues with the latest nixpkgs
+and hopefully reduce the likelihood of issues occurring in the future.
+
 ## 2024-06-16
 
 This release updates nixpkgs, the kernel, and Mesa.
