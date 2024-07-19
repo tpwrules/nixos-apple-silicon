@@ -1,17 +1,10 @@
 { config, options, pkgs, lib, ... }:
 
 {
-  imports = [
-    # disable pulseaudio as the Asahi sound infrastructure can't use it.
-    # if we disable it only if setupAsahiSound is enabled, then infinite
-    # recursion results as pulseaudio enables config.sound by default.
-    { config.hardware.pulseaudio.enable = (!config.hardware.asahi.enable); }
-  ];
-
   options.hardware.asahi = {
     setupAsahiSound = lib.mkOption {
       type = lib.types.bool;
-      default = config.sound.enable && config.hardware.asahi.enable;
+      default = config.hardware.asahi.enable;
       description = ''
         Set up the Asahi DSP components so that the speakers and headphone jack
         work properly and safely.
@@ -31,6 +24,8 @@
     lv2Path = lib.makeSearchPath "lib/lv2" [ lsp-plugins pkgs.bankstown-lv2 ];
   in lib.mkIf (cfg.setupAsahiSound && cfg.enable) (lib.mkMerge [
     {
+      # can't be used by Asahi sound infrastructure
+      hardware.pulseaudio.enable = false;
       # enable pipewire to run real-time and avoid audible glitches
       security.rtkit.enable = true;
       # set up pipewire with the supported capabilities (instead of pulseaudio)
