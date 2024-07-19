@@ -2,6 +2,17 @@
 
 This file contains important information for each release.
 
+## 2024-07-18
+
+This release updates nixpkgs.
+
+The kernel has been temporarily downgraded to 6.9.5 to resolve crashes reported
+by several users using 6.9.9 relating to the graphics driver.
+
+Additionally, the sound module has been adjusted to resolve evaluation failures
+caused by the removal of the NixOS `sound.enable` option in recent nixpkgs
+versions.
+
 ## 2024-07-14
 
 This release updates nixpkgs and the kernel.
