@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2024-07-19
+
+This release updates nixpkgs and the kernel.
+
+The kernel is updated back to a 6.9.9 series kernel with workarounds for the
+graphics driver crashes. It should now be stable and ready for use.
+
 ## 2024-07-18
 
 This release updates nixpkgs.

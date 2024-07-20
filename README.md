@@ -9,7 +9,7 @@ Please see the documentation and guide below to get started.
 ## Documentation
 
 * [Release Notes](docs/release-notes.md)
-* [Setup, Installation, and Maintenance Guide (2024-07-18)](docs/uefi-standalone.md)
+* [Setup, Installation, and Maintenance Guide (2024-07-19)](docs/uefi-standalone.md)
 
 ## Credits
 
