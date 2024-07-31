@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2024-07-31
+
+This release updates nixpkgs, the kernel, and Mesa.
+
+The kernel contains a graphics UAPI update, so you must reboot after updating
+to restore graphics acceleration.
+
 ## 2024-07-19
 
 This release updates nixpkgs and the kernel.
