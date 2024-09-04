@@ -8,14 +8,14 @@
 
 python3.pkgs.buildPythonApplication rec {
   pname = "asahi-fwextract";
-  version = "0.7.5";
+  version = "0.7.8";
 
   # tracking version: https://packages.fedoraproject.org/pkgs/asahi-installer/python3-asahi_firmware/
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = "asahi-installer";
     rev = "v${version}";
-    hash = "sha256-lGZFvB1zK+5MYhy2DgAHNUUG4EJPDGlIJ8MfdnDm4Ak=";
+    hash = "sha256-UmgHWKIRbcg9PK44YPPM4tyuEDC0+ANKO3Mzc4N9RHo=";
   };
 
   postPatch = ''
