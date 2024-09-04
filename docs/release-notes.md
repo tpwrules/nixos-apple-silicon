@@ -2,6 +2,15 @@
 
 This file contains important information for each release.
 
+## 2024-09-03
+
+This release updates nixpkgs, the kernel, the Asahi audio configs, and
+asahi-fwextract.
+
+This release fixes an issue evaluating Mesa builds using the latest versions of
+nixpkgs. Thanks to rowanG077 for the fix! The kernel and nixpkgs updates also
+fix issues connecting to WiFi in certain situations.
+
 ## 2024-07-31
 
 This release updates nixpkgs, the kernel, and Mesa.
