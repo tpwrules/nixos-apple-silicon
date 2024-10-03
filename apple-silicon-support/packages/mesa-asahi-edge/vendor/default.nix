@@ -369,6 +369,7 @@ self = stdenv.mkDerivation {
     python3Packages.pycparser
     python3Packages.mako
     python3Packages.ply
+    python3Packages.pyyaml
     jdupes
     glslang
     rustc

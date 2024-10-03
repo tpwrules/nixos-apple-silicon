@@ -1,34 +1,37 @@
 { lib
 , fetchFromGitLab
 , pkgs
-, meson
-, llvmPackages
 }:
 
 # don't bother to provide Darwin deps
 ((pkgs.callPackage ./vendor { OpenGL = null; Xplugin = null; }).override {
   galliumDrivers = [ "swrast" "asahi" ];
-  vulkanDrivers = [ "swrast" ];
+  vulkanDrivers = [ "swrast" "asahi" ];
   enableGalliumNine = false;
   # libclc and other OpenCL components are needed for geometry shader support on Apple Silicon
   enableOpenCL = true;
 }).overrideAttrs (oldAttrs: {
   # version must be the same length (i.e. no unstable or date)
   # so that system.replaceRuntimeDependencies can work
-  version = "24.2.0";
+  version = "24.3.0";
+
   src = fetchFromGitLab {
     # tracking: https://pagure.io/fedora-asahi/mesa/commits/asahi
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20240727";
-    hash = "sha256-XXhmiedwJwjKTZeApDE/GdAzIteteoi78J4LJ3WBJsY=";
+    rev = "asahi-20241109";
+    hash = "sha256-RHcQVjSnA6DoZjuCzi8tPgCyHPbY8gwu/oGxWVmQsFw=";
   };
 
   mesonFlags =
     # remove flag to configure xvmc functionality as having it
     # breaks the build because that no longer exists in Mesa 23
-    (lib.filter (x: !(lib.hasPrefix "-Dxvmc-libs-path=" x)) oldAttrs.mesonFlags) ++ [
+    (lib.filter (x: !(
+    (lib.hasPrefix "-Dxvmc-libs-path=" x)
+    || (lib.hasPrefix "-Ddri-search-path=" x)
+    || (lib.hasPrefix "-Domx-libs-path=" x)
+    )) oldAttrs.mesonFlags) ++ [
       # we do not build any graphics drivers these features can be enabled for
       "-Dgallium-va=disabled"
       "-Dgallium-vdpau=disabled"
