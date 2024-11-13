@@ -102,6 +102,10 @@ let
         { name = "coreutils-fix";
           patch = ./0001-fs-fcntl-accept-more-values-as-F_DUPFD_CLOEXEC-args.patch;
         }
+      ] ++ lib.optionals (rustAtLeast "1.82.0") [
+        { name = "rustc_1.82.0";
+          patch = ./rustc_1.82.0.patch;
+        }
       ] ++ _kernelPatches;
 
       inherit configfile;
