@@ -1,11 +1,11 @@
-# UEFI Boot Standalone NixOS (2024-09-03)
+# UEFI Boot Standalone NixOS (2024-11-12)
 
 This guide will build and was tested with the following software:
 * Asahi Linux kernel version asahi-6.10.6-1
 * Asahi Linux's Mesa version 24.2.0_asahi-20240727-1
 * m1n1 version v1.4.14
 * Asahi Linux's U-Boot version 2024.04-4-asahi
-* Nixpkgs, as of 2024-08-31
+* Nixpkgs, as of 2024-11-09
 * macOS stub 12.3
 
 NOTE: The latest version of this guide will always be [at its home](https://github.com/tpwrules/nixos-apple-silicon/blob/main/docs/uefi-standalone.md). For more general information about Linux on Apple Silicon Macs, refer to the [Asahi Linux project](https://asahilinux.org/) and [alpha installer release](https://asahilinux.org/2022/03/asahi-linux-alpha-release/).

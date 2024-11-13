@@ -2,6 +2,22 @@
 
 This file contains important information for each release.
 
+## 2024-11-12
+
+This release updates nixpkgs.
+
+**This release fixes an issue that will cause NixOS to be unbootable after an
+  upgrade.** This was caused by a systemd update in recent nixpkgs revisions.
+If you are affected, please see the information
+[here](https://github.com/tpwrules/nixos-apple-silicon/issues/248)
+to recover.
+
+Thanks in particular to oliverbestmann and andre4ik3 for their work reporting
+and diagnosing this issue.
+
+This release also fixes build issues with Rust 1.82.0. Updates to other Asahi
+components will follow.
+
 ## 2024-09-03
 
 This release updates nixpkgs, the kernel, the Asahi audio configs, and
