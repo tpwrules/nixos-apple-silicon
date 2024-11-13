@@ -7782,6 +7782,9 @@ CONFIG_ACPI=y
 CONFIG_TCG_TPM=y
 CONFIG_TCG_TIS=m
 CONFIG_TCG_CRB=m
+# needed for mounting the installer squashfs
+# https://github.com/NixOS/nixpkgs/blob/6295433b2b0079b063d78761ae52c4f385180cae/nixos/modules/installer/cd-dvd/iso-image.nix#L725
+CONFIG_SQUASHFS_CHOICE_DECOMP_BY_MOUNT=y
 
 # for better efficiency with sound
 CONFIG_UCLAMP_TASK=y
