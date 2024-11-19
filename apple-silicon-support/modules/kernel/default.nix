@@ -54,6 +54,10 @@
       "hid_generic"
     ];
 
+    boot.extraModprobeConfig = lib.mkIf config.hardware.asahi.enableFanControl ''
+      options macsmc_hwmon melt_my_mac=1
+    '';
+
     boot.kernelParams = [
       "earlycon"
       "console=ttySAC0,115200n8"
@@ -102,6 +106,14 @@
     default = false;
     description = ''
       Build the Asahi Linux kernel with Rust support.
+    '';
+  };
+
+  options.hardware.asahi.enableFanControl = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = ''
+      Enable hwmon fan control on Apple hardware.
     '';
   };
 }
