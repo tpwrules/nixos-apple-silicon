@@ -25,14 +25,14 @@ let
   });
 in stdenv.mkDerivation rec {
   pname = "m1n1";
-  version = "1.4.14";
+  version = "1.4.17";
 
   src = fetchFromGitHub {
     # tracking: https://src.fedoraproject.org/rpms/m1n1
     owner = "AsahiLinux";
     repo = "m1n1";
     rev = "v${version}";
-    hash = "sha256-bhX6qtyiKgSpBic4q3jNu9Xi+SOw21JC4sBI44YHKK0=";
+    hash = "sha256-p79TshQ/C4Uwmxga3GdzJR9Ku62ObrXEv5uVVpWncdY=";
     fetchSubmodules = true;
   };
 
