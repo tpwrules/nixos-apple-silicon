@@ -13,12 +13,12 @@
     in lib.mkIf cfg.enable {
       nixpkgs.overlays = lib.mkBefore [ cfg.overlay ];
 
-      # patch systemd-boot to boot in Apple Silicon UEFI environment. not sure
-      # what the fixed version is yet so we patch all.
+      # patch systemd-boot to boot in Apple Silicon UEFI environment.
+      # This regression only appeared in systemd 256.7.
       # see https://github.com/NixOS/nixpkgs/pull/355290
       # and https://github.com/systemd/systemd/issues/35026
       systemd.package = let
-        systemdBroken = (lib.versionAtLeast pkgs.systemd.version "256.7");
+        systemdBroken = (pkgs.systemd.version == "256.7");
 
         systemdPatched = pkgs.systemd.overrideAttrs (old: {
           patches = let
