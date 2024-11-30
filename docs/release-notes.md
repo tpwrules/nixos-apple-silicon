@@ -2,6 +2,17 @@
 
 This file contains important information for each release.
 
+## 2024-11-30
+
+This release updates nixpkgs.
+
+Updating nixpkgs brings us past the 24.11 release and on the path to 25.05. This
+release also fixes builds with the version of systemd fixed to not cause
+bootability issues.
+
+Updates to other Asahi components are imminent.
+
+
 ## 2024-11-12
 
 This release updates nixpkgs.
