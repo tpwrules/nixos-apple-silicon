@@ -234,15 +234,12 @@ self = stdenv.mkDerivation {
     # https://gitlab.freedesktop.org/mesa/mesa/blob/master/docs/meson.html#L327
     (lib.mesonBool "b_ndebug" true)
 
-    (lib.mesonOption "dri-search-path" "${libglvnd.driverLink}/lib/dri")
-
     (lib.mesonOption "platforms" (lib.concatStringsSep "," eglPlatforms))
     (lib.mesonOption "gallium-drivers" (lib.concatStringsSep "," galliumDrivers))
     (lib.mesonOption "vulkan-drivers" (lib.concatStringsSep "," vulkanDrivers))
 
     (lib.mesonOption "dri-drivers-path" "${placeholder "drivers"}/lib/dri")
     (lib.mesonOption "vdpau-libs-path" "${placeholder "drivers"}/lib/vdpau")
-    (lib.mesonOption "omx-libs-path" "${placeholder "drivers"}/lib/bellagio")
     (lib.mesonOption "va-libs-path" "${placeholder "drivers"}/lib/dri")
     (lib.mesonOption "d3d-drivers-path" "${placeholder "drivers"}/lib/d3d")
 
@@ -276,11 +273,8 @@ self = stdenv.mkDerivation {
     # which makes no sense because Darwin has neither Intel nor RT, but OK
     (lib.mesonEnable "intel-rt" false)
   ] ++ lib.optionals enableOpenCL [
-    # Clover, old OpenCL frontend
-    (lib.mesonOption "gallium-opencl" "icd")
-    (lib.mesonBool "opencl-spirv" true)
-
     # Rusticl, new OpenCL frontend
+    (lib.mesonOption "gallium-opencl" "icd")
     (lib.mesonBool "gallium-rusticl" true)
   ] ++ lib.optionals (!withValgrind) [
     (lib.mesonEnable "valgrind" false)
@@ -369,6 +363,7 @@ self = stdenv.mkDerivation {
     python3Packages.pycparser
     python3Packages.mako
     python3Packages.ply
+    python3Packages.pyyaml
     jdupes
     glslang
     rustc
