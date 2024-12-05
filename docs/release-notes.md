@@ -2,6 +2,18 @@
 
 This file contains important information for each release.
 
+## 2024-12-04
+
+This release updates nixpkgs and all the Asahi components.
+
+The big new feature is Vulkan support thanks to Asahi's hard work on Mesa! The
+kernel contains a graphics UAPI update, so you must reboot after updating to
+restore graphics acceleration.
+
+There might be trouble with Wi-Fi in the installer failing to connect to certain
+networks, please report on GitHub and use an older version temporarily if you
+encounter this issue.
+
 ## 2024-11-30
 
 This release updates nixpkgs.
@@ -11,7 +23,6 @@ release also fixes builds with the version of systemd fixed to not cause
 bootability issues.
 
 Updates to other Asahi components are imminent.
-
 
 ## 2024-11-12
 
