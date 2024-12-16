@@ -6,4 +6,10 @@ final: prev: {
   mesa-asahi-edge = final.callPackage ./mesa-asahi-edge { };
   alsa-ucm-conf-asahi = final.callPackage ./alsa-ucm-conf-asahi { inherit (prev) alsa-ucm-conf; };
   asahi-audio = final.callPackage ./asahi-audio { };
+
+  # chromium/v8 enabled 'decommit-pooled-pages' in v131, breaking chromium on
+  # systems with 16k pages
+  chromium = prev.chromium.override {
+    commandLineArgs = "--js-flags=--no-decommit-pooled-pages";
+  };
 }
