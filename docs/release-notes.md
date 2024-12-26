@@ -2,6 +2,18 @@
 
 This file contains important information for each release.
 
+## 2024-12-25
+
+This release updates nixpkgs, the kernel, and Mesa.
+
+The kernel config is fixed to prevent an issue which, in combination with a bug
+in nixpkgs, caused boot failure when using systemd in initrd. Thanks to
+andre4ik3 and several others for helping diagnose and provide hints to find
+this issue.
+
+The Wi-Fi issue persists, but will likely be resolved by an imminent nixpkgs
+update.
+
 ## 2024-12-04
 
 This release updates nixpkgs and all the Asahi components.
