@@ -274,6 +274,7 @@ nixos# iwctl
 NetworkConfigurationEnabled: enabled
 StateDirectory: /var/lib/iwd
 Version: 2.4
+[iwd]# station wlan0 scan
 [iwd]# station wlan0 connect <SSID>
 Type the network passphrase for <SSID> psk.
 Passphrase: <your passphrase>
