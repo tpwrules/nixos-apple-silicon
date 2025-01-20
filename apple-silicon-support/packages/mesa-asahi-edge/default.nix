@@ -5,13 +5,9 @@
 , llvmPackages
 }:
 
-# don't bother to provide Darwin deps
-((pkgs.callPackage ./vendor { OpenGL = null; Xplugin = null; }).override {
+(pkgs.mesa.override {
   galliumDrivers = [ "swrast" "asahi" ];
   vulkanDrivers = [ "swrast" "asahi" ];
-  enableGalliumNine = false;
-  # libclc and other OpenCL components are needed for geometry shader support on Apple Silicon
-  enableOpenCL = true;
 }).overrideAttrs (oldAttrs: {
   # version must be the same length (i.e. no unstable or date)
   # so that system.replaceRuntimeDependencies can work
@@ -25,7 +21,15 @@
     hash = "sha256-Ny4M/tkraVLhUK5y6Wt7md1QBtqQqPDUv+aY4MpNA6Y=";
   };
 
-  mesonFlags = oldAttrs.mesonFlags ++ [
+  mesonFlags = let
+    badFlags = [
+      "-Dinstall-mesa-clc"
+      "-Dopencl-spirv"
+      "-Dgallium-nine"
+    ];
+    isBadFlagList = f: builtins.map (b: lib.hasPrefix b f) badFlags;
+    isGoodFlag = f: !(builtins.foldl' (x: y: x || y) false (isBadFlagList f));
+  in (builtins.filter isGoodFlag oldAttrs.mesonFlags) ++ [
       # we do not build any graphics drivers these features can be enabled for
       "-Dgallium-va=disabled"
       "-Dgallium-vdpau=disabled"
@@ -43,4 +47,9 @@
     ./disk_cache-include-dri-driver-path-in-cache-key.patch
     ./opencl.patch
   ];
+
+  postInstall = (oldAttrs.postInstall or "") + ''
+    # we don't build anything to go in this output but it needs to exist
+    touch $spirv2dxil
+  '';
 })
