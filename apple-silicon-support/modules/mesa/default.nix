@@ -15,37 +15,11 @@
         EndSection
       '';
     }
-    (lib.mkIf config.hardware.asahi.useExperimentalGPUDriver (
-      # install the drivers
-      if builtins.hasAttr "graphics" options.hardware then {
-        hardware.graphics.package = config.hardware.asahi.pkgs.mesa-asahi-edge.drivers;
-      } else { # for 24.05
-        hardware.opengl.package = config.hardware.asahi.pkgs.mesa-asahi-edge.drivers;
-      })
-    )
     (lib.mkIf config.hardware.asahi.useExperimentalGPUDriver {
+      # install the Asahi Mesa version
+      hardware.graphics.package = config.hardware.asahi.pkgs.mesa-asahi-edge.drivers;
       # required for in-kernel GPU driver
       hardware.asahi.withRust = true;
-    })
-    (lib.mkIf (isMode "replace") {
-      # replace the Mesa linked into system packages with the Asahi version
-      # without rebuilding them to avoid rebuilding the world.
-      system.replaceDependencies.replacements = [
-        { original = pkgs.mesa;
-          replacement = config.hardware.asahi.pkgs.mesa-asahi-edge;
-        }
-      ];
-    })
-    (lib.mkIf (isMode "overlay") {
-      # replace the Mesa used in Nixpkgs with the Asahi version using an overlay,
-      # which requires rebuilding the world but ensures it is done faithfully
-      # (and in a way compatible with pure evaluation)
-      nixpkgs.overlays = [
-        (final: prev: {
-          # prevent cross-built Mesas that might be evaluated using this config (e.g. Steam emulation via box64) from using the special Asahi Mesa
-          mesa = if prev.targetPlatform.isAarch64 then final.mesa-asahi-edge else prev.mesa;
-        })
-      ];
     })
   ]);
 
@@ -59,6 +33,7 @@
     '';
   };
 
+  # hopefully no longer used, should be deprecated eventually
   options.hardware.asahi.experimentalGPUInstallMode = lib.mkOption {
     type = lib.types.enum [ "driver" "replace" "overlay" ];
     default = "replace";
