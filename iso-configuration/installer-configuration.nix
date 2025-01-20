@@ -92,6 +92,12 @@
 
   nixpkgs.overlays = [
     (final: prev: {
+      # https://github.com/NixOS/nixpkgs/pull/364656
+      unbound = prev.unbound.overrideAttrs (old: {
+        nativeCheckInputs = [];
+        nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.bison ];
+      });
+
       # disabling pcsclite avoids the need to cross-compile gobject
       # introspection stuff which works now but is slow and unnecessary
       libfido2 = prev.libfido2.override {
