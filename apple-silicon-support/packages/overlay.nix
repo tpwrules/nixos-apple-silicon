@@ -4,6 +4,6 @@ final: prev: {
   uboot-asahi = final.callPackage ./uboot-asahi { };
   asahi-fwextract = final.callPackage ./asahi-fwextract { };
   mesa-asahi-edge = final.callPackage ./mesa-asahi-edge { };
-  alsa-ucm-conf-asahi = final.callPackage ./alsa-ucm-conf-asahi { inherit (prev) alsa-ucm-conf; };
+  alsa-ucm-conf-asahi = final.callPackage ./alsa-ucm-conf-asahi { };
   asahi-audio = final.callPackage ./asahi-audio { };
 }
