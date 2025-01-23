@@ -2,6 +2,13 @@
 
 This file contains important information for each release.
 
+## 2025-01-22
+
+This release updates nixpkgs.
+
+This release corrects a build failure with the latest nixpkgs due to a change in
+how the `alsa-ucm-conf` derivation works.
+
 ## 2025-01-20
 
 This release updates nixpkgs. **NixOS 24.11 users must stay on the previous
