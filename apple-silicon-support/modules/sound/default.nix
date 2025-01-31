@@ -17,8 +17,7 @@
 
     asahi-audio = pkgs.asahi-audio; # the asahi-audio we use
 
-    # php override works around build failure: https://github.com/NixOS/nixpkgs/pull/330895
-    lsp-plugins = pkgs.lsp-plugins.override { php = pkgs.php82; }; # the lsp-plugins we use
+    lsp-plugins = pkgs.lsp-plugins;
 
     lsp-plugins-is-safe = (pkgs.lib.versionAtLeast lsp-plugins.version "1.2.14");
 
