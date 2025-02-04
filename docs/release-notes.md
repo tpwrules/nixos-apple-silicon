@@ -2,6 +2,12 @@
 
 This file contains important information for each release.
 
+## p2-2024-12-25
+
+This is a special patch release to fix build issues related to lsp-plugins on
+recent NixOS 24.11 releases. It is available at Git tag
+`releasep2-2024-12-25`. NixOS 24.11 users must use this release.
+
 ## 2024-12-25
 
 This release updates nixpkgs, the kernel, and Mesa.
