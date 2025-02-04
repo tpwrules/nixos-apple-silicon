@@ -2,6 +2,20 @@
 
 This file contains important information for each release.
 
+## 2025-02-03
+
+This release updates nixpkgs, m1n1, and the kernel.
+
+This release fixes build issues related to lsp-plugins.
+
+**NixOS 24.11 users, please use tag `releasep2-2024-12-25`; see below.**
+
+## p2-2024-12-25
+
+This is a special patch release to fix build issues related to lsp-plugins on
+recent NixOS 24.11 releases. It is available at Git tag
+`releasep2-2024-12-25`. NixOS 24.11 users must use this release.
+
 ## 2025-01-22
 
 This release updates nixpkgs.
