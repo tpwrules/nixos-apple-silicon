@@ -7797,13 +7797,14 @@ CONFIG_RUST_OVERFLOW_CHECKS=y
 CONFIG_RUST_PHYLIB_ABSTRACTIONS=y
 CONFIG_RUST=y
 
+# "upstreamed" flags
+CONFIG_SPI_APPLE=m
+
 # Fedora Asahi Remix-specific options
 # generated with something like
 # git diff --name-only fedora-6.9 fedora-asahi-6.9 redhat/configs/ | grep -v x86 | grep -v s390x | xargs cat | sort >> config
 # in a checkout of https://gitlab.com/fedora-asahi/kernel-asahi/-/tree/fedora-asahi-6.9
 
-CONFIG_APPLE_MAILBOX=m
-CONFIG_APPLE_RTKIT=m
 CONFIG_APPLE_AOP=m
 CONFIG_APPLE_DOCKCHANNEL=m
 CONFIG_APPLE_MAILBOX=y
@@ -7842,9 +7843,7 @@ CONFIG_RTC_DRV_MACSMC=m
 CONFIG_SENSORS_MACSMC=m
 CONFIG_SND_SOC_APPLE_AOP_AUDIO=m
 CONFIG_SND_SOC_APPLE_MACAUDIO=m
-# CONFIG_SND_SOC_CS42L84 is not set
 CONFIG_SND_SOC_CS42L84=m
-CONFIG_SPI_APPLE=m
 # CONFIG_SPI_HID_APPLE_OF is not set
 CONFIG_SPI_HID_APPLE_OF=m
 CONFIG_SPMI_APPLE=m
