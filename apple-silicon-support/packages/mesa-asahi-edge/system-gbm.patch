@@ -1,0 +1,173 @@
+diff --git a/meson.build b/meson.build
+--- a/meson.build
++++ b/meson.build
+@@ -2392,7 +2392,7 @@ summary(egl_summary, section: 'EGL', bool_yn: true, list_sep: ' ')
+ 
+ gbm_summary = {'Enabled': with_gbm}
+ if with_gbm
+-  gbm_summary += {'Backends path': gbm_backends_path}
++  gbm_summary += {'External libgbm': get_option('libgbm-external'), 'Backends path': gbm_backends_path}
+ endif
+ summary(gbm_summary, section: 'GBM', bool_yn: true, list_sep: ' ')
+ 
+diff --git a/meson.options b/meson.options
+--- a/meson.options
++++ b/meson.options
+@@ -330,6 +330,13 @@ option(
+   description : 'Build support for gbm platform'
+ )
+ 
++option(
++  'libgbm-external',
++  type: 'boolean',
++  value: false,
++  description: 'Whether to use external libgbm (default: use in-tree copy)'
++)
++
+ option(
+   'gbm-backends-path',
+   type : 'string',
+diff --git a/src/egl/meson.build b/src/egl/meson.build
+--- a/src/egl/meson.build
++++ b/src/egl/meson.build
+@@ -107,9 +107,8 @@ if with_dri
+   endif
+   if with_gbm and not with_platform_android
+     files_egl += files('drivers/dri2/platform_drm.c')
+-    link_for_egl += libgbm
+-    incs_for_egl += [inc_gbm, include_directories('../gbm/main')]
+-    deps_for_egl += dep_libdrm
++    incs_for_egl += [include_directories('../gbm/backends/dri')]
++    deps_for_egl += [dep_libdrm, dep_gbm]
+   endif
+   if with_platform_wayland
+     deps_for_egl += [dep_wayland_client, dep_wayland_server, dep_wayland_egl_headers]
+diff --git a/src/gallium/targets/dril/dril_target.c b/src/gallium/targets/dril/dril_target.c
+--- a/src/gallium/targets/dril/dril_target.c
++++ b/src/gallium/targets/dril/dril_target.c
+@@ -25,7 +25,7 @@
+ #include <dlfcn.h>
+ #include <EGL/egl.h>
+ #include <EGL/eglext.h>
+-#include "gbm/main/gbm.h"
++#include <gbm.h>
+ #include "drm-uapi/drm_fourcc.h"
+ 
+ #define EGL_PLATFORM_GBM_MESA             0x31D7
+diff --git a/src/gallium/targets/dril/meson.build b/src/gallium/targets/dril/meson.build
+--- a/src/gallium/targets/dril/meson.build
++++ b/src/gallium/targets/dril/meson.build
+@@ -51,10 +51,10 @@ dril_dri = shared_library(
+   link_depends : dril_link_depends,
+   link_with : [
+     libgallium,
+-    libgbm,
+   ],
+   dependencies : [
+     idep_mesautil,
++    dep_gbm,
+   ],
+   # Will be deleted during installation, see install_megadrivers.py
+   install : true,
+diff --git a/src/gbm/backends/dri/gbm_dri.c b/src/gbm/backends/dri/gbm_dri.c
+--- a/src/gbm/backends/dri/gbm_dri.c
++++ b/src/gbm/backends/dri/gbm_dri.c
+@@ -43,7 +43,7 @@
+ 
+ #include "mesa_interface.h"
+ #include "gbm_driint.h"
+-#include "gbmint.h"
++#include <gbm_backend_abi.h>
+ #include "loader_dri_helper.h"
+ #include "kopper_interface.h"
+ #include "loader.h"
+diff --git a/src/gbm/backends/dri/gbm_driint.h b/src/gbm/backends/dri/gbm_driint.h
+--- a/src/gbm/backends/dri/gbm_driint.h
++++ b/src/gbm/backends/dri/gbm_driint.h
+@@ -31,7 +31,7 @@
+ #include <xf86drm.h>
+ #include <string.h>
+ #include <sys/mman.h>
+-#include "gbmint.h"
++#include <gbm_backend_abi.h>
+ #include "c11/threads.h"
+ 
+ #include <GL/gl.h> /* mesa_interface needs GL types */
+diff --git a/src/gbm/backends/dri/meson.build b/src/gbm/backends/dri/meson.build
+--- a/src/gbm/backends/dri/meson.build
++++ b/src/gbm/backends/dri/meson.build
+@@ -11,10 +11,10 @@ endif
+ shared_library(
+   'dri_gbm',
+   files('gbm_dri.c', 'gbm_driint.h'),
+-  include_directories : [incs_gbm, incs_gbm_dri, inc_st_dri, inc_gallium_aux],
++  include_directories : [inc_gallium, incs_gbm_dri, inc_loader, inc_st_dri, inc_gallium_aux],
+   link_args : [ld_args_gc_sections],
+   link_with : [libloader, libgallium_dri],
+-  dependencies : [deps_gbm_dri, dep_dl, dep_libdrm, idep_mesautil, idep_xmlconfig],
++  dependencies : [deps_gbm_dri, dep_dl, dep_gbm, dep_libdrm, idep_mesautil, idep_xmlconfig],
+   gnu_symbol_visibility : 'hidden',
+   install : true,
+   install_dir: join_paths(get_option('libdir'), 'gbm'),
+diff --git a/src/gbm/meson.build b/src/gbm/meson.build
+--- a/src/gbm/meson.build
++++ b/src/gbm/meson.build
+@@ -15,10 +15,6 @@ args_gbm = [
+ ]
+ incs_gbm = [include_directories('main'), inc_loader, inc_gallium]
+ 
+-if with_dri2
+-  subdir('backends/dri')
+-endif
+-
+ libgbm_name = 'gbm'
+ 
+ if with_platform_android and get_option('platform-sdk-version') >= 30
+@@ -43,7 +39,7 @@ if with_tests
+   test('gbm-abi-check', abi_check, suite : ['gbm'])
+ endif
+ 
+-install_headers('main/gbm.h')
++install_headers('main/gbm.h', 'main/gbm_backend_abi.h')
+ 
+ pkg.generate(
+   name : 'gbm',
+@@ -67,3 +63,8 @@ if with_symbols_check
+     suite : ['gbm'],
+   )
+ endif
++
++dep_gbm = declare_dependency(
++  link_with : libgbm,
++  include_directories : inc_gbm,
++)
+diff --git a/src/meson.build b/src/meson.build
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -129,9 +129,13 @@ if with_glx == 'dri'
+   subdir('glx')
+ endif
+ if with_gbm
+-  subdir('gbm')
++  if get_option('libgbm-external')
++    dep_gbm = dependency('gbm')
++  else
++    subdir('gbm')
++  endif
+ else
+-  inc_gbm = []
++  dep_gbm = null_dep
+ endif
+ if with_egl
+   subdir('egl')
+@@ -142,6 +146,10 @@ if with_gallium and with_gbm
+   endif
+ endif
+ 
++if with_gbm and with_dri2
++  subdir('gbm/backends/dri')
++endif
++
+ # This must be after at least mesa, glx, and gallium, since libgl will be
+ # defined in one of those subdirs depending on the glx provider.
+ if with_glx != 'disabled' and not with_glvnd
