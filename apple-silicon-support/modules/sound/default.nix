@@ -21,7 +21,8 @@
 
     lsp-plugins-is-safe = (pkgs.lib.versionAtLeast lsp-plugins.version "1.2.14");
 
-    lv2Path = lib.makeSearchPath "lib/lv2" [ lsp-plugins pkgs.bankstown-lv2 ];
+    lv2Packages = with pkgs; [ lsp-plugins bankstown-lv2 triforce-lv2 ];
+    lv2Path = lib.makeSearchPath "lib/lv2" ls2Packages;
   in lib.mkIf (cfg.setupAsahiSound && cfg.enable) (lib.mkMerge [
     {
       # can't be used by Asahi sound infrastructure
@@ -36,13 +37,13 @@
         pulse.enable = true;
 
         configPackages = [ asahi-audio ];
-        extraLv2Packages = [ lsp-plugins pkgs.bankstown-lv2 ];
+        extraLv2Packages = lv2Packages;
 
         wireplumber = {
           enable = true;
 
           configPackages = [ asahi-audio ];
-          extraLv2Packages = [ lsp-plugins pkgs.bankstown-lv2 ];
+          extraLv2Packages = lv2Packages;
         };
       };
 
