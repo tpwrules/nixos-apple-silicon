@@ -1,5 +1,6 @@
 final: prev: {
   linux-asahi = final.callPackage ./linux-asahi { };
+  linux-asahi-with-rust = final.callPackage ./linux-asahi { withRust = true; };
   m1n1 = final.callPackage ./m1n1 { };
   uboot-asahi = final.callPackage ./uboot-asahi { };
   asahi-fwextract = final.callPackage ./asahi-fwextract { };
