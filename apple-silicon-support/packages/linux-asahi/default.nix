@@ -3,7 +3,7 @@
 , callPackage
 , writeText
 , linuxPackagesFor
-, withRust ? false
+, withRust ? true
 , _kernelPatches ? [ ]
 }:
 
