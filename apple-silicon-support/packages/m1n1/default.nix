@@ -8,11 +8,8 @@
 , isRelease ? false
 , withTools ? true
 , withChainloading ? false
-, rust-bin ? null
 , customLogo ? null
 }:
-
-assert withChainloading -> rust-bin != null;
 
 let
   pyenv = python3.withPackages (p: with p; [
@@ -20,9 +17,21 @@ let
     pyserial
   ]);
 
-  rustenv = rust-bin.selectLatestNightlyWith (toolchain: toolchain.minimal.override {
-    targets = [ "aarch64-unknown-none-softfloat" ];
+  stdenvOpts = {
+    targetPlatform.system = "aarch64-none-elf";
+    targetPlatform.rust.rustcTarget = "${stdenv.hostPlatform.parsed.cpu.name}-unknown-none-softfloat";
+    targetPlatform.rust.rustcTargetSpec = "${stdenv.hostPlatform.parsed.cpu.name}-unknown-none-softfloat";
+  };
+  rust = buildPackages.rust.override {
+    stdenv = lib.recursiveUpdate buildPackages.stdenv stdenvOpts;
+  };
+  rustPackages = rust.packages.stable.overrideScope (f: p: {
+    rustc-unwrapped = p.rustc-unwrapped.override {
+      stdenv = lib.recursiveUpdate p.rustc-unwrapped.stdenv stdenvOpts;
+    };
   });
+  rustPlatform = buildPackages.makeRustPlatform rustPackages;
+
 in stdenv.mkDerivation rec {
   pname = "m1n1";
   version = "1.4.21";
@@ -35,6 +44,7 @@ in stdenv.mkDerivation rec {
     hash = "sha256-PEjTaSwcsV8PzM9a3rDWMYXGX9FlrM0oeElrP5HYRPg=";
     fetchSubmodules = true;
   };
+  cargoVendorDir = ".";
 
   makeFlags = [ "ARCH=${stdenv.cc.targetPrefix}" ]
     ++ lib.optional isRelease "RELEASE=1"
@@ -42,8 +52,7 @@ in stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     dtc
-    buildPackages.gcc
-  ] ++ lib.optional withChainloading rustenv
+  ] ++ lib.optionals withChainloading [rustPackages.rustc rustPackages.cargo rustPlatform.cargoSetupHook]
     ++ lib.optional (customLogo != null) imagemagick;
 
   postPatch = ''
