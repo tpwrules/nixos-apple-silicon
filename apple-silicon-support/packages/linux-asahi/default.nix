@@ -1,5 +1,4 @@
 { lib
-, pkgs
 , callPackage
 , writeText
 , linuxPackagesFor
