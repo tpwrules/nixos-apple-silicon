@@ -74,10 +74,6 @@ let
         configList = (parseConfig origConfigText) ++ extraConfig;
       in builtins.listToAttrs (map makePair (lib.lists.reverseList configList));
 
-      # used to (ostensibly) keep compatibility for those running stable versions of nixos
-      rustOlder = version: withRust && (lib.versionOlder rustc.version version);
-      bindgenOlder = version: withRust && (lib.versionOlder rust-bindgen.unwrapped.version version);
-
       # used to fix issues when nixpkgs gets ahead of the kernel
       rustAtLeast = version: withRust && (lib.versionAtLeast rustc.version version);
       bindgenAtLeast = version: withRust && (lib.versionAtLeast rust-bindgen.unwrapped.version version);
