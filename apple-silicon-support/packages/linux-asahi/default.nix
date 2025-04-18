@@ -1,7 +1,5 @@
 { lib
-, pkgs
 , callPackage
-, writeShellScriptBin
 , writeText
 , linuxPackagesFor
 , withRust ? false
