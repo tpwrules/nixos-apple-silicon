@@ -2,6 +2,16 @@
 
 This file contains important information for each release.
 
+## 2025-04-27
+
+This release updates nixpkgs.
+
+This release fixes issues preventing Mesa from being used. Thanks to
+marcin-serwin and schphe for the fix.
+
+Another update with updated packages will follow shortly. Thanks for the
+patience.
+
 ## 2025-03-15
 
 This release updates nixpkgs and the kernel.
