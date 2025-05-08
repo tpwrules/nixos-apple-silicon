@@ -6,11 +6,6 @@
       url = "github:nixos/nixpkgs/nixos-unstable";
     };
 
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      flake = false;
-    };
-
     flake-compat.url = "github:nix-community/flake-compat";
   };
 
@@ -38,7 +33,6 @@
               crossSystem.system = "aarch64-linux";
               localSystem.system = system;
               overlays = [
-                (import inputs.rust-overlay)
                 self.overlays.default
               ];
             };
