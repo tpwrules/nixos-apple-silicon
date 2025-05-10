@@ -2,6 +2,22 @@
 
 This file contains important information for each release.
 
+## 2025-05-10
+
+This release updates nixpkgs, the kernel, and audio support components.
+
+Microphone support is now available for users using macOS firmare version 13.5
+(this is different to any other macOS install on the system). The current
+version can be checked with `cat /proc/device-tree/chosen/asahi,os-fw-version`.
+
+To upgrade it:
+* Take a backup of any macOS and Linux data you do not want to lose in case of
+  problems
+* Delete the macOS stub and EFI partitions ONLY, NOT the root partition
+  (more info avaiable in the guide's uninstallation section)
+* Reinstall the UEFI environment into the free space using the Asahi installer
+* Rerun the NixOS installer (more info available in the guide's rescue section)
+
 ## 2025-04-27
 
 This release updates nixpkgs.
