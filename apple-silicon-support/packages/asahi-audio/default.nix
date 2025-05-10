@@ -1,6 +1,8 @@
 { stdenv
 , lib
 , fetchFromGitHub
+, lsp-plugins
+, bankstown-lv2
 }:
 
 stdenv.mkDerivation rec {
@@ -34,4 +36,9 @@ stdenv.mkDerivation rec {
     # no need to link the asahi-audio dir globally
     mv $out/share/asahi-audio $out
   '';
+
+  passthru.requiredLv2Packages = [
+    lsp-plugins
+    bankstown-lv2
+  ];
 }

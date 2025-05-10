@@ -28,13 +28,11 @@
         pulse.enable = true;
 
         configPackages = [ pkgs.asahi-audio ];
-        extraLv2Packages = [ pkgs.lsp-plugins pkgs.bankstown-lv2 ];
 
         wireplumber = {
           enable = true;
 
           configPackages = [ pkgs.asahi-audio ];
-          extraLv2Packages = [ pkgs.lsp-plugins pkgs.bankstown-lv2 ];
         };
       };
 
