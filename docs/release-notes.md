@@ -2,6 +2,21 @@
 
 This file contains important information for each release.
 
+## 2025-05-17
+
+This release updates nixpkgs, the kernel, and Mesa.
+
+The Mesa and kernel update stabilize the UAPI communication between them,
+allowing official Mesa releases in the future to be compatible with Apple
+Silicon. A reboot will be required after installation to restore graphics
+support.
+
+**Please see the issue on [the community tranistion of nixos-apple-silicon](https://github.com/tpwrules/nixos-apple-silicon/issues/298).**
+
+This repository will shortly be moving to the nix-community organization and
+gaining some more maintainership. The user experience should not majorly change
+but my personal involvement will slightly shift. Thanks for everything so far!
+
 ## 2025-05-10
 
 This release updates nixpkgs, the kernel, and audio support components.
