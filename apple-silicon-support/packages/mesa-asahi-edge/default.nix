@@ -13,8 +13,8 @@
     domain = "gitlab.freedesktop.org";
     owner = "asahi";
     repo = "mesa";
-    rev = "asahi-20250221";
-    hash = "sha256-xt49IaylZYoH3LxYu6Uxd+qRrqQfjI6FDeAD8MLeWP8=";
+    tag = "asahi-20250425";
+    hash = "sha256-3c3uewzKv5wL9BRwaVL4E3FnyA04veQwAPxfHiL7wII=";
   };
 
   mesonFlags =
@@ -37,7 +37,6 @@
   # replace patches with ones tweaked slightly to apply to this version
   patches = [
     ./opencl.patch
-    ./system-gbm.patch
   ];
 
   postInstall = (oldAttrs.postInstall or "") + ''
